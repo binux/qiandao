@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block head %}
+<link href="{{ static_url('components/bootstrap/css/bootstrap.min.css') }}" rel="stylesheet" type="text/css">
+<link href="{{ static_url('components/bootstrap/css/bootstrap-theme.min.css') }}" rel="stylesheet" type="text/css">
+{% endblock %}
+
+{% block body %}
+<p>hello world!</p>
+{{ config.port }}
+{% endblock %}

@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <title>{% block title %}签到{% endblock %}</title>
+    <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <meta name="description" content="{% block desc %}签到{% endblock %}">
+    <meta name="author" content="{% block author %}binux{% endblock %}">
+    {% block head %}{% endblock %}
+  </head>
+
+  <body>
+    {% block body %}{% endblock %}
+    {% block foot %}{% endblock %}
+  </body>
+</html>
+<!-- vim: set et sw=2 ts=2 sts=2 ff=unix fenc=utf8: -->
+
