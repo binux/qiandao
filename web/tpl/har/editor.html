@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block head %}
+<link href="{{ static_url('components/bootstrap/dist/css/bootstrap.min.css') }}" rel="stylesheet" type="text/css">
+<link href="{{ static_url('har/editor.css') }}" rel="stylesheet" type="text/css">
+<script>
+  seajs.use('/static/har/editor', function(main) {
+    main.init()
+  });
+</script>
+{% endblock %}
+
+{% block body %}
+{% raw %}
+<div ng-controller="EditorCtrl"></div>
+{% endraw %}
+
+{% raw %}
+<div class="modal fade" id="upload-har" ng-controller="UploadCtrl">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title">上传HAR</h4>
+      </div>
+      <div class="modal-body">
+        <div class="alert alert-danger" role="alert" style="display: none;">
+      <strong>Oh snap!</strong> Change a few things up and try submitting again.
+    </div>
+        <input type="file">
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" data-loading-text="Loading..." ng-click="upload()">上传</button>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+{% endraw %}
+{% endblock %}

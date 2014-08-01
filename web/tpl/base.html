@@ -9,6 +9,17 @@
 
     <meta name="description" content="{% block desc %}签到{% endblock %}">
     <meta name="author" content="{% block author %}binux{% endblock %}">
+    <script src="{{ static_url('components/seajs/dist/sea.js') }}"></script>
+    <script>
+      seajs.config({
+        base: "/static/components",
+        alias: {
+          "jquery": "jquery/dist/jquery",
+          "bootstrap": "bootstrap/dist/js/bootstrap.min",
+          "angular": "angularjs/angular.min",
+        }
+      })
+    </script>
     {% block head %}{% endblock %}
   </head>
 
