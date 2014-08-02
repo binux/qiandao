@@ -6,33 +6,69 @@
 <script>
   seajs.use('/static/har/editor', function(main) {
     main.init()
+
+    if (location.href.indexOf("?dev") > 0) {
+      $.get('/static/www.smzdm.com.har', function(data) {
+        data = angular.fromJson(data);
+        angular.element('#upload-har').scope().loaded(data);
+      })
+    }
   });
 </script>
 {% endblock %}
 
 {% block body %}
 {% raw %}
-<div ng-controller="EditorCtrl"></div>
-{% endraw %}
-
-{% raw %}
-<div class="modal fade" id="upload-har" ng-controller="UploadCtrl">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h4 class="modal-title">上传HAR</h4>
+<div class="container">
+  <div class="row" ng-controller="EditorCtrl">
+    <div class="col-md-3" id="editor-switch">
+      <div class="list-group">
+        <a ng-class="{active: !filter.checked}" class="list-group-item" href="#" ng-click='filter = {}'>
+          <span class="badge">{{ har.log.entries.length }}</span>
+          所有请求
+        </a>
+        <a ng-class="{active: filter.checked}" class="list-group-item" href="#" ng-click='filter.checked = true'>
+          <span class="badge">{{ (har.log.entries|filter:{checked:true}).length }}</span>
+          已选择请求
+        </a>
       </div>
-      <div class="modal-body">
-        <div class="alert alert-danger" role="alert" style="display: none;">
-      <strong>Oh snap!</strong> Change a few things up and try submitting again.
     </div>
-        <input type="file">
+
+    <div class="col-md-9" id="entries">
+      <div class="list-group">
+        <li class="list-group-item pageref" ng-repeat-start="entry in har.log.entries | filter: filter" ng-if="(har.log.entries | filter:filter)[$index-1].pageref != entry.pageref">
+          {{ entry.pageref }}
+        </li>
+        <a href="#" class="list-group-item entry" ng-repeat-end>
+          <div class="entry-checked">
+            <input ng-model="entry.checked" type="checkbox">
+          </div>
+          <span class="label {{ status_label(entry.response.status) }}">{{ entry.response.status }}</span>
+          <span class="entry-url">{{ entry.request.url }}</span>
+        </a>
       </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-primary" data-loading-text="Loading..." ng-click="upload()">上传</button>
-      </div>
-    </div><!-- /.modal-content -->
-  </div><!-- /.modal-dialog -->
-</div><!-- /.modal -->
+    </div>
+
+  </div>
+
+  <div class="modal fade" id="upload-har" ng-controller="UploadCtrl">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h4 class="modal-title">上传HAR</h4>
+        </div>
+        <div class="modal-body">
+          <div class="alert alert-danger" role="alert" style="display: none;">
+            <strong>Oh snap!</strong> Change a few things up and try submitting again.
+          </div>
+          <input type="file">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" data-loading-text="Loading..." ng-click="upload()">上传</button>
+        </div>
+      </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+  </div><!-- /.modal -->
+</div>
 {% endraw %}
 {% endblock %}

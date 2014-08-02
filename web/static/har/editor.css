@@ -2,3 +2,22 @@
 /* Author: Binux<i@binux.me> */
 /*         http://binux.me */
 /* Created on 2014-08-01 19:18:00 */
+.container {
+  margin-top: 10px;
+}
+.pageref {
+  color: #31708f;
+  background-color: #d9edf7;
+}
+.entry {
+  padding-left: 46px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.entry-checked {
+  position: absolute;
+  border-right: 1px solid #ddd;
+  padding: 0 12px;
+  left: 0;
+}

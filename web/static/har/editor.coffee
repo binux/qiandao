@@ -7,13 +7,16 @@ define (require, exports, module) ->
   require 'jquery'
   require 'bootstrap'
   require 'angular'
+  analysis = require '/static/har/analysis'
 
   editor = angular.module('HAREditor', [])
 
   # upload har controller
-  editor.controller('UploadCtrl', ($scope) ->
+  editor.controller('UploadCtrl', ($scope, $rootScope) ->
     element = angular.element('#upload-har')
+
     element.modal('show').on('hide.bs.modal', -> $scope.uploaded?)
+
     element.find('input[type=file]').on('change', (ev) ->
       $scope.file = this.files[0]
     )
@@ -24,6 +27,7 @@ define (require, exports, module) ->
     $scope.loaded = (data) ->
       console.log data
       $scope.uploaded = true
+      $rootScope.$emit('har-loaded', data)
       angular.element('#upload-har').modal('hide')
 
     $scope.upload = ->
@@ -42,6 +46,7 @@ define (require, exports, module) ->
         try
           $scope.loaded angular.fromJson ev.target.result
         catch error
+          console.log error
           $scope.alert 'HAR 格式错误'
         finally
           element.find('button').button('reset')
@@ -49,7 +54,23 @@ define (require, exports, module) ->
   )
 
   # edit har controller
-  editor.controller('EditorCtrl', ($scope) ->
+  editor.controller('EditorCtrl', ($scope, $rootScope) ->
+    $rootScope.$on('har-loaded', (ev, data) ->
+      data = analysis.analyze data
+      $scope.$apply -> $scope.har = data
+    )
+
+    $scope.status_label = (status) ->
+      if status // 100 == 2
+        'label-success'
+      else if status // 100 == 3
+        'label-info'
+      else if status == 0
+        'label-danger'
+      else
+        'label-warning'
+
+    $scope.filter = checked: true
   )
 
   init: -> angular.bootstrap(document.body, ['HAREditor'])
