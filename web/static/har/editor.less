@@ -27,6 +27,10 @@
   left: 0;
 }
 
+.label.pull-right {
+  margin-left: .5em;
+}
+
 #edit-entry {
   .modal-header, table, .modal-body {
     word-break: break-all;
@@ -44,12 +48,15 @@
     padding: .2em .6em .1em;
   }
 
-  .table caption {
-    font-size: 120%;
-    font-weight: bold;
-    padding: .2em;
-    color: #3c763d;
-    background-color: #dff0d8;
+  dt:after {
+    content: ":";
+  }
+
+  dl span.remove {
+    cursor: pointer;
+    position: absolute;
+    margin-top: -.1em;
+    padding: 0 .4em;
   }
 }
 

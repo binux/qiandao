@@ -95,6 +95,8 @@ define (require, exports, module) ->
       angular.element('#edit-entry').modal('show')
     )
 
+    $scope.panel = 'request'
+
     $scope.delete = (hashKey, array) ->
       for each, index in array
         if each.$$hashKey == hashKey

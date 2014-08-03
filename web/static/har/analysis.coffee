@@ -6,26 +6,6 @@
 define (require, exports, module) ->
   utils = require('/static/utils')
 
-  checked = (har) ->
-    # mark can been checked
-    for entry in har.log.entries
-      entry.check_tag = []
-      if entry.response.cookies.length > 0
-        entry.check_tag.push('response-cookie')
-        entry.checked = true
-      else if (c for c in entry.request.cookies when c.cookie_changed or c.cookie_added).length > 0
-        entry.check_tag.push('request-cookie-changed')
-        entry.checked = true
-      else if entry.response.status in [0, 304]
-        entry.checked = false
-      else if entry.response.content?.mimeType.indexOf('image') == 0
-        entry.checked = false
-      else if entry.response.content?.mimeType in ['text/css', ]
-        entry.checked = false
-      else
-        entry.checked = true
-    return har
-
   xhr = (har) ->
     for entry in har.log.entries
       if (h for h in entry.request.headers when h.name == 'X-Requested-With' and h.value == 'XMLHttpRequest').length > 0
@@ -48,24 +28,37 @@ define (require, exports, module) ->
 
   analyze_cookies = (har) ->
     # analyze where cookie from
-    cookies = {}
+    cookie_jar = new utils.CookieJar()
     for entry in har.log.entries
+      cookies = {}
+      for cookie in cookie_jar.getCookiesSync(entry.request.url)
+        cookies[cookie.key] = cookie.value
       for cookie in entry.request.cookies
         if cookie.name of cookies
           if cookie.value == cookies[cookie.name]
             cookie.from_session = true
+            entry.filter_from_session = true
           else
             cookie.cookie_changed = true
             entry.filter_cookie_changed = true
+            cookie_jar.setCookieSync(utils.Cookie.fromJSON(angular.toJson({
+              key: cookie.name
+              value: cookie.value
+              path: '/'
+            })), entry.request.url)
         else
           cookie.cookie_added = true
           entry.filter_cookie_added = true
-        cookies[cookie.name] = cookie.value
+          cookie_jar.setCookieSync(utils.Cookie.fromJSON(angular.toJson({
+            key: cookie.name
+            value: cookie.value
+            path: '/'
+          })), entry.request.url)
 
       # update cookie from response
-      for cookie in entry.response.cookies
+      for header in (h for h in entry.response.headers when h.name.toLowerCase() == 'set-cookie')
         entry.filter_set_cookie = true
-        cookies[cookie.name] = cookie.value
+        cookie_jar.setCookieSync(header.value, entry.request.url)
     return har
 
   sort = (har) ->
@@ -83,7 +76,13 @@ define (require, exports, module) ->
     )
     return har
 
+  remove_header = (har) ->
+    to_remove_headers = ['X-DevTools-Emulate-Network-Conditions-Client-Id', ]
+    for entry in har.log.entries
+      entry.request.headers = (h for h in entry.request.headers when h.name not in to_remove_headers)
+    return har
+
   exports.analyze = (har) ->
-    mime_type analyze_cookies sort har
+    mime_type analyze_cookies sort remove_header har
   
   return exports

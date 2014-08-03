@@ -93,6 +93,7 @@
         $scope.entry = entry;
         return angular.element('#edit-entry').modal('show');
       });
+      $scope.panel = 'request';
       $scope["delete"] = function(hashKey, array) {
         var each, index, _i, _len;
         for (index = _i = 0, _len = array.length; _i < _len; index = ++_i) {

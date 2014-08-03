@@ -249,13 +249,6 @@ function domainMatch(str, domStr, canonicalize) {
     return true;
   }
 
-  /* "All of the following [three] conditions hold:" (order adjusted from the RFC) */
-
-  /* "* The string is a host name (i.e., not an IP address)." */
-  if (net.isIP(str)) {
-    return false;
-  }
-
   /* "* The domain string is a suffix of the string" */
   var idx = str.indexOf(domStr);
   if (idx <= 0) {

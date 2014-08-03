@@ -21,6 +21,9 @@
   padding: 0 12px;
   left: 0;
 }
+.label.pull-right {
+  margin-left: .5em;
+}
 #edit-entry .modal-header,
 #edit-entry table,
 #edit-entry .modal-body {
@@ -36,12 +39,14 @@
 #edit-entry .entry-url {
   padding: .2em .6em .1em;
 }
-#edit-entry .table caption {
-  font-size: 120%;
-  font-weight: bold;
-  padding: .2em;
-  color: #3c763d;
-  background-color: #dff0d8;
+#edit-entry dt:after {
+  content: ":";
+}
+#edit-entry dl span.remove {
+  cursor: pointer;
+  position: absolute;
+  margin-top: -0.1em;
+  padding: 0 .4em;
 }
 [contenteditable]:empty:not(:focus):before {
   color: #777;
