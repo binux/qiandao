@@ -22,8 +22,9 @@
 <div class="container">
   <div class="row" ng-controller="EditorCtrl">
     <div class="col-md-3" id="editor-switch">
+      <!--checked switch-->
       <div class="list-group">
-        <a ng-class="{active: !filter.checked}" class="list-group-item" href="#" ng-click='filter = {}'>
+        <a ng-class="{active: !filter.checked}" class="list-group-item" href="#" ng-click='filter.checked = undefined'>
           <span class="badge">{{ har.log.entries.length }}</span>
           所有请求
         </a>
@@ -32,24 +33,141 @@
           已选择请求
         </a>
       </div>
-    </div>
 
-    <div class="col-md-9" id="entries">
       <div class="list-group">
-        <li class="list-group-item pageref" ng-repeat-start="entry in har.log.entries | filter: filter" ng-if="(har.log.entries | filter:filter)[$index-1].pageref != entry.pageref">
-          {{ entry.pageref }}
-        </li>
-        <a href="#" class="list-group-item entry" ng-repeat-end>
-          <div class="entry-checked">
-            <input ng-model="entry.checked" type="checkbox">
-          </div>
-          <span class="label {{ status_label(entry.response.status) }}">{{ entry.response.status }}</span>
-          <span class="entry-url">{{ entry.request.url }}</span>
+        <a href="#" class="list-group-item"
+          ng-repeat="(name, key) in {
+            All: undefined,
+            Documents: 'document',
+            Styles: 'style',
+            Images: 'image',
+            Media: 'media',
+            Others: 'other'
+          }"
+          ng-class="{active: filter.filter_mimeType == key}"
+          ng-click="filter.filter_mimeType = key">
+          <span class="badge">{{ (har.log.entries | filter: {checked: filter.checked, filter_mimeType: key}).length }}</span>
+          {{ name }}
+        </a>
+        <a href="#" class="list-group-item"
+          ng-class="{active: filter.filter_xhr}"
+          ng-click="filter.filter_xhr = filter.filter_xhr ? undefined : true">
+          <span class="badge">{{ (har.log.entries | filter: {checked: filter.checked, filter_xhr: true}).length }}</span>
+          XMLHttpRequest
         </a>
       </div>
     </div>
 
+    <!--entries-->
+    <div class="col-md-9" id="entries">
+      <div class="list-group">
+        <li class="list-group-item pageref"
+          ng-repeat-start="entry in har.log.entries | filter: filter | filter: track_item()"
+          ng-if="filted[$index-1].pageref != entry.pageref">
+          {{ entry.pageref }}
+        </li>
+        <a href="javascript:void(0)" class="list-group-item entry" ng-click="edit(entry)" ng-repeat-end>
+          <div class="entry-checked">
+            <input ng-model="entry.checked" type="checkbox">
+          </div>
+          <span class="label pull-right {{ status_label(entry.response.status) }}">{{ entry.response.status }}</span>
+          <span class="label label-default pull-right" ng-repeat="tag in entry.check_tag">{{ tag }}</span>
+          <span class="label" ng-class="{
+            'label-warning': (entry.request.method != 'GET'),
+            'label-primary': (entry.request.method == 'GET')
+            }">{{ entry.request.method }}</span>
+          <span class="entry-url">{{ entry.request.url }}</span>
+        </a>
+        <li class="list-group-item" ng-if="filted.length == 0">过滤条件下没有请求</li>
+      </div>
+    </div>
+
+    <!--edit entry modal-->
+    <div class="modal fade" id="edit-entry" data-backdrop='false' ng-controller="EntryCtrl">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+            <h4 class="modal-title">编辑请求</h4>
+          </div>
+
+          <!--url-->
+          <div class="modal-body">
+            <span contenteditable class="label entry-method" data-ph="METHOD"
+              strip-br="true"
+              ng-model="entry.request.method"
+              ng-class="{
+              'label-warning': (entry.request.method != 'GET'),
+              'label-primary': (entry.request.method == 'GET')
+              }"></span>
+            <span contenteditable class="entry-url" strip-br="true" ng-model="entry.request.url" data-ph="url"></span>
+          </div>
+
+          <!--headers table-->
+          <table class="table table-condensed">
+            <caption>Headers</caption>
+            <tr>
+              <th>name</th>
+              <th>value</th>
+              <th>act</th>
+            </tr>
+            <tr ng-repeat="header in entry.request.headers">
+              <td contenteditable ng-model="header.name"></td>
+              <td contenteditable ng-model="header.value"></td>
+              <td>
+                <button class="btn btn-default btn-sm"
+                  ng-click="delete(header.$$hashKey, entry.request.headers)"><span aria-hidden="true">&times;</span></button>
+              </td>
+            </tr>
+            <tr>
+              <td colspan=3>
+                <button class="btn btn-default btn-sm pull-right"
+                  ng-click="entry.request.headers.push({name:'', value:''})">Add Header</button>
+              </td>
+            </tr>
+          </table>
+
+          <!--cookies table-->
+          <table class="table table-condensed" ng-show="entry.request.cookies">
+            <caption>Cookies</caption>
+            <tr>
+              <th>name</th>
+              <th>value</th>
+              <th>act</th>
+            </tr>
+            <tr ng-repeat="cookie in entry.request.cookies">
+              <td>
+                <span contenteditable data-ph="cookie-name" ng-model="cookie.name"></span>
+                <span class="label label-danger" ng-if="cookie.cookie_added">changed</span>
+                <span class="label label-warning" ng-if="cookie.cookie_changed">changed</span>
+                <span class="label label-info" ng-if="cookie.from_session">session</span>
+              </td>
+              <td contenteditable ng-model="cookie.value"></td>
+              <td>
+                <button class="btn btn-default btn-sm"
+                  ng-click="delete(cookie.$$hashKey, entry.request.cookies)"><span aria-hidden="true">&times;</span></button>
+              </td>
+            </tr>
+            <tr>
+              <td colspan=3>
+                <button class="btn btn-default btn-sm pull-right"
+                  ng-click="entry.request.cookies.push({name:'', value:''})">Add Header</button>
+              </td>
+            </tr>
+          </table>
+
+          <!--post data-->
+          <div class="modal-body" contenteditable
+            ng-model="entry.request.postData.text"
+            ng-show="entry.request.postData"> </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-primary" data-loading-text="Saving..." data-dismiss="modal">Save</button>
+          </div>
+        </div><!-- /.modal-content -->
+      </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
   </div>
+
 
   <div class="modal fade" id="upload-har" ng-controller="UploadCtrl">
     <div class="modal-dialog">

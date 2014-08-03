@@ -26,3 +26,34 @@
   padding: 0 12px;
   left: 0;
 }
+
+#edit-entry {
+  .modal-header, table, .modal-body {
+    word-break: break-all;
+  }
+
+  table th:not(:last-child), table td:not(:last-child) {
+    min-width: 150px;
+  }
+
+  .entry-method {
+    display: inline-block;
+  }
+
+  .entry-url {
+    padding: .2em .6em .1em;
+  }
+
+  .table caption {
+    font-size: 120%;
+    font-weight: bold;
+    padding: .2em;
+    color: #3c763d;
+    background-color: #dff0d8;
+  }
+}
+
+[contenteditable]:empty:not(:focus):before {
+  color: #777;
+  content:attr(data-ph)
+}

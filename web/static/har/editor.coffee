@@ -7,9 +7,12 @@ define (require, exports, module) ->
   require 'jquery'
   require 'bootstrap'
   require 'angular'
-  analysis = require '/static/har/analysis'
+  require 'angular-contenteditable'
 
-  editor = angular.module('HAREditor', [])
+  analysis = require '/static/har/analysis'
+  utils = require '/static/utils'
+
+  editor = angular.module('HAREditor', ['contenteditable'])
 
   # upload har controller
   editor.controller('UploadCtrl', ($scope, $rootScope) ->
@@ -70,7 +73,37 @@ define (require, exports, module) ->
       else
         'label-warning'
 
-    $scope.filter = checked: true
+    $scope.filter = {}
+
+    $scope.track_item = () ->
+      $scope.filted = []
+      (item) ->
+        $scope.filted.push(item)
+        return true
+
+    $scope.edit = (entry) ->
+      $scope.$broadcast('edit-entry', entry)
+      return false
+  )
+
+  # entry editor controller
+  editor.controller('EntryCtrl', ($scope, $rootScope) ->
+    console.log $scope
+    $scope.$on('edit-entry', (ev, entry) ->
+      console.log entry
+      $scope.entry = entry
+      angular.element('#edit-entry').modal('show')
+    )
+
+    $scope.delete = (hashKey, array) ->
+      for each, index in array
+        if each.$$hashKey == hashKey
+          array.splice(index, 1)
+          return
+
+    $scope.$watch('entry.request.cookies', () ->
+      null
+    , true)
   )
 
   init: -> angular.bootstrap(document.body, ['HAREditor'])
