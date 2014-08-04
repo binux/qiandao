@@ -5,14 +5,26 @@
     require('jquery');
     require('bootstrap');
     require('angular');
-    require('angular-contenteditable');
+    require('/static/har/contenteditable');
     analysis = require('/static/har/analysis');
     utils = require('/static/utils');
     $(document).on('click', '.contentedit-wrapper', function(ev) {
-      return $(this).hide().next('[contenteditable]').show().focus();
+      var editable;
+      return editable = $(this).hide().next('[contenteditable]').show().focus();
     });
     $(document).on('blur', '.contentedit-wrapper + [contenteditable]', function(ev) {
       return $(this).hide().prev('.contentedit-wrapper').show();
+    });
+    $(document).on('focus', '[contenteditable]', function(ev) {
+      var range, sel;
+      if (this.childNodes[0]) {
+        range = document.createRange();
+        sel = window.getSelection();
+        range.setStartBefore(this.childNodes[0]);
+        range.setEndAfter(this);
+        sel.removeAllRanges();
+        return sel.addRange(range);
+      }
     });
     editor = angular.module('HAREditor', ['contenteditable']);
     editor.controller('UploadCtrl', function($scope, $rootScope) {
@@ -119,6 +131,64 @@
         $scope.entry = entry;
         return angular.element('#edit-entry').modal('show');
       });
+      $scope.$watch('entry.request.url', function() {
+        var key, queryString, value;
+        if ($scope.entry == null) {
+          return;
+        }
+        queryString = (function() {
+          var _ref, _results;
+          _ref = utils.url_parse($scope.entry.request.url, true).query;
+          _results = [];
+          for (key in _ref) {
+            value = _ref[key];
+            _results.push({
+              name: key,
+              value: value
+            });
+          }
+          return _results;
+        })();
+        if (!angular.equals(queryString, $scope.entry.request.queryString)) {
+          return $scope.entry.request.queryString = queryString;
+        }
+      });
+      $scope.$watch('entry.request.queryString', (function() {
+        var each, key, m, query, re, replace_list, url, value, _i, _j, _len, _len1, _ref, _ref1;
+        if ($scope.entry == null) {
+          return;
+        }
+        url = utils.url_parse($scope.entry.request.url);
+        query = {};
+        _ref = $scope.entry.request.queryString;
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          each = _ref[_i];
+          query[each.name] = each.value;
+        }
+        query = utils.querystring_unparse(query);
+        replace_list = {};
+        _ref1 = $scope.entry.request.queryString;
+        for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
+          each = _ref1[_j];
+          re = /{{\s*(\w+?)\s*}}/g;
+          while (m = re.exec(each.name)) {
+            replace_list[encodeURIComponent(m[0])] = m[0];
+          }
+          re = /{{\s*(\w+?)\s*}}/g;
+          while (m = re.exec(each.value)) {
+            replace_list[encodeURIComponent(m[0])] = m[0];
+          }
+        }
+        for (key in replace_list) {
+          value = replace_list[key];
+          query = query.replace(key, value, 'g');
+        }
+        url.search = "?" + query;
+        url = utils.url_unparse(url);
+        if (url !== $scope.entry.request.url) {
+          return $scope.entry.request.url = url;
+        }
+      }), true);
       $scope.panel = 'request';
       $scope["delete"] = function(hashKey, array) {
         var each, index, _i, _len;

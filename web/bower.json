@@ -12,7 +12,6 @@
     "angularjs": "~1.2.21",
     "jquery": "~2.1.1",
     "bootstrap": "~3.2.0",
-    "seajs": "~2.3.0",
-    "angular-contenteditable": "~0.3.7"
+    "seajs": "~2.3.0"
   }
 }

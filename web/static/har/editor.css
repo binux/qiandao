@@ -43,8 +43,7 @@
 #edit-entry dd {
   word-break: break-all;
 }
-#edit-entry dt .contentedit-wrapper,
-#edit-entry dd .contentedit-wrapper {
+#edit-entry details dt .contentedit-wrapper {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

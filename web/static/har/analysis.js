@@ -125,7 +125,7 @@
     };
     headers = function(har) {
       var entry, header, to_remove_headers, _i, _j, _len, _len1, _ref, _ref1, _ref2;
-      to_remove_headers = ['X-DevTools-Emulate-Network-Conditions-Client-Id'];
+      to_remove_headers = ['X-DevTools-Emulate-Network-Conditions-Client-Id', 'Cookie'];
       _ref = har.log.entries;
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         entry = _ref[_i];

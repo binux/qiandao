@@ -7,17 +7,26 @@ define (require, exports, module) ->
   require 'jquery'
   require 'bootstrap'
   require 'angular'
-  require 'angular-contenteditable'
+  require '/static/har/contenteditable'
 
   analysis = require '/static/har/analysis'
   utils = require '/static/utils'
 
   # contentedit-wrapper
   $(document).on('click', '.contentedit-wrapper', (ev) ->
-    $(this).hide().next('[contenteditable]').show().focus()
+    editable = $(this).hide().next('[contenteditable]').show().focus()
   )
   $(document).on('blur', '.contentedit-wrapper + [contenteditable]', (ev) ->
     $(this).hide().prev('.contentedit-wrapper').show()
+  )
+  $(document).on('focus', '[contenteditable]', (ev) ->
+    if this.childNodes[0]
+      range = document.createRange()
+      sel = window.getSelection()
+      range.setStartBefore(this.childNodes[0])
+      range.setEndAfter(this)
+      sel.removeAllRanges()
+      sel.addRange(range)
   )
 
   editor = angular.module('HAREditor', ['contenteditable'])
@@ -114,6 +123,42 @@ define (require, exports, module) ->
       $scope.entry = entry
       angular.element('#edit-entry').modal('show')
     )
+
+    $scope.$watch('entry.request.url', () ->
+      if not $scope.entry?
+        return
+      queryString = ({name: key, value: value} for key, value of utils.url_parse($scope.entry.request.url, true).query)
+
+      if not angular.equals(queryString, $scope.entry.request.queryString)
+        $scope.entry.request.queryString = queryString
+    )
+
+    $scope.$watch('entry.request.queryString', (() ->
+      if not $scope.entry?
+        return
+      url = utils.url_parse($scope.entry.request.url)
+      query = {}
+      for each in $scope.entry.request.queryString
+        query[each.name] = each.value
+      query = utils.querystring_unparse(query)
+
+      replace_list = {}
+      for each in $scope.entry.request.queryString
+        re = /{{\s*(\w+?)\s*}}/g
+        while m = re.exec(each.name)
+          replace_list[encodeURIComponent(m[0])] = m[0]
+        re = /{{\s*(\w+?)\s*}}/g
+        while m = re.exec(each.value)
+          replace_list[encodeURIComponent(m[0])] = m[0]
+      for key, value of replace_list
+        query = query.replace(key, value, 'g')
+
+      url.search = "?#{query}"
+      url = utils.url_unparse(url)
+
+      if url != $scope.entry.request.url
+        $scope.entry.request.url = url
+    ), true)
 
     $scope.panel = 'request'
 

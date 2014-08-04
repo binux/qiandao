@@ -27,19 +27,20 @@
     <div class="col-md-3" id="editor-switch">
       <!--checked switch-->
       <div class="list-group">
-        <a ng-class="{active: !filter.checked && !filter.recommend}" class="list-group-item" href="#" ng-click='filter.recommend=undefined;filter.checked = undefined'>
+        <a ng-class="{active: !filter.checked && !filter.recommend}" class="list-group-item" href="#" ng-click='filter.recommend=undefined;filter.checked=undefined'>
           <span class="badge">{{ har.log.entries.length }}</span>
           所有请求
         </a>
-        <a ng-class="{active: filter.checked}" class="list-group-item" href="#" ng-click='filter.checked=true'>
+        <a ng-class="{active: filter.checked}" class="list-group-item" href="#" ng-click='filter.recommend=undefined;filter.checked=true'>
           <span class="badge">{{ (har.log.entries|filter:{checked:true}).length }}</span>
           已选择请求
         </a>
-        <a ng-class="{active: filter.recommend}" class="list-group-item text-right" href="#" ng-click='recommend();filter.recommend = true; filter.checked = undefined'>
+        <a ng-class="{active: filter.recommend}" class="list-group-item text-right" href="#" ng-click='recommend();filter.recommend=true;filter.checked=undefined'>
           推荐关联请求 &gt;
         </a>
       </div>
 
+      <!-- mime type -->
       <div class="list-group">
         <a href="#" class="list-group-item"
           ng-repeat="(name, key) in {
@@ -57,6 +58,7 @@
         </a>
       </div>
 
+      <!-- xhr && cookie -->
       <div class="list-group">
         <a href="#" class="list-group-item"
           ng-class="{active: filter.filter_xhr}"
@@ -73,7 +75,7 @@
       </div>
     </div>
 
-    <!--entries-->
+    <!-- entries list -->
     <div class="col-md-9" id="entries">
       <div class="list-group">
         <li class="list-group-item pageref"
@@ -105,6 +107,7 @@
     <div class="modal fade" id="edit-entry" ng-controller="EntryCtrl">
       <div class="modal-dialog modal-lg">
         <div class="modal-content">
+          <!-- header -->
           <div class="modal-header">
             <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
             <ul class="nav nav-pills">
@@ -129,8 +132,32 @@
               <dt>Request Method</dt>
               <dd contenteditable data-ph="request method" ng-model="entry.request.method"></dd>
             </dl>
+
+            <!-- query string -->
+            <details open onclick="return false">
+              <summary>
+                Query String Parameters
+                <a class="btn btn-info btn-xxs"
+                  ng-click="entry.request.query_string.unshift({name: ':key', value: ':value'})">ADD</a>
+              </summary>
+              <dl class="dl-horizontal">
+                <dt ng-repeat-start="query in entry.request.queryString">
+                <div class="contentedit-wrapper">
+                  <span ng-bind-html="variables_wrapper(query.name, ':key')"></span>
+                </div>
+                <div contenteditable ng-model="query.name"></div>
+                </dt>
+                <dd ng-repeat-end>
+                <div class="contentedit-wrapper">
+                  <span ng-bind-html="variables_wrapper(query.value, ':value')"></span>
+                </div>
+                <div contenteditable ng-model="query.value"></div>
+                </dd>
+              </dl>
+            </details>
+
             <!-- headers -->
-            <details open>
+            <details open onclick="return false">
               <summary>
                 Request Headers
                 <a class="btn btn-info btn-xxs"
@@ -163,7 +190,7 @@
 
 
             <!-- cookies -->
-            <details open>
+            <details open onclick="return false">
               <summary>
                 Cookies
                 <a class="btn btn-info btn-xxs"
@@ -210,14 +237,14 @@
               <dt>Status Code</dt>
               <dd><span class="label {{ status_label(entry.response.status) }}">{{ entry.response.status }}</span></dd>
             </dl>
-            <details open>
+            <details open onclick="return false">
               <summary>Response Headers</summary>
               <dl class="dl-horizontal">
                 <dt ng-repeat-start="header in entry.response.headers">{{ header.name }}</dt>
                 <dd ng-repeat-end>{{ header.value }}</dd>
               </dl>
             </details>
-            <details open>
+            <details open onclick="return false">
               <summary>Cookies</summary>
               <dl class="dl-horizontal">
                 <dt ng-repeat-start="cookie in entry.response.cookies">{{ cookie.name }}</dt>

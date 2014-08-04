@@ -78,7 +78,7 @@ define (require, exports, module) ->
     return har
 
   headers = (har) ->
-    to_remove_headers = ['X-DevTools-Emulate-Network-Conditions-Client-Id', ]
+    to_remove_headers = ['X-DevTools-Emulate-Network-Conditions-Client-Id', 'Cookie']
     for entry in har.log.entries
       for header in entry.request.headers
         if header.name not in to_remove_headers
