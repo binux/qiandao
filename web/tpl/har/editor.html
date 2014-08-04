@@ -138,7 +138,7 @@
               <summary>
                 Query String Parameters
                 <a class="btn btn-info btn-xxs"
-                  ng-click="entry.request.query_string.unshift({name: ':key', value: ':value'})">ADD</a>
+                  ng-click="entry.request.queryString.unshift({name: ':key', value: ':value'})">ADD</a>
               </summary>
               <dl class="dl-horizontal">
                 <dt ng-repeat-start="query in entry.request.queryString">
@@ -148,8 +148,9 @@
                 <div contenteditable ng-model="query.name"></div>
                 </dt>
                 <dd ng-repeat-end>
+                <span class="btn btn-default btn-xxs remove pull-right" ng-click="delete(query.$$hashKey, entry.request.queryString)"></span>
                 <div class="contentedit-wrapper">
-                  <span ng-bind-html="variables_wrapper(query.value, ':value')"></span>
+                  <span ng-bind-html="variables_wrapper(query.value, ':empty')"></span>
                 </div>
                 <div contenteditable ng-model="query.value"></div>
                 </dd>
@@ -180,7 +181,7 @@
                 <!-- header.value -->
                 <dd ng-repeat-end>
                 <span class="btn btn-default btn-xxs remove pull-right" ng-click="delete(header.$$hashKey, entry.request.headers)"></span>
-                <div class="contentedit-wrapper" ng-bind-html="variables_wrapper(header.value, 'header.value')"></div>
+                <div class="contentedit-wrapper" ng-bind-html="variables_wrapper(header.value, ':empty')"></div>
                 <div contenteditable ng-model="header.value"></div>
                 </dd>
 
@@ -214,7 +215,7 @@
                 <dd ng-repeat-end>
                 <span class="btn btn-default btn-xxs remove pull-right" ng-click="delete(cookie.$$hashKey, entry.request.cookies)"></span>
                 <div class="contentedit-wrapper">
-                  <span ng-bind-html="variables_wrapper(cookie.value, 'cookie.value')"></span>
+                  <span ng-bind-html="variables_wrapper(cookie.value, ':empty')"></span>
                   <span class="label label-danger" ng-show="cookie.cookie_added">added</span>
                   <span class="label label-warning" ng-show="cookie.cookie_changed">changed</span>
                   <span class="label label-info" ng-show="cookie.from_session">session</span>

@@ -140,20 +140,8 @@ define (require, exports, module) ->
       query = {}
       for each in $scope.entry.request.queryString
         query[each.name] = each.value
-      query = utils.querystring_unparse(query)
-
-      replace_list = {}
-      for each in $scope.entry.request.queryString
-        re = /{{\s*(\w+?)\s*}}/g
-        while m = re.exec(each.name)
-          replace_list[encodeURIComponent(m[0])] = m[0]
-        re = /{{\s*(\w+?)\s*}}/g
-        while m = re.exec(each.value)
-          replace_list[encodeURIComponent(m[0])] = m[0]
-      for key, value of replace_list
-        query = query.replace(key, value, 'g')
-
-      url.search = "?#{query}"
+      query = utils.querystring_unparse_with_variables(query)
+      url.search = "?#{query}" if query
       url = utils.url_unparse(url)
 
       if url != $scope.entry.request.url

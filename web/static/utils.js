@@ -37,6 +37,27 @@
       url_unparse: node_url.format,
       querystring_parse: node_querystring.parse,
       querystring_unparse: node_querystring.stringify,
+      querystring_unparse_with_variables: function(obj) {
+        var key, m, query, re, replace_list, value;
+        query = node_querystring.stringify(obj);
+        replace_list = {};
+        for (key in obj) {
+          value = obj[key];
+          re = /{{\s*(\w+?)\s*}}/g;
+          while (m = re.exec(key)) {
+            replace_list[encodeURIComponent(m[0])] = m[0];
+          }
+          re = /{{\s*(\w+?)\s*}}/g;
+          while (m = re.exec(value)) {
+            replace_list[encodeURIComponent(m[0])] = m[0];
+          }
+        }
+        for (key in replace_list) {
+          value = replace_list[key];
+          query = query.replace(key, value, 'g');
+        }
+        return query;
+      },
       CookieJar: node_tough.CookieJar,
       Cookie: node_tough.Cookie
     };

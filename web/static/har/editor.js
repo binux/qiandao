@@ -154,7 +154,7 @@
         }
       });
       $scope.$watch('entry.request.queryString', (function() {
-        var each, key, m, query, re, replace_list, url, value, _i, _j, _len, _len1, _ref, _ref1;
+        var each, query, url, _i, _len, _ref;
         if ($scope.entry == null) {
           return;
         }
@@ -165,25 +165,10 @@
           each = _ref[_i];
           query[each.name] = each.value;
         }
-        query = utils.querystring_unparse(query);
-        replace_list = {};
-        _ref1 = $scope.entry.request.queryString;
-        for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
-          each = _ref1[_j];
-          re = /{{\s*(\w+?)\s*}}/g;
-          while (m = re.exec(each.name)) {
-            replace_list[encodeURIComponent(m[0])] = m[0];
-          }
-          re = /{{\s*(\w+?)\s*}}/g;
-          while (m = re.exec(each.value)) {
-            replace_list[encodeURIComponent(m[0])] = m[0];
-          }
+        query = utils.querystring_unparse_with_variables(query);
+        if (query) {
+          url.search = "?" + query;
         }
-        for (key in replace_list) {
-          value = replace_list[key];
-          query = query.replace(key, value, 'g');
-        }
-        url.search = "?" + query;
         url = utils.url_unparse(url);
         if (url !== $scope.entry.request.url) {
           return $scope.entry.request.url = url;

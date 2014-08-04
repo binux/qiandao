@@ -29,6 +29,20 @@ define (require) ->
 
     querystring_parse: node_querystring.parse
     querystring_unparse: node_querystring.stringify
+    querystring_unparse_with_variables: (obj) ->
+      query = node_querystring.stringify(obj)
+
+      replace_list = {}
+      for key, value of obj
+        re = /{{\s*(\w+?)\s*}}/g
+        while m = re.exec(key)
+          replace_list[encodeURIComponent(m[0])] = m[0]
+        re = /{{\s*(\w+?)\s*}}/g
+        while m = re.exec(value)
+          replace_list[encodeURIComponent(m[0])] = m[0]
+      for key, value of replace_list
+        query = query.replace(key, value, 'g')
+      return query
 
     CookieJar: node_tough.CookieJar
     Cookie: node_tough.Cookie
