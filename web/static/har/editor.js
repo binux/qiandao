@@ -8,6 +8,12 @@
     require('angular-contenteditable');
     analysis = require('/static/har/analysis');
     utils = require('/static/utils');
+    $(document).on('click', '.contentedit-wrapper', function(ev) {
+      return $(this).hide().next('[contenteditable]').show().focus();
+    });
+    $(document).on('blur', '.contentedit-wrapper + [contenteditable]', function(ev) {
+      return $(this).hide().prev('.contentedit-wrapper').show();
+    });
     editor = angular.module('HAREditor', ['contenteditable']);
     editor.controller('UploadCtrl', function($scope, $rootScope) {
       var element;
@@ -32,7 +38,6 @@
         if ($scope.file == null) {
           return false;
         }
-        console.log($scope.file);
         if ($scope.file.size > 50 * 1024 * 1024) {
           $scope.alert('文件大小超过50M');
           return false;
@@ -43,7 +48,11 @@
           var error;
           $scope.uploaded = true;
           try {
-            return $scope.loaded(angular.fromJson(ev.target.result));
+            return $scope.loaded({
+              har: analysis.analyze(angular.fromJson(ev.target.result)),
+              username: $scope.username,
+              password: $scope.password
+            });
           } catch (_error) {
             error = _error;
             console.log(error);
@@ -57,9 +66,15 @@
     });
     editor.controller('EditorCtrl', function($scope, $rootScope) {
       $rootScope.$on('har-loaded', function(ev, data) {
-        data = analysis.analyze(data);
         return $scope.$apply(function() {
-          return $scope.har = data;
+          var key, value, _results;
+          console.log(data);
+          _results = [];
+          for (key in data) {
+            value = data[key];
+            _results.push($scope[key] = value);
+          }
+          return _results;
         });
       });
       $scope.status_label = function(status) {
@@ -74,6 +89,15 @@
         }
       };
       $scope.filter = {};
+      $scope.badge_filter = function(update) {
+        var filter, key, value;
+        filter = angular.copy($scope.filter);
+        for (key in update) {
+          value = update[key];
+          filter[key] = value;
+        }
+        return filter;
+      };
       $scope.track_item = function() {
         $scope.filted = [];
         return function(item) {
@@ -81,13 +105,15 @@
           return true;
         };
       };
-      return $scope.edit = function(entry) {
+      $scope.edit = function(entry) {
         $scope.$broadcast('edit-entry', entry);
         return false;
       };
+      return $scope.recommend = function() {
+        return analysis.recommend($scope.har);
+      };
     });
-    editor.controller('EntryCtrl', function($scope, $rootScope) {
-      console.log($scope);
+    editor.controller('EntryCtrl', function($scope, $rootScope, $sce) {
       $scope.$on('edit-entry', function(ev, entry) {
         console.log(entry);
         $scope.entry = entry;
@@ -104,14 +130,30 @@
           }
         }
       };
-      return $scope.$watch('entry.request.cookies', function() {
-        return null;
-      }, true);
+      $scope.variables = function(string) {
+        var m, re, _results;
+        re = /{{\s*(\w+?)\s*}}/g;
+        _results = [];
+        while (m = re.exec(string)) {
+          _results.push(m[1]);
+        }
+        return _results;
+      };
+      return $scope.variables_wrapper = function(string, place_holder) {
+        var re;
+        if (place_holder == null) {
+          place_holder = '';
+        }
+        string = string || place_holder;
+        re = /{{\s*(\w+?)\s*}}/g;
+        return $sce.trustAsHtml(string.replace(re, '<span class="label label-primary">$&</span>'));
+      };
     });
     return {
       init: function() {
         return angular.bootstrap(document.body, ['HAREditor']);
-      }
+      },
+      analysis: analysis
     };
   });
 

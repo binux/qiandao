@@ -21,17 +21,14 @@
   padding: 0 12px;
   left: 0;
 }
-.label.pull-right {
-  margin-left: .5em;
+.label {
+  margin: 0 .2em;
 }
-#edit-entry .modal-header,
-#edit-entry table,
-#edit-entry .modal-body {
-  word-break: break-all;
-}
-#edit-entry table th:not(:last-child),
-#edit-entry table td:not(:last-child) {
-  min-width: 150px;
+.btn-xxs {
+  padding: 1px 3px;
+  font-size: 8px;
+  line-height: 1.5;
+  border-radius: 2px;
 }
 #edit-entry .entry-method {
   display: inline-block;
@@ -39,16 +36,40 @@
 #edit-entry .entry-url {
   padding: .2em .6em .1em;
 }
-#edit-entry dt:after {
+#edit-entry dt .contentedit-wrapper:after {
   content: ":";
 }
-#edit-entry dl span.remove {
-  cursor: pointer;
-  position: absolute;
-  margin-top: -0.1em;
-  padding: 0 .4em;
+#edit-entry dt,
+#edit-entry dd {
+  word-break: break-all;
 }
-[contenteditable]:empty:not(:focus):before {
-  color: #777;
-  content: attr(data-ph);
+#edit-entry dt .contentedit-wrapper,
+#edit-entry dd .contentedit-wrapper {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+#edit-entry .select .btn {
+  margin-top: 1px;
+  margin-right: .5em;
+}
+#edit-entry .select .btn.active {
+  color: #fff;
+  background-color: #449d44;
+  border-color: #398439;
+}
+#edit-entry .select .btn:after {
+  font-family: 'Glyphicons Halflings';
+  content: "\2212";
+}
+#edit-entry .select .btn.active:after {
+  content: "\e013";
+}
+#edit-entry .remove.btn:after {
+  line-height: 1.5;
+  font-family: 'Glyphicons Halflings';
+  content: "\e014";
+}
+.contentedit-wrapper + [contenteditable] {
+  display: none;
 }

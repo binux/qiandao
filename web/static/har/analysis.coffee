@@ -31,9 +31,10 @@ define (require, exports, module) ->
     cookie_jar = new utils.CookieJar()
     for entry in har.log.entries
       cookies = {}
-      for cookie in cookie_jar.getCookiesSync(entry.request.url)
+      for cookie in cookie_jar.getCookiesSync(entry.request.url, {now: new Date(entry.startedDateTime)})
         cookies[cookie.key] = cookie.value
       for cookie in entry.request.cookies
+        cookie.checked = false
         if cookie.name of cookies
           if cookie.value == cookies[cookie.name]
             cookie.from_session = true
@@ -41,24 +42,24 @@ define (require, exports, module) ->
           else
             cookie.cookie_changed = true
             entry.filter_cookie_changed = true
-            cookie_jar.setCookieSync(utils.Cookie.fromJSON(angular.toJson({
-              key: cookie.name
-              value: cookie.value
-              path: '/'
-            })), entry.request.url)
+            #cookie_jar.setCookieSync(utils.Cookie.fromJSON(angular.toJson({
+              #key: cookie.name
+              #value: cookie.value
+              #path: '/'
+            #})), entry.request.url)
         else
           cookie.cookie_added = true
           entry.filter_cookie_added = true
-          cookie_jar.setCookieSync(utils.Cookie.fromJSON(angular.toJson({
-            key: cookie.name
-            value: cookie.value
-            path: '/'
-          })), entry.request.url)
+          #cookie_jar.setCookieSync(utils.Cookie.fromJSON(angular.toJson({
+            #key: cookie.name
+            #value: cookie.value
+            #path: '/'
+          #})), entry.request.url)
 
       # update cookie from response
       for header in (h for h in entry.response.headers when h.name.toLowerCase() == 'set-cookie')
         entry.filter_set_cookie = true
-        cookie_jar.setCookieSync(header.value, entry.request.url)
+        cookie_jar.setCookieSync(header.value, entry.request.url, {now: new Date(entry.startedDateTime)})
     return har
 
   sort = (har) ->
@@ -76,13 +77,32 @@ define (require, exports, module) ->
     )
     return har
 
-  remove_header = (har) ->
+  headers = (har) ->
     to_remove_headers = ['X-DevTools-Emulate-Network-Conditions-Client-Id', ]
     for entry in har.log.entries
-      entry.request.headers = (h for h in entry.request.headers when h.name not in to_remove_headers)
+      for header in entry.request.headers
+        if header.name not in to_remove_headers
+          header.checked = true
+        else
+          header.checked = false
     return har
 
-  exports.analyze = (har) ->
-    mime_type analyze_cookies sort remove_header har
-  
+  exports =
+    analyze: (har) ->
+      xhr mime_type analyze_cookies headers sort har
+    recommend: (har) ->
+      for entry in har.log.entries
+        entry.recommend = if entry.checked then true else false
+
+      checked = (e for e in har.log.entries when e.checked)
+      related_cookies = []
+      for entry in checked
+        for cookie in entry.request.cookies
+          related_cookies.push(cookie.name)
+      for entry in har.log.entries
+        for cookie in entry.response.cookies
+          if cookie.name in related_cookies
+            entry.recommend = true
+            break
+
   return exports

@@ -12,6 +12,14 @@ define (require, exports, module) ->
   analysis = require '/static/har/analysis'
   utils = require '/static/utils'
 
+  # contentedit-wrapper
+  $(document).on('click', '.contentedit-wrapper', (ev) ->
+    $(this).hide().next('[contenteditable]').show().focus()
+  )
+  $(document).on('blur', '.contentedit-wrapper + [contenteditable]', (ev) ->
+    $(this).hide().prev('.contentedit-wrapper').show()
+  )
+
   editor = angular.module('HAREditor', ['contenteditable'])
 
   # upload har controller
@@ -36,7 +44,6 @@ define (require, exports, module) ->
     $scope.upload = ->
       if not $scope.file?
         return false
-      console.log $scope.file
 
       if $scope.file.size > 50*1024*1024
         $scope.alert '文件大小超过50M'
@@ -47,7 +54,11 @@ define (require, exports, module) ->
       reader.onload = (ev) ->
         $scope.uploaded = true
         try
-          $scope.loaded angular.fromJson ev.target.result
+          $scope.loaded(
+            har: analysis.analyze angular.fromJson ev.target.result
+            username: $scope.username
+            password: $scope.password
+          )
         catch error
           console.log error
           $scope.alert 'HAR 格式错误'
@@ -56,11 +67,13 @@ define (require, exports, module) ->
       reader.readAsText $scope.file
   )
 
-  # edit har controller
+  # har list controller
   editor.controller('EditorCtrl', ($scope, $rootScope) ->
     $rootScope.$on('har-loaded', (ev, data) ->
-      data = analysis.analyze data
-      $scope.$apply -> $scope.har = data
+      $scope.$apply ->
+        console.log data
+        for key, value of data
+          $scope[key] = value
     )
 
     $scope.status_label = (status) ->
@@ -74,6 +87,11 @@ define (require, exports, module) ->
         'label-warning'
 
     $scope.filter = {}
+    $scope.badge_filter = (update) ->
+      filter = angular.copy($scope.filter)
+      for key, value of update
+        filter[key] = value
+      return filter
 
     $scope.track_item = () ->
       $scope.filted = []
@@ -84,11 +102,13 @@ define (require, exports, module) ->
     $scope.edit = (entry) ->
       $scope.$broadcast('edit-entry', entry)
       return false
+
+    $scope.recommend = () ->
+      analysis.recommend($scope.har)
   )
 
-  # entry editor controller
-  editor.controller('EntryCtrl', ($scope, $rootScope) ->
-    console.log $scope
+  # entry edit
+  editor.controller('EntryCtrl', ($scope, $rootScope, $sce) ->
     $scope.$on('edit-entry', (ev, entry) ->
       console.log entry
       $scope.entry = entry
@@ -103,9 +123,15 @@ define (require, exports, module) ->
           array.splice(index, 1)
           return
 
-    $scope.$watch('entry.request.cookies', () ->
-      null
-    , true)
+    $scope.variables = (string) ->
+      re = /{{\s*(\w+?)\s*}}/g
+      while m = re.exec(string)
+        m[1]
+    $scope.variables_wrapper = (string, place_holder='') ->
+      string = string or place_holder
+      re = /{{\s*(\w+?)\s*}}/g
+      $sce.trustAsHtml(string.replace(re, '<span class="label label-primary">$&</span>'))
   )
 
   init: -> angular.bootstrap(document.body, ['HAREditor'])
+  analysis: analysis

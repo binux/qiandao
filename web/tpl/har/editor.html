@@ -9,8 +9,11 @@
 
     if (location.href.indexOf("?dev") > 0) {
       $.get('/static/www.smzdm.com.har', function(data) {
-        data = angular.fromJson(data);
-        angular.element('#upload-har').scope().loaded(data);
+        data = main.analysis.analyze(angular.fromJson(data));
+        angular.element('#upload-har').scope().loaded({
+          har: data,
+          username: 'binux',
+        });
       })
     }
   });
@@ -24,15 +27,15 @@
     <div class="col-md-3" id="editor-switch">
       <!--checked switch-->
       <div class="list-group">
-        <a ng-class="{active: !filter.checked}" class="list-group-item" href="#" ng-click='filter.checked = undefined'>
+        <a ng-class="{active: !filter.checked && !filter.recommend}" class="list-group-item" href="#" ng-click='filter.recommend=undefined;filter.checked = undefined'>
           <span class="badge">{{ har.log.entries.length }}</span>
           所有请求
         </a>
-        <a ng-class="{active: filter.checked}" class="list-group-item" href="#" ng-click='filter.checked = true'>
+        <a ng-class="{active: filter.checked}" class="list-group-item" href="#" ng-click='filter.checked=true'>
           <span class="badge">{{ (har.log.entries|filter:{checked:true}).length }}</span>
           已选择请求
         </a>
-        <a href="#" class="list-group-item text-right">
+        <a ng-class="{active: filter.recommend}" class="list-group-item text-right" href="#" ng-click='recommend();filter.recommend = true; filter.checked = undefined'>
           推荐关联请求 &gt;
         </a>
       </div>
@@ -49,7 +52,7 @@
           }"
           ng-class="{active: filter.filter_mimeType == key}"
           ng-click="filter.filter_mimeType = key">
-          <span class="badge">{{ (har.log.entries | filter: {checked: filter.checked, filter_mimeType: key}).length }}</span>
+          <span class="badge">{{ (har.log.entries | filter: badge_filter({filter_mimeType: key})).length }}</span>
           {{ name }}
         </a>
       </div>
@@ -58,26 +61,14 @@
         <a href="#" class="list-group-item"
           ng-class="{active: filter.filter_xhr}"
           ng-click="filter.filter_xhr = filter.filter_xhr ? undefined : true">
-          <span class="badge">{{ (har.log.entries | filter: {checked: filter.checked, filter_mimeType: filter.filter_mimeType, filter_xhr: true}).length }}</span>
+          <span class="badge">{{ (har.log.entries | filter: badge_filter({filter_mimeType: filter.filter_mimeType, filter_xhr: true})).length }}</span>
           XMLHttpRequest
         </a>
         <a href="#" class="list-group-item"
           ng-class="{active: filter.filter_set_cookie}"
           ng-click="filter.filter_set_cookie = filter.filter_set_cookie ? undefined : true">
-          <span class="badge">{{ (har.log.entries | filter: {checked: filter.checked, filter_mimeType: filter.filter_mimeType, filter_set_cookie: true}).length }}</span>
+          <span class="badge">{{ (har.log.entries | filter: badge_filter({filter_mimeType: filter.filter_mimeType, filter_set_cookie: true})).length }}</span>
           Set-Cookie
-        </a>
-        <a href="#" class="list-group-item"
-          ng-class="{active: filter.filter_cookie_added}"
-          ng-click="filter.filter_cookie_added = filter.filter_cookie_added ? undefined : true">
-          <span class="badge">{{ (har.log.entries | filter: {checked: filter.checked, filter_mimeType: filter.filter_mimeType, filter_cookie_added: true}).length }}</span>
-          JS 新增 Cookie
-        </a>
-        <a href="#" class="list-group-item"
-          ng-class="{active: filter.filter_cookie_changed}"
-          ng-click="filter.filter_cookie_changed = filter.filter_cookie_changed ? undefined : true">
-          <span class="badge">{{ (har.log.entries | filter: {checked: filter.checked, filter_mimeType: filter.filter_mimeType, filter_cookie_changed: true}).length }}</span>
-          JS 修改 Cookie
         </a>
       </div>
     </div>
@@ -131,7 +122,10 @@
             <!-- url and method -->
             <dl class="dl-horizontal">
               <dt>Request URL</dt>
-              <dd contenteditable data-ph="request url" ng-model="entry.request.url"></dd>
+              <dd>
+                <div class="contentedit-wrapper" ng-bind-html="variables_wrapper(entry.request.url, 'request url')"></div>
+                <div contenteditable style="display: none" ng-model="entry.request.url"></div>
+              </dd>
               <dt>Request Method</dt>
               <dd contenteditable data-ph="request method" ng-model="entry.request.method"></dd>
             </dl>
@@ -139,40 +133,71 @@
             <details open>
               <summary>
                 Request Headers
-                <a class="btn btn-info btn-xs"
-                  ng-click="entry.request.headers.unshift({name:'', value:''})">Add</a>
+                <a class="btn btn-info btn-xxs"
+                  ng-click="entry.request.headers.unshift({name:'', value:'', checked: true})">ADD</a>
               </summary>
               <dl class="dl-horizontal">
-                <dt contenteditable data-ph="header.name"
-                ng-repeat-start="header in entry.request.headers | filter:{name: '!Cookie'}"
-                ng-model="header.name"></dt>
-                <span class="remove" ng-click="delete(header.$$hashKey, entry.request.headers)">&times;</span>
-                <dd contenteditable data-ph="header.value" ng-repeat-end ng-model="header.value"></dd>
+                <!-- header.name -->
+                <dt ng-repeat-start="header in entry.request.headers | filter:{name: '!Cookie'}">
+                <div class="btn-group pull-left select" data-toggle="buttons">
+                  <label class="btn btn-default btn-xxs" ng-class="{active: header.checked}">
+                    <input type="checkbox" ng-model="header.checked">
+                  </label>
+                </div>
+                <div class="contentedit-wrapper">
+                  <span ng-bind-html="variables_wrapper(header.name, 'header.name')"></span>
+                </div>
+                <div contenteditable ng-model="header.name"></div>
+                </dt>
+
+                <!-- header.value -->
+                <dd ng-repeat-end>
+                <span class="btn btn-default btn-xxs remove pull-right" ng-click="delete(header.$$hashKey, entry.request.headers)"></span>
+                <div class="contentedit-wrapper" ng-bind-html="variables_wrapper(header.value, 'header.value')"></div>
+                <div contenteditable ng-model="header.value"></div>
+                </dd>
+
               </dl>
             </details>
+            <!-- headers end -->
+
+
             <!-- cookies -->
             <details open>
               <summary>
                 Cookies
-                <a class="btn btn-info btn-xs" ng-if="false"
-                  ng-click="entry.request.cookies.unshift({name:'', value:'', checked:true})">Add</a>
+                <a class="btn btn-info btn-xxs"
+                  ng-click="entry.request.cookies.unshift({name:'', value:'', checked:true})">ADD</a>
               </summary>
               <dl class="dl-horizontal">
-                <dt ng-repeat-start="cookie in entry.request.cookies" ng-if="!cookie.checked">{{ cookie.name }}</dt>
-                <dd ng-if="!cookie.checked">
-                  {{ cookie.value }}
+                <!-- cookie.name -->
+                <dt ng-repeat-start="cookie in entry.request.cookies">
+                <div class="btn-group pull-left select" data-toggle="buttons">
+                  <label class="btn btn-default btn-xxs" ng-class="{active: cookie.checked}">
+                    <input type="checkbox" ng-model="cookie.checked">
+                  </label>
+                </div>
+                <div class="contentedit-wrapper">
+                  <span ng-bind-html="variables_wrapper(cookie.name, 'cookie.name')"></span>
+                </div>
+                <div contenteditable ng-model="cookie.name"></div>
+                </dt>
+
+                <!-- cookie.value -->
+                <dd ng-repeat-end>
+                <span class="btn btn-default btn-xxs remove pull-right" ng-click="delete(cookie.$$hashKey, entry.request.cookies)"></span>
+                <div class="contentedit-wrapper">
+                  <span ng-bind-html="variables_wrapper(cookie.value, 'cookie.value')"></span>
                   <span class="label label-danger" ng-show="cookie.cookie_added">added</span>
                   <span class="label label-warning" ng-show="cookie.cookie_changed">changed</span>
                   <span class="label label-info" ng-show="cookie.from_session">session</span>
-                </dd>
-                <dt contenteditable data-ph="cookie.name" ng-model="cookie.name" ng-if="cookie.checked"></dt>
-                <span class="remove" ng-if="cookie.checked" ng-click="delete(cookie.$$hashKey, entry.request.cookies)">&times;</span>
-                <dd ng-if="cookie.checked" ng-repeat-end>
-                  <span contenteditable data-ph="cookie.value" ng-model="cookie.value"></span>
-                  <span class="label label-success">added cookie</span>
+                </div>
+                <div contenteditable ng-model="cookie.value"></div>
                 </dd>
               </dl>
             </details>
+            <!-- cookie end -->
+
             <!--post data-->
             <div class="modal-body" contenteditable
               ng-model="entry.request.postData.text"
@@ -209,7 +234,7 @@
     </div><!-- /.modal -->
   </div>
 
-
+  <!-- upload modal -->
   <div class="modal fade" id="upload-har" ng-controller="UploadCtrl">
     <div class="modal-dialog">
       <div class="modal-content">
@@ -220,7 +245,28 @@
           <div class="alert alert-danger" role="alert" style="display: none;">
             <strong>Oh snap!</strong> Change a few things up and try submitting again.
           </div>
-          <input type="file">
+          <div class="form-horizontal" role="form">
+            <div class="form-group">
+              <label class="col-sm-3 control-label">上传 HAR 文件</label>
+              <div class="col-sm-9">
+                <input type="file">
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="col-sm-3 control-label">用户名</label>
+              <div class="col-sm-9">
+                <input ng-model="username">
+                <p class="help-block">登录目标网站时输入的用户名，用于变量替换</p>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="col-sm-3 control-label">密码</label>
+              <div class="col-sm-9">
+                <input ng-model="password">
+                <p class="help-block">登录目标网站时输入的密码，用于变量替换</p>
+              </div>
+            </div>
+          </div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-primary" data-loading-text="Loading..." ng-click="upload()">上传</button>
