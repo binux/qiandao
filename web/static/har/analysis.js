@@ -3,7 +3,7 @@
   var __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
   define(function(require, exports, module) {
-    var analyze_cookies, headers, mime_type, sort, utils, xhr;
+    var analyze_cookies, headers, mime_type, post_data, replace_variables, sort, utils, xhr;
     utils = require('/static/utils');
     xhr = function(har) {
       var entry, h, _i, _len, _ref;
@@ -125,7 +125,7 @@
     };
     headers = function(har) {
       var entry, header, to_remove_headers, _i, _j, _len, _len1, _ref, _ref1, _ref2;
-      to_remove_headers = ['x-devtools-emulate-network-conditions-client-id', 'cookie'];
+      to_remove_headers = ['x-devtools-emulate-network-conditions-client-id', 'cookie', 'host', 'content-length'];
       _ref = har.log.entries;
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         entry = _ref[_i];
@@ -141,12 +141,66 @@
       }
       return har;
     };
+    post_data = function(har) {
+      var entry, key, result, value, _i, _len, _ref, _ref1, _ref2, _ref3;
+      _ref = har.log.entries;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        entry = _ref[_i];
+        if (((_ref1 = entry.request.postData) != null ? _ref1.text : void 0) && ((_ref2 = entry.request.postData) != null ? _ref2.mimeType : void 0) === "application/x-www-form-urlencoded") {
+          result = [];
+          _ref3 = utils.querystring_parse(entry.request.postData.text);
+          for (key in _ref3) {
+            value = _ref3[key];
+            result.push({
+              name: key,
+              value: value
+            });
+          }
+          entry.request.postData.params = result;
+        }
+      }
+      return har;
+    };
+    replace_variables = function(har, variables) {
+      var changed, entry, k, key, query, url, v, value, variables_vk, _i, _len, _ref, _ref1;
+      variables_vk = {};
+      for (k in variables) {
+        v = variables[k];
+        variables_vk[v] = k;
+      }
+      console.log(variables_vk, variables);
+      _ref = har.log.entries;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        entry = _ref[_i];
+        url = utils.url_parse(entry.request.url, true);
+        changed = false;
+        _ref1 = url.query;
+        for (key in _ref1) {
+          value = _ref1[key];
+          if (value in variables_vk) {
+            url.query[key] = "{{ " + variables_vk[value] + " }}";
+            changed = true;
+          }
+        }
+        if (changed) {
+          query = utils.querystring_unparse_with_variables(url.query);
+          if (query) {
+            url.search = "?" + query;
+          }
+          entry.request.url = utils.url_unparse(url);
+        }
+      }
+      return har;
+    };
     exports = {
-      analyze: function(har) {
-        return xhr(mime_type(analyze_cookies(headers(sort(har)))));
+      analyze: function(har, variables) {
+        if (variables == null) {
+          variables = {};
+        }
+        return replace_variables(post_data(xhr(mime_type(analyze_cookies(headers(sort(har)))))), variables);
       },
       recommend: function(har) {
-        var checked, cookie, e, entry, related_cookies, _i, _j, _k, _l, _len, _len1, _len2, _len3, _ref, _ref1, _ref2, _results;
+        var c, checked, cookie, e, entry, related_cookies, set_cookie, start_time, started, _i, _j, _k, _l, _len, _len1, _len2, _len3, _m, _ref, _ref1, _ref2, _ref3, _related_cookies;
         _ref = har.log.entries;
         for (_i = 0, _len = _ref.length; _i < _len; _i++) {
           entry = _ref[_i];
@@ -173,27 +227,141 @@
             related_cookies.push(cookie.name);
           }
         }
+        started = false;
         _ref2 = har.log.entries;
-        _results = [];
-        for (_l = 0, _len3 = _ref2.length; _l < _len3; _l++) {
+        for (_l = _ref2.length - 1; _l >= 0; _l += -1) {
           entry = _ref2[_l];
-          _results.push((function() {
-            var _len4, _m, _ref3, _ref4, _results1;
+          if (!started) {
+            started = entry.checked;
+          }
+          if (!started) {
+            continue;
+          }
+          if (!entry.response.cookies) {
+            continue;
+          }
+          start_time = new Date(entry.startedDateTime);
+          set_cookie = (function() {
+            var _len3, _m, _ref3, _results;
             _ref3 = entry.response.cookies;
-            _results1 = [];
-            for (_m = 0, _len4 = _ref3.length; _m < _len4; _m++) {
+            _results = [];
+            for (_m = 0, _len3 = _ref3.length; _m < _len3; _m++) {
               cookie = _ref3[_m];
-              if (_ref4 = cookie.name, __indexOf.call(related_cookies, _ref4) >= 0) {
-                entry.recommend = true;
-                break;
-              } else {
-                _results1.push(void 0);
+              if ((new Date(cookie.expires)) > start_time) {
+                _results.push(cookie.name);
               }
             }
-            return _results1;
-          })());
+            return _results;
+          })();
+          _related_cookies = (function() {
+            var _len3, _m, _results;
+            _results = [];
+            for (_m = 0, _len3 = related_cookies.length; _m < _len3; _m++) {
+              c = related_cookies[_m];
+              if (__indexOf.call(set_cookie, c) < 0) {
+                _results.push(c);
+              }
+            }
+            return _results;
+          })();
+          if (related_cookies.length > _related_cookies.length) {
+            entry.recommend = true;
+            related_cookies = _related_cookies;
+            _ref3 = entry.request.cookies;
+            for (_m = 0, _len3 = _ref3.length; _m < _len3; _m++) {
+              cookie = _ref3[_m];
+              related_cookies.push(cookie.name);
+            }
+          }
+        }
+        return har;
+      },
+      variables: function(string) {
+        var m, re, _results;
+        re = /{{\s*([\w]+?)\s*}}/g;
+        _results = [];
+        while (m = re.exec(string)) {
+          _results.push(m[1]);
         }
         return _results;
+      },
+      variables_in_entry: function(entry) {
+        var c, h, result, _ref;
+        result = [];
+        [
+          [entry.request.url], (function() {
+            var _i, _len, _ref, _results;
+            _ref = entry.request.headers;
+            _results = [];
+            for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+              h = _ref[_i];
+              if (h.checked) {
+                _results.push(h.name);
+              }
+            }
+            return _results;
+          })(), (function() {
+            var _i, _len, _ref, _results;
+            _ref = entry.request.headers;
+            _results = [];
+            for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+              h = _ref[_i];
+              if (h.checked) {
+                _results.push(h.value);
+              }
+            }
+            return _results;
+          })(), (function() {
+            var _i, _len, _ref, _results;
+            _ref = entry.request.cookies;
+            _results = [];
+            for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+              c = _ref[_i];
+              if (c.checked) {
+                _results.push(c.name);
+              }
+            }
+            return _results;
+          })(), (function() {
+            var _i, _len, _ref, _results;
+            _ref = entry.request.cookies;
+            _results = [];
+            for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+              c = _ref[_i];
+              if (c.checked) {
+                _results.push(c.value);
+              }
+            }
+            return _results;
+          })(), [(_ref = entry.request.postData) != null ? _ref.text : void 0]
+        ].map(function(list) {
+          var each, string, _i, _len, _results;
+          _results = [];
+          for (_i = 0, _len = list.length; _i < _len; _i++) {
+            string = list[_i];
+            _results.push((function() {
+              var _j, _len1, _ref, _results1;
+              _ref = exports.variables(string);
+              _results1 = [];
+              for (_j = 0, _len1 = _ref.length; _j < _len1; _j++) {
+                each = _ref[_j];
+                if (__indexOf.call(result, each) < 0) {
+                  _results1.push(result.push(each));
+                } else {
+                  _results1.push(void 0);
+                }
+              }
+              return _results1;
+            })());
+          }
+          return _results;
+        });
+        if (result.length > 0) {
+          entry.filter_variables = true;
+        } else {
+          entry.filter_variables = false;
+        }
+        return result;
       }
     };
     return exports;

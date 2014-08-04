@@ -78,7 +78,7 @@ define (require, exports, module) ->
     return har
 
   headers = (har) ->
-    to_remove_headers = ['x-devtools-emulate-network-conditions-client-id', 'cookie']
+    to_remove_headers = ['x-devtools-emulate-network-conditions-client-id', 'cookie', 'host', 'content-length', ]
     for entry in har.log.entries
       for header in entry.request.headers
         if header.name.toLowerCase() not in to_remove_headers
@@ -87,9 +87,41 @@ define (require, exports, module) ->
           header.checked = false
     return har
 
+  post_data = (har) ->
+    for entry in har.log.entries
+      if entry.request.postData?.text and entry.request.postData?.mimeType == "application/x-www-form-urlencoded"
+        result = []
+        for key, value of utils.querystring_parse(entry.request.postData.text)
+          result.push({name: key, value: value})
+        entry.request.postData.params = result
+    return har
+
+  replace_variables = (har, variables) ->
+    variables_vk = {}
+    for k, v of variables
+      variables_vk[v] = k
+    console.log variables_vk, variables
+
+    # url
+    for entry in har.log.entries
+      url = utils.url_parse(entry.request.url, true)
+      changed = false
+      for key, value of url.query
+        if value of variables_vk
+          url.query[key] = "{{ #{variables_vk[value]} }}"
+          changed = true
+      if changed
+        query = utils.querystring_unparse_with_variables(url.query)
+        url.search = "?#{query}" if query
+        entry.request.url = utils.url_unparse(url)
+
+    return har
+
+
   exports =
-    analyze: (har) ->
-      xhr mime_type analyze_cookies headers sort har
+    analyze: (har, variables={}) ->
+      replace_variables((post_data xhr mime_type analyze_cookies headers sort har), variables)
+
     recommend: (har) ->
       for entry in har.log.entries
         entry.recommend = if entry.checked then true else false
@@ -99,10 +131,50 @@ define (require, exports, module) ->
       for entry in checked
         for cookie in entry.request.cookies
           related_cookies.push(cookie.name)
-      for entry in har.log.entries
-        for cookie in entry.response.cookies
-          if cookie.name in related_cookies
-            entry.recommend = true
-            break
+
+      started = false
+      for entry in har.log.entries by -1
+        started = entry.checked if not started
+        if not started
+          continue
+        if not entry.response.cookies
+          continue
+
+        start_time = new Date(entry.startedDateTime)
+        set_cookie = (cookie.name for cookie in entry.response.cookies when (new Date(cookie.expires)) > start_time)
+        _related_cookies = (c for c in related_cookies when c not in set_cookie)
+        if related_cookies.length > _related_cookies.length
+          entry.recommend = true
+          related_cookies = _related_cookies
+          # add pre request cookie
+          for cookie in entry.request.cookies
+            related_cookies.push(cookie.name)
+      return har
+
+    variables: (string) ->
+      re = /{{\s*([\w]+?)\s*}}/g
+      while m = re.exec(string)
+        m[1]
+
+    variables_in_entry: (entry) ->
+      result = []
+      [
+        [entry.request.url, ]
+        (h.name for h in entry.request.headers when h.checked)
+        (h.value for h in entry.request.headers when h.checked)
+        (c.name for c in entry.request.cookies when c.checked)
+        (c.value for c in entry.request.cookies when c.checked)
+        [entry.request.postData?.text,]
+      ].map((list) ->
+        for string in list
+          for each in exports.variables(string)
+            if each not in result
+              result.push(each)
+      )
+      if result.length > 0
+        entry.filter_variables = true
+      else
+        entry.filter_variables = false
+      return result
 
   return exports

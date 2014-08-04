@@ -61,9 +61,10 @@
           $scope.uploaded = true;
           try {
             return $scope.loaded({
-              har: analysis.analyze(angular.fromJson(ev.target.result)),
-              username: $scope.username,
-              password: $scope.password
+              har: analysis.analyze(angular.fromJson(ev.target.result), {
+                username: $scope.username,
+                password: $scope.password
+              })
             });
           } catch (_error) {
             error = _error;
@@ -100,6 +101,7 @@
           return 'label-warning';
         }
       };
+      $scope.variables_in_entry = analysis.variables_in_entry;
       $scope.filter = {};
       $scope.badge_filter = function(update) {
         var filter, key, value;
@@ -174,6 +176,19 @@
           return $scope.entry.request.url = url;
         }
       }), true);
+      $scope.$watch('entry.request.postData.params', (function() {
+        var obj, param, _i, _len, _ref;
+        if ($scope.entry == null) {
+          return;
+        }
+        obj = {};
+        _ref = $scope.entry.request.postData.params;
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          param = _ref[_i];
+          obj[param.name] = param.value;
+        }
+        return $scope.entry.request.postData.text = utils.querystring_unparse_with_variables(obj);
+      }), true);
       $scope.panel = 'request';
       $scope["delete"] = function(hashKey, array) {
         var each, index, _i, _len;
@@ -185,22 +200,13 @@
           }
         }
       };
-      $scope.variables = function(string) {
-        var m, re, _results;
-        re = /{{\s*(\w+?)\s*}}/g;
-        _results = [];
-        while (m = re.exec(string)) {
-          _results.push(m[1]);
-        }
-        return _results;
-      };
       return $scope.variables_wrapper = function(string, place_holder) {
         var re;
         if (place_holder == null) {
           place_holder = '';
         }
         string = string || place_holder;
-        re = /{{\s*(\w+?)\s*}}/g;
+        re = /{{\s*([\w]+?)\s*}}/g;
         return $sce.trustAsHtml(string.replace(re, '<span class="label label-primary">$&</span>'));
       };
     });

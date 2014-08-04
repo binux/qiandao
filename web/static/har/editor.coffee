@@ -64,9 +64,10 @@ define (require, exports, module) ->
         $scope.uploaded = true
         try
           $scope.loaded(
-            har: analysis.analyze angular.fromJson ev.target.result
-            username: $scope.username
-            password: $scope.password
+            har: analysis.analyze(angular.fromJson(ev.target.result), {
+              username: $scope.username
+              password: $scope.password
+            })
           )
         catch error
           console.log error
@@ -94,6 +95,8 @@ define (require, exports, module) ->
         'label-danger'
       else
         'label-warning'
+
+    $scope.variables_in_entry = analysis.variables_in_entry
 
     $scope.filter = {}
     $scope.badge_filter = (update) ->
@@ -148,6 +151,15 @@ define (require, exports, module) ->
         $scope.entry.request.url = url
     ), true)
 
+    $scope.$watch('entry.request.postData.params', (() ->
+      if not $scope.entry?
+        return
+      obj = {}
+      for param in $scope.entry.request.postData.params
+        obj[param.name] = param.value
+      $scope.entry.request.postData.text = utils.querystring_unparse_with_variables(obj)
+    ), true)
+
     $scope.panel = 'request'
 
     $scope.delete = (hashKey, array) ->
@@ -156,13 +168,9 @@ define (require, exports, module) ->
           array.splice(index, 1)
           return
 
-    $scope.variables = (string) ->
-      re = /{{\s*(\w+?)\s*}}/g
-      while m = re.exec(string)
-        m[1]
     $scope.variables_wrapper = (string, place_holder='') ->
       string = string or place_holder
-      re = /{{\s*(\w+?)\s*}}/g
+      re = /{{\s*([\w]+?)\s*}}/g
       $sce.trustAsHtml(string.replace(re, '<span class="label label-primary">$&</span>'))
   )
 

@@ -9,7 +9,9 @@
 
     if (location.href.indexOf("?dev") > 0) {
       $.get('/static/www.smzdm.com.har', function(data) {
-        data = main.analysis.analyze(angular.fromJson(data));
+        data = main.analysis.analyze(angular.fromJson(data), {
+          username: 'binux',
+        });
         angular.element('#upload-har').scope().loaded({
           har: data,
           username: 'binux',
@@ -72,6 +74,12 @@
           <span class="badge">{{ (har.log.entries | filter: badge_filter({filter_mimeType: filter.filter_mimeType, filter_set_cookie: true})).length }}</span>
           Set-Cookie
         </a>
+        <a href="#" class="list-group-item"
+          ng-class="{active: filter.filter_variables}"
+          ng-click="filter.filter_variables = filter.filter_variables ? undefined : true">
+          <span class="badge">{{ (har.log.entries | filter: badge_filter({filter_mimeType: filter.filter_mimeType, filter_variables: true})).length }}</span>
+          请求中有变量
+        </a>
       </div>
     </div>
 
@@ -91,6 +99,7 @@
           <span class="label pull-right {{ status_label(entry.response.status) }}">{{ entry.response.status }}</span>
           <span class="label pull-right label-info" ng-show="entry.filter_set_cookie">set-cookie</span>
           <span class="label pull-right label-warning" ng-show="entry.filter_xhr">XHR</span>
+          <span class="label pull-right label-primary" ng-repeat="variable in variables_in_entry(entry)"><span ng-non-bindable>{{ </span>{{ variable }}<span ng-no-bindable> }}</span></span>
           <span class="label label-default pull-right" ng-repeat="tag in entry.check_tag">{{ tag }}</span>
           <span class="label" ng-class="{
             'label-warning': (entry.request.method != 'GET'),
@@ -227,10 +236,32 @@
             <!-- cookie end -->
 
             <!--post data-->
-            <div class="modal-body" contenteditable
-              ng-model="entry.request.postData.text"
-              ng-show="entry.request.postData"> </div>
+            <details open onclick="return false" ng-if="entry.request.postData.text">
+              <summary>
+                Request Payload
+                <a class="btn btn-info btn-xxs" ng-if="entry.request.postData.params"
+                  ng-click="entry.request.postData.params.unshift({name:'', value:''})">ADD</a>
+              </summary>
+              <pre class="contentedit-wrapper" ng-bind-html="variables_wrapper(entry.request.postData.text)" ng-if="!entry.request.postData.params"></pre>
+              <textarea contenteditable style="width: 100%" rows="5" onfocus="$(this).height($(this)[0].scrollHeight);" ng-model="entry.request.postData.text" ng-if="!entry.request.postData.params"></textarea>
+              <dl class="dl-horizontal" ng-if="entry.request.postData.params">
+                <dt ng-repeat-start="param in entry.request.postData.params">
+                <div class="contentedit-wrapper">
+                  <span ng-bind-html="variables_wrapper(param.name, 'param.name')"></span>
+                </div>
+                <div contenteditable ng-model="param.name"></div>
+                </dt>
+                <dd ng-repeat-end>
+                <span class="btn btn-default btn-xxs remove pull-right" ng-click="delete(param.$$hashKey, entry.request.postData.params)"></span>
+                <div class="contentedit-wrapper">
+                  <span ng-bind-html="variables_wrapper(param.value, ':empty')"></span>
+                </div>
+                <div contenteditable ng-model="param.value"></div>
+                </dd>
+              </dl>
+            </details>
           </div>
+          <!-- /.reqeust -->
 
           <!-- response -->
           <div class="modal-body" ng-show="panel=='response'">
