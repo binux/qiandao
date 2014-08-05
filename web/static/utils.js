@@ -59,7 +59,29 @@
         return query;
       },
       CookieJar: node_tough.CookieJar,
-      Cookie: node_tough.Cookie
+      Cookie: node_tough.Cookie,
+      dict2list: function(dict) {
+        var k, v, _results;
+        _results = [];
+        for (k in dict) {
+          v = dict[k];
+          _results.push({
+            name: k,
+            value: v
+          });
+        }
+        return _results;
+      },
+      list2dict: function(list) {
+        var dict, each, _i, _len, _results;
+        dict = {};
+        _results = [];
+        for (_i = 0, _len = list.length; _i < _len; _i++) {
+          each = list[_i];
+          _results.push(dict[each.name] = each.value);
+        }
+        return _results;
+      }
     };
     return exports;
   });

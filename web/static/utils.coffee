@@ -47,4 +47,11 @@ define (require) ->
     CookieJar: node_tough.CookieJar
     Cookie: node_tough.Cookie
 
+    dict2list: (dict) ->
+      ({name: k, value: v} for k, v of dict)
+    list2dict: (list) ->
+      dict = {}
+      for each in list
+        dict[each.name] = each.value
+
   return exports

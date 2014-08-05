@@ -14,7 +14,9 @@
         });
         angular.element('#upload-har').scope().loaded({
           har: data,
-          username: 'binux',
+          env: {
+            username: 'binux',
+            }
         });
       })
     }
@@ -126,6 +128,12 @@
               <li ng-class="{active: panel=='response'}">
                 <a href="javascript:void(0)" ng-click="panel='response'">Response</a>
               </li>
+              <li ng-class="{active: panel=='test'}">
+                <a href="javascript:void(0)" ng-click="panel='test'">测试</a>
+              </li>
+              <li ng-class="{active: panel=='preview'}" ng-show="preview">
+                <a href="javascript:void(0)" ng-click="panel='preview'">测试</a>
+              </li>
             </ul>
           </div>
 
@@ -149,21 +157,7 @@
                 <a class="btn btn-info btn-xxs"
                   ng-click="entry.request.queryString.unshift({name: ':key', value: ':value'})">ADD</a>
               </summary>
-              <dl class="dl-horizontal">
-                <dt ng-repeat-start="query in entry.request.queryString">
-                <div class="contentedit-wrapper">
-                  <span ng-bind-html="variables_wrapper(query.name, ':key')"></span>
-                </div>
-                <div contenteditable ng-model="query.name"></div>
-                </dt>
-                <dd ng-repeat-end>
-                <span class="btn btn-default btn-xxs remove pull-right" ng-click="delete(query.$$hashKey, entry.request.queryString)"></span>
-                <div class="contentedit-wrapper">
-                  <span ng-bind-html="variables_wrapper(query.value, ':empty')"></span>
-                </div>
-                <div contenteditable ng-model="query.value"></div>
-                </dd>
-              </dl>
+              <div editablelist="entry.request.queryString"></div>
             </details>
 
             <!-- headers -->
@@ -173,28 +167,7 @@
                 <a class="btn btn-info btn-xxs"
                   ng-click="entry.request.headers.unshift({name:'', value:'', checked: true})">ADD</a>
               </summary>
-              <dl class="dl-horizontal">
-                <!-- header.name -->
-                <dt ng-repeat-start="header in entry.request.headers | filter:{name: '!Cookie'}">
-                <div class="btn-group pull-left select" data-toggle="buttons">
-                  <label class="btn btn-default btn-xxs" ng-class="{active: header.checked}">
-                    <input type="checkbox" ng-model="header.checked">
-                  </label>
-                </div>
-                <div class="contentedit-wrapper">
-                  <span ng-bind-html="variables_wrapper(header.name, 'header.name')"></span>
-                </div>
-                <div contenteditable ng-model="header.name"></div>
-                </dt>
-
-                <!-- header.value -->
-                <dd ng-repeat-end>
-                <span class="btn btn-default btn-xxs remove pull-right" ng-click="delete(header.$$hashKey, entry.request.headers)"></span>
-                <div class="contentedit-wrapper" ng-bind-html="variables_wrapper(header.value, ':empty')"></div>
-                <div contenteditable ng-model="header.value"></div>
-                </dd>
-
-              </dl>
+              <div editablelist="entry.request.headers" filter="{name: '!Cookie'}"></div>
             </details>
             <!-- headers end -->
 
@@ -206,32 +179,7 @@
                 <a class="btn btn-info btn-xxs"
                   ng-click="entry.request.cookies.unshift({name:'', value:'', checked:true})">ADD</a>
               </summary>
-              <dl class="dl-horizontal">
-                <!-- cookie.name -->
-                <dt ng-repeat-start="cookie in entry.request.cookies">
-                <div class="btn-group pull-left select" data-toggle="buttons">
-                  <label class="btn btn-default btn-xxs" ng-class="{active: cookie.checked}">
-                    <input type="checkbox" ng-model="cookie.checked">
-                  </label>
-                </div>
-                <div class="contentedit-wrapper">
-                  <span ng-bind-html="variables_wrapper(cookie.name, 'cookie.name')"></span>
-                </div>
-                <div contenteditable ng-model="cookie.name"></div>
-                </dt>
-
-                <!-- cookie.value -->
-                <dd ng-repeat-end>
-                <span class="btn btn-default btn-xxs remove pull-right" ng-click="delete(cookie.$$hashKey, entry.request.cookies)"></span>
-                <div class="contentedit-wrapper">
-                  <span ng-bind-html="variables_wrapper(cookie.value, ':empty')"></span>
-                  <span class="label label-danger" ng-show="cookie.cookie_added">added</span>
-                  <span class="label label-warning" ng-show="cookie.cookie_changed">changed</span>
-                  <span class="label label-info" ng-show="cookie.from_session">session</span>
-                </div>
-                <div contenteditable ng-model="cookie.value"></div>
-                </dd>
-              </dl>
+              <div editablelist="entry.request.cookies"></div>
             </details>
             <!-- cookie end -->
 
@@ -244,21 +192,9 @@
               </summary>
               <pre class="contentedit-wrapper" ng-bind-html="variables_wrapper(entry.request.postData.text)" ng-if="!entry.request.postData.params"></pre>
               <textarea contenteditable style="width: 100%" rows="5" onfocus="$(this).height($(this)[0].scrollHeight);" ng-model="entry.request.postData.text" ng-if="!entry.request.postData.params"></textarea>
-              <dl class="dl-horizontal" ng-if="entry.request.postData.params">
-                <dt ng-repeat-start="param in entry.request.postData.params">
-                <div class="contentedit-wrapper">
-                  <span ng-bind-html="variables_wrapper(param.name, 'param.name')"></span>
-                </div>
-                <div contenteditable ng-model="param.name"></div>
-                </dt>
-                <dd ng-repeat-end>
-                <span class="btn btn-default btn-xxs remove pull-right" ng-click="delete(param.$$hashKey, entry.request.postData.params)"></span>
-                <div class="contentedit-wrapper">
-                  <span ng-bind-html="variables_wrapper(param.value, ':empty')"></span>
-                </div>
-                <div contenteditable ng-model="param.value"></div>
-                </dd>
-              </dl>
+              <div ng-if="entry.request.postData.params">
+                <div editablelist="entry.request.postData.params"></div>
+              </div>
             </details>
           </div>
           <!-- /.reqeust -->
@@ -284,10 +220,39 @@
               </dl>
             </details>
           </div>
+          <!-- /.response -->
 
+          <!-- test -->
+          <div class="modal-body" ng-show="panel=='test'">
+            <details open onclick="return false">
+              <summary>
+                Variables
+                <a class="btn btn-info btn-xxs" ng-click="env.unshift({name:'', value:''})">ADD</a>
+              </summary>
+              <div editablelist="env"></div>
+            </details>
+            <details open onclick="return false">
+              <summary>Cookies</summary>
+              <dl class="dl-horizontal">
+                <dt ng-repeat-start="cookie in session">{{ cookie.name }}</dt>
+                <dd ng-repeat-end>{{ cookie.value }}</dd>
+              </dl>
+            </details>
+          </div>
+          <!-- /.test -->
+
+          <!-- preview -->
+          <div class="modal-body" ng-show="panel=='preview'">
+          </div>
+          <!-- /.preview -->
+
+          <!-- footer -->
           <div class="modal-footer">
+            <button type="button" class="btn btn-success" data-loading-test="Loading..."
+              ng-show="panel=='test'" ng-click="do_test()">测试</button>
             <button type="button" class="btn btn-primary" data-loading-text="Saving..." data-dismiss="modal">Save</button>
           </div>
+          <!-- /.footer -->
         </div><!-- /.modal-content -->
       </div><!-- /.modal-dialog -->
     </div><!-- /.modal -->

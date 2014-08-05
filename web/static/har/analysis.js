@@ -124,14 +124,14 @@
       return har;
     };
     headers = function(har) {
-      var entry, header, to_remove_headers, _i, _j, _len, _len1, _ref, _ref1, _ref2;
+      var entry, header, i, to_remove_headers, _i, _j, _len, _len1, _ref, _ref1, _ref2;
       to_remove_headers = ['x-devtools-emulate-network-conditions-client-id', 'cookie', 'host', 'content-length'];
       _ref = har.log.entries;
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         entry = _ref[_i];
         _ref1 = entry.request.headers;
-        for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
-          header = _ref1[_j];
+        for (i = _j = 0, _len1 = _ref1.length; _j < _len1; i = ++_j) {
+          header = _ref1[i];
           if (_ref2 = header.name.toLowerCase(), __indexOf.call(to_remove_headers, _ref2) < 0) {
             header.checked = true;
           } else {

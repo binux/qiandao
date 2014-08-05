@@ -6,6 +6,7 @@
     require('bootstrap');
     require('angular');
     require('/static/har/contenteditable');
+    require('/static/har/editablelist');
     analysis = require('/static/har/analysis');
     utils = require('/static/utils');
     $(document).on('click', '.contentedit-wrapper', function(ev) {
@@ -26,7 +27,7 @@
         return sel.addRange(range);
       }
     });
-    editor = angular.module('HAREditor', ['contenteditable']);
+    editor = angular.module('HAREditor', ['contenteditable', 'editablelist']);
     editor.controller('UploadCtrl', function($scope, $rootScope) {
       var element;
       element = angular.element('#upload-har');
@@ -64,7 +65,11 @@
               har: analysis.analyze(angular.fromJson(ev.target.result), {
                 username: $scope.username,
                 password: $scope.password
-              })
+              }),
+              env: {
+                username: $scope.username,
+                password: $scope.password
+              }
             });
           } catch (_error) {
             error = _error;
@@ -80,14 +85,10 @@
     editor.controller('EditorCtrl', function($scope, $rootScope) {
       $rootScope.$on('har-loaded', function(ev, data) {
         return $scope.$apply(function() {
-          var key, value, _results;
           console.log(data);
-          _results = [];
-          for (key in data) {
-            value = data[key];
-            _results.push($scope[key] = value);
-          }
-          return _results;
+          $scope.har = data.har;
+          $scope.env = utils.dict2list(data.env);
+          return $scope.session = [];
         });
       });
       $scope.status_label = function(status) {
@@ -127,11 +128,18 @@
         return analysis.recommend($scope.har);
       };
     });
-    editor.controller('EntryCtrl', function($scope, $rootScope, $sce) {
+    editor.controller('EntryCtrl', function($scope, $rootScope, $sce, $http) {
       $scope.$on('edit-entry', function(ev, entry) {
         console.log(entry);
         $scope.entry = entry;
         return angular.element('#edit-entry').modal('show');
+      });
+      angular.element('#edit-entry').on('hidden.bs.modal', function(ev) {
+        if ($scope.panel === 'preview') {
+          return $scope.$apply(function() {
+            return $scope.panel = 'test';
+          });
+        }
       });
       $scope.$watch('entry.request.url', function() {
         var key, queryString, value;
@@ -177,14 +185,14 @@
         }
       }), true);
       $scope.$watch('entry.request.postData.params', (function() {
-        var obj, param, _i, _len, _ref;
-        if ($scope.entry == null) {
+        var obj, param, _i, _len, _ref, _ref1;
+        if (((_ref = $scope.entry) != null ? _ref.postData : void 0) == null) {
           return;
         }
         obj = {};
-        _ref = $scope.entry.request.postData.params;
-        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-          param = _ref[_i];
+        _ref1 = $scope.entry.request.postData.params;
+        for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
+          param = _ref1[_i];
           obj[param.name] = param.value;
         }
         return $scope.entry.request.postData.text = utils.querystring_unparse_with_variables(obj);
@@ -200,7 +208,7 @@
           }
         }
       };
-      return $scope.variables_wrapper = function(string, place_holder) {
+      $scope.variables_wrapper = function(string, place_holder) {
         var re;
         if (place_holder == null) {
           place_holder = '';
@@ -208,6 +216,52 @@
         string = string || place_holder;
         re = /{{\s*([\w]+?)\s*}}/g;
         return $sce.trustAsHtml(string.replace(re, '<span class="label label-primary">$&</span>'));
+      };
+      return $scope.do_test = function() {
+        var c, h, _ref;
+        return $http.post('/har/test', {
+          request: {
+            method: $scope.entry.request.method,
+            url: $scope.entry.request.url,
+            headers: (function() {
+              var _i, _len, _ref, _results;
+              _ref = $scope.entry.request.headers;
+              _results = [];
+              for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+                h = _ref[_i];
+                if (h.checked) {
+                  _results.push({
+                    name: h.name,
+                    value: h.value
+                  });
+                }
+              }
+              return _results;
+            })(),
+            cookies: (function() {
+              var _i, _len, _ref, _results;
+              _ref = $scope.entry.request.cookies;
+              _results = [];
+              for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+                c = _ref[_i];
+                if (c.checked) {
+                  _results.push({
+                    name: c.name,
+                    value: c.value
+                  });
+                }
+              }
+              return _results;
+            })(),
+            data: (_ref = $scope.entry.request.postData) != null ? _ref.text : void 0
+          },
+          env: utils.list2dict($scope.env),
+          session: $scope.session
+        }).success(function(data, status, headers, config) {
+          return console.log('success', data, status, headers, config);
+        }).error(function(data, status, headers, config) {
+          return console.log('error', data, status, headers, config);
+        });
       };
     });
     return {

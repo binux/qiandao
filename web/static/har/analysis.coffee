@@ -80,7 +80,7 @@ define (require, exports, module) ->
   headers = (har) ->
     to_remove_headers = ['x-devtools-emulate-network-conditions-client-id', 'cookie', 'host', 'content-length', ]
     for entry in har.log.entries
-      for header in entry.request.headers
+      for header, i in entry.request.headers
         if header.name.toLowerCase() not in to_remove_headers
           header.checked = true
         else

@@ -8,6 +8,7 @@ define (require, exports, module) ->
   require 'bootstrap'
   require 'angular'
   require '/static/har/contenteditable'
+  require '/static/har/editablelist'
 
   analysis = require '/static/har/analysis'
   utils = require '/static/utils'
@@ -29,7 +30,7 @@ define (require, exports, module) ->
       sel.addRange(range)
   )
 
-  editor = angular.module('HAREditor', ['contenteditable'])
+  editor = angular.module('HAREditor', ['contenteditable', 'editablelist'])
 
   # upload har controller
   editor.controller('UploadCtrl', ($scope, $rootScope) ->
@@ -68,6 +69,10 @@ define (require, exports, module) ->
               username: $scope.username
               password: $scope.password
             })
+            env: {
+              username: $scope.username
+              password: $scope.password
+            }
           )
         catch error
           console.log error
@@ -82,8 +87,9 @@ define (require, exports, module) ->
     $rootScope.$on('har-loaded', (ev, data) ->
       $scope.$apply ->
         console.log data
-        for key, value of data
-          $scope[key] = value
+        $scope.har = data.har
+        $scope.env = utils.dict2list(data.env)
+        $scope.session = []
     )
 
     $scope.status_label = (status) ->
@@ -120,11 +126,17 @@ define (require, exports, module) ->
   )
 
   # entry edit
-  editor.controller('EntryCtrl', ($scope, $rootScope, $sce) ->
+  editor.controller('EntryCtrl', ($scope, $rootScope, $sce, $http) ->
     $scope.$on('edit-entry', (ev, entry) ->
       console.log entry
       $scope.entry = entry
       angular.element('#edit-entry').modal('show')
+    )
+
+    angular.element('#edit-entry').on('hidden.bs.modal', (ev) ->
+      if $scope.panel == 'preview'
+        $scope.$apply ->
+            $scope.panel = 'test'
     )
 
     $scope.$watch('entry.request.url', () ->
@@ -152,7 +164,7 @@ define (require, exports, module) ->
     ), true)
 
     $scope.$watch('entry.request.postData.params', (() ->
-      if not $scope.entry?
+      if not $scope.entry?.postData?
         return
       obj = {}
       for param in $scope.entry.request.postData.params
@@ -172,6 +184,24 @@ define (require, exports, module) ->
       string = string or place_holder
       re = /{{\s*([\w]+?)\s*}}/g
       $sce.trustAsHtml(string.replace(re, '<span class="label label-primary">$&</span>'))
+
+    $scope.do_test = () ->
+      $http.post('/har/test', {
+        request:
+          method: $scope.entry.request.method
+          url: $scope.entry.request.url
+          headers: ({name: h.name, value: h.value} for h in $scope.entry.request.headers when h.checked)
+          cookies: ({name: c.name, value: c.value} for c in $scope.entry.request.cookies when c.checked)
+          data: $scope.entry.request.postData?.text
+        env: utils.list2dict($scope.env)
+        session: $scope.session
+      }).
+      success((data, status, headers, config) ->
+        console.log 'success', data, status, headers, config
+      ).
+      error((data, status, headers, config) ->
+        console.log 'error', data, status, headers, config
+      )
   )
 
   init: -> angular.bootstrap(document.body, ['HAREditor'])
