@@ -69,6 +69,11 @@
   font-family: 'Glyphicons Halflings';
   content: "\e014";
 }
+#edit-entry .panel-preview iframe {
+  border: 0;
+  width: 100%;
+  height: 400px;
+}
 .contentedit-wrapper + [contenteditable] {
   display: none;
 }

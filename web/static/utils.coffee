@@ -53,5 +53,6 @@ define (require) ->
       dict = {}
       for each in list
         dict[each.name] = each.value
+      return dict
 
   return exports

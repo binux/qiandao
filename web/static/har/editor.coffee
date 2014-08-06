@@ -131,13 +131,21 @@ define (require, exports, module) ->
       console.log entry
       $scope.entry = entry
       angular.element('#edit-entry').modal('show')
+      $scope.alert_hide()
     )
 
     angular.element('#edit-entry').on('hidden.bs.modal', (ev) ->
-      if $scope.panel == 'preview'
+      if $scope.panel in ['preview-headers', 'preview']
         $scope.$apply ->
             $scope.panel = 'test'
+      $scope.$apply ->
+        $scope.preview = undefined
     )
+
+    $scope.alert = (message) ->
+      angular.element('.panel-test .alert').text(message).show()
+    $scope.alert_hide = () ->
+      angular.element('.panel-test .alert').hide()
 
     $scope.$watch('entry.request.url', () ->
       if not $scope.entry?
@@ -197,10 +205,24 @@ define (require, exports, module) ->
         session: $scope.session
       }).
       success((data, status, headers, config) ->
-        console.log 'success', data, status, headers, config
+        console.log 'success', data, status
+        if (status != 200)
+          $scope.alert(data)
+          return
+        $scope.preview = data.har
+        $scope.env = utils.dict2list(data.env)
+        $scope.session = data.session
+        $scope.panel = 'preview'
+
+        if data.har.response?.content?.text?
+          setTimeout((() ->
+            angular.element('.panel-preview iframe').attr("src",
+              "data:#{data.har.response.content.mimeType};\
+              base64,#{data.har.response.content.text}")), 0)
       ).
       error((data, status, headers, config) ->
         console.log 'error', data, status, headers, config
+        $scope.alert(data)
       )
   )
 

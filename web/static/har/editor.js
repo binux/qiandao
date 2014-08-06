@@ -132,15 +132,26 @@
       $scope.$on('edit-entry', function(ev, entry) {
         console.log(entry);
         $scope.entry = entry;
-        return angular.element('#edit-entry').modal('show');
+        angular.element('#edit-entry').modal('show');
+        return $scope.alert_hide();
       });
       angular.element('#edit-entry').on('hidden.bs.modal', function(ev) {
-        if ($scope.panel === 'preview') {
-          return $scope.$apply(function() {
+        var _ref;
+        if ((_ref = $scope.panel) === 'preview-headers' || _ref === 'preview') {
+          $scope.$apply(function() {
             return $scope.panel = 'test';
           });
         }
+        return $scope.$apply(function() {
+          return $scope.preview = void 0;
+        });
       });
+      $scope.alert = function(message) {
+        return angular.element('.panel-test .alert').text(message).show();
+      };
+      $scope.alert_hide = function() {
+        return angular.element('.panel-test .alert').hide();
+      };
       $scope.$watch('entry.request.url', function() {
         var key, queryString, value;
         if ($scope.entry == null) {
@@ -258,9 +269,24 @@
           env: utils.list2dict($scope.env),
           session: $scope.session
         }).success(function(data, status, headers, config) {
-          return console.log('success', data, status, headers, config);
+          var _ref, _ref1;
+          console.log('success', data, status);
+          if (status !== 200) {
+            $scope.alert(data);
+            return;
+          }
+          $scope.preview = data.har;
+          $scope.env = utils.dict2list(data.env);
+          $scope.session = data.session;
+          $scope.panel = 'preview';
+          if (((_ref = data.har.response) != null ? (_ref1 = _ref.content) != null ? _ref1.text : void 0 : void 0) != null) {
+            return setTimeout((function() {
+              return angular.element('.panel-preview iframe').attr("src", "data:" + data.har.response.content.mimeType + ";base64," + data.har.response.content.text);
+            }), 0);
+          }
         }).error(function(data, status, headers, config) {
-          return console.log('error', data, status, headers, config);
+          console.log('error', data, status, headers, config);
+          return $scope.alert(data);
         });
       };
     });

@@ -131,8 +131,11 @@
               <li ng-class="{active: panel=='test'}">
                 <a href="javascript:void(0)" ng-click="panel='test'">测试</a>
               </li>
+              <li ng-class="{active: panel=='preview-headers'}" ng-show="preview">
+                <a href="javascript:void(0)" ng-click="panel='preview-headers'">结果 Headers</a>
+              </li>
               <li ng-class="{active: panel=='preview'}" ng-show="preview">
-                <a href="javascript:void(0)" ng-click="panel='preview'">测试</a>
+                <a href="javascript:void(0)" ng-click="panel='preview'">预览</a>
               </li>
             </ul>
           </div>
@@ -223,7 +226,10 @@
           <!-- /.response -->
 
           <!-- test -->
-          <div class="modal-body" ng-show="panel=='test'">
+          <div class="modal-body panel-test" ng-show="panel=='test'">
+            <div class="alert alert-danger" role="alert">
+              <strong>Oh snap!</strong> Change a few things up and try submitting again.
+            </div>
             <details open onclick="return false">
               <summary>
                 Variables
@@ -232,7 +238,10 @@
               <div editablelist="env"></div>
             </details>
             <details open onclick="return false">
-              <summary>Cookies</summary>
+              <summary>
+                Cookies
+                <a class="btn btn-info btn-xxs" ng-click="session = []">CLEAR</a>
+              </summary>
               <dl class="dl-horizontal">
                 <dt ng-repeat-start="cookie in session">{{ cookie.name }}</dt>
                 <dd ng-repeat-end>{{ cookie.value }}</dd>
@@ -241,15 +250,65 @@
           </div>
           <!-- /.test -->
 
+          <!-- preview-headers -->
+          <div class="modal-body" ng-show="panel=='preview-headers'">
+            <dl class="dl-horizontal">
+              <dt>Request URL</dt>
+              <dd>{{ preview.request.url }}</dd>
+              <dt>Request Method</dt>
+              <dd>{{ preview.request.method }}</dd>
+              <dt>Status Code</dt>
+              <dd><span class="label {{ status_label(preview.response.status) }}">{{ preview.response.status }}</span></dd>
+            </dl>
+
+            <!-- request header -->
+            <details open>
+              <summary>Request Headers</summary>
+              <dl class="dl-horizontal">
+                <dt ng-repeat-start="header in preview.request.headers">{{ header.name }}</dt>
+                <dd ng-repeat-end>{{ header.value }}</dd>
+              </dl>
+            </details>
+            <!-- request payload -->
+            <details open ng-if="preview.request.postData.text">
+              <summary>Request Payload</summary>
+              <pre ng-bind-html="variables_wrapper(preview.request.postData.text)" ng-if="!preview.request.postData.params"></pre>
+              <dl class="dl-horizontal" ng-if="preview.request.postData.params">
+                <dt ng-repeat-start="each in preview.request.postData.params">{{ each.name }}</dt>
+                <dd ng-repeat-end>{{ each.value }}</dd>
+              </dl>
+            </details>
+            <!-- request query string -->
+            <details open ng-if="!preview.reqeust.postData.text && preview.request.queryString.length > 0">
+              <summary>Query String Parameters</summary>
+              <dl class="dl-horizontal">
+                <dt ng-repeat-start="each in preview.request.queryString">{{ each.name }}</dt>
+                <dd ng-repeat-end>{{ each.value }}</dd>
+              </dl>
+            </details>
+
+            <!-- response headers -->
+            <details open>
+              <summary>Response Headers</summary>
+              <dl class="dl-horizontal">
+                <dt ng-repeat-start="each in preview.response.headers">{{ each.name }}</dt>
+                <dd ng-repeat-end>{{ each.value }}</dd>
+              </dl>
+          </div>
+          <!-- /.preview-headers -->
+
           <!-- preview -->
-          <div class="modal-body" ng-show="panel=='preview'">
+          <div class="modal-body panel-preview"
+            ng-if="preview.response.content.text" ng-show="panel=='preview'">
+            <iframe sandbox></iframe>
           </div>
           <!-- /.preview -->
 
           <!-- footer -->
           <div class="modal-footer">
             <button type="button" class="btn btn-success" data-loading-test="Loading..."
-              ng-show="panel=='test'" ng-click="do_test()">测试</button>
+              ng-show="panel=='test' || panel=='preview' || panel=='preview-headers'"
+              ng-click="do_test()">测试</button>
             <button type="button" class="btn btn-primary" data-loading-text="Saving..." data-dismiss="modal">Save</button>
           </div>
           <!-- /.footer -->

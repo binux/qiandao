@@ -60,6 +60,7 @@ define (require, exports, module) ->
       for header in (h for h in entry.response.headers when h.name.toLowerCase() == 'set-cookie')
         entry.filter_set_cookie = true
         cookie_jar.setCookieSync(header.value, entry.request.url, {now: new Date(entry.startedDateTime)})
+
     return har
 
   sort = (har) ->

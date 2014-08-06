@@ -73,14 +73,13 @@
         return _results;
       },
       list2dict: function(list) {
-        var dict, each, _i, _len, _results;
+        var dict, each, _i, _len;
         dict = {};
-        _results = [];
         for (_i = 0, _len = list.length; _i < _len; _i++) {
           each = list[_i];
-          _results.push(dict[each.name] = each.value);
+          dict[each.name] = each.value;
         }
-        return _results;
+        return dict;
       }
     };
     return exports;
