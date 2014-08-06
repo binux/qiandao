@@ -6,7 +6,6 @@
     require('bootstrap');
     require('angular');
     require('/static/har/contenteditable');
-    require('/static/har/editablelist');
     require('/static/har/update_ctrl');
     require('/static/har/entry_list');
     require('/static/har/entry_editor');
@@ -28,7 +27,7 @@
         return sel.addRange(range);
       }
     });
-    editor = angular.module('HAREditor', ['contenteditable', 'editablelist', 'upload_ctrl', 'entry_list', 'entry_editor']);
+    editor = angular.module('HAREditor', ['editablelist', 'upload_ctrl', 'entry_list', 'entry_editor']);
     return {
       init: function() {
         return angular.bootstrap(document.body, ['HAREditor']);

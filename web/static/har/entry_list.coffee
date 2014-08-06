@@ -9,12 +9,18 @@ define (require, exports, module) ->
 
   angular.module('entry_list', []).
     controller('EntryList', ($scope, $rootScope) ->
+      $scope.filter = {}
+
+      # on uploaded event
       $rootScope.$on('har-loaded', (ev, data) ->
         $scope.$apply ->
           console.log data
           $scope.har = data.har
           $scope.env = utils.dict2list(data.env)
           $scope.session = []
+
+          $scope.recommend()
+          $scope.filter.recommend = true
       )
 
       $scope.status_label = (status) ->
@@ -29,7 +35,6 @@ define (require, exports, module) ->
 
       $scope.variables_in_entry = analysis.variables_in_entry
 
-      $scope.filter = {}
       $scope.badge_filter = (update) ->
         filter = angular.copy($scope.filter)
         for key, value of update

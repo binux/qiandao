@@ -5,12 +5,15 @@
     analysis = require('/static/har/analysis');
     utils = require('/static/utils');
     return angular.module('entry_list', []).controller('EntryList', function($scope, $rootScope) {
+      $scope.filter = {};
       $rootScope.$on('har-loaded', function(ev, data) {
         return $scope.$apply(function() {
           console.log(data);
           $scope.har = data.har;
           $scope.env = utils.dict2list(data.env);
-          return $scope.session = [];
+          $scope.session = [];
+          $scope.recommend();
+          return $scope.filter.recommend = true;
         });
       });
       $scope.status_label = function(status) {
@@ -25,7 +28,6 @@
         }
       };
       $scope.variables_in_entry = analysis.variables_in_entry;
-      $scope.filter = {};
       $scope.badge_filter = function(update) {
         var filter, key, value;
         filter = angular.copy($scope.filter);

@@ -9,8 +9,8 @@
 }
 
 .pageref {
-  color: #31708f;
-  background-color: #d9edf7;
+  color: #3c763d;
+  background-color: #dff0d8;
 }
 
 .entry {
@@ -93,9 +93,83 @@
     width: 100%;
     height: 400px;
   }
+
+  .preview-assert {
+    dt {
+      width: 60%;
+      text-align: left;
+      position: relative;
+
+      select {
+        width: 100px;
+      }
+
+      .input-wrapper {
+        position: absolute;
+        top: 0;
+        left: 105px;
+        right: 40px;
+
+        input {
+          width: 100%;
+          border: 0;
+          text-align: right;
+        }
+      }
+
+      .eq {
+        width: 20px;
+        float: right;
+      }
+    }
+    dd {
+      margin-left: 60%;
+      padding-left: 20px;
+    }
+  }
+
+  .extract-variables {
+    dt {
+      width: 60%;
+      position: relative;
+
+      .input-wrapper {
+        width: 50%;
+        float: left;
+        padding: 0 20px;
+      }
+
+      .eq {
+        position: absolute;
+        left: 50%;
+        margin-left: -20px;
+        width: 20px;
+        float: left;
+      }
+      
+      .eq:nth-child(2) {
+        left: 100%;
+      }
+
+
+      input {
+        border: 0;
+        width: 100%;
+        text-align: right;
+      }
+    }
+    dd {
+      margin-left: 60%;
+      padding-left: 20px;
+    }
+  }
 }
 
 .contentedit-wrapper + [contenteditable] {
   display: none;
 }
 
+[contenteditable]:empty:not(:focus):before {
+  color: #777;
+  content:attr(data-ph)
+}

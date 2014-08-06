@@ -2,11 +2,28 @@
 (function() {
   define(function(require, exports, module) {
     var utils;
+    require('/static/har/editablelist');
     utils = require('/static/utils');
-    return angular.module('entry_editor', []).controller('EntryCtrl', function($scope, $rootScope, $sce, $http) {
+    return angular.module('entry_editor', ['contenteditable']).controller('EntryCtrl', function($scope, $rootScope, $sce, $http) {
+      $scope.panel = 'request';
       $scope.$on('edit-entry', function(ev, entry) {
+        var _base, _base1, _base2;
         console.log(entry);
         $scope.entry = entry;
+        if ((_base = $scope.entry).success_asserts == null) {
+          _base.success_asserts = [
+            {
+              re: '' + $scope.entry.response.status,
+              from: 'status'
+            }
+          ];
+        }
+        if ((_base1 = $scope.entry).failed_asserts == null) {
+          _base1.failed_asserts = [];
+        }
+        if ((_base2 = $scope.entry).extract_variables == null) {
+          _base2.extract_variables = [];
+        }
         angular.element('#edit-entry').modal('show');
         return $scope.alert_hide();
       });
@@ -14,7 +31,17 @@
         var _ref;
         if ((_ref = $scope.panel) === 'preview-headers' || _ref === 'preview') {
           $scope.$apply(function() {
-            return $scope.panel = 'test';
+            var env, ret, rule, _i, _len, _ref1;
+            $scope.panel = 'test';
+            env = utils.list2dict($scope.env);
+            _ref1 = $scope.entry.extract_variables;
+            for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
+              rule = _ref1[_i];
+              if (ret = $scope.preview_match(rule.re)) {
+                env[rule.name] = ret;
+              }
+            }
+            return $scope.env = utils.dict2list(env);
           });
         }
         return $scope.$apply(function() {
@@ -83,7 +110,6 @@
         }
         return $scope.entry.request.postData.text = utils.querystring_unparse_with_variables(obj);
       }), true);
-      $scope.panel = 'request';
       $scope["delete"] = function(hashKey, array) {
         var each, index, _i, _len;
         for (index = _i = 0, _len = array.length; _i < _len; index = ++_i) {
@@ -105,7 +131,7 @@
       };
       return $scope.do_test = function() {
         var c, h, _ref;
-        return $http.post('/har/test', {
+        $http.post('/har/test', {
           request: {
             method: $scope.entry.request.method,
             url: $scope.entry.request.url,
@@ -141,6 +167,11 @@
             })(),
             data: (_ref = $scope.entry.request.postData) != null ? _ref.text : void 0
           },
+          rule: {
+            success_asserts: $scope.entry.success_asserts,
+            failed_asserts: $scope.entry.failed_asserts,
+            extract_variables: $scope.entry.extract_variables
+          },
           env: utils.list2dict($scope.env),
           session: $scope.session
         }).success(function(data, status, headers, config) {
@@ -163,6 +194,47 @@
           console.log('error', data, status, headers, config);
           return $scope.alert(data);
         });
+        return $scope.preview_match = function(re, from) {
+          var content, data, error, header, m, _i, _len, _ref1;
+          data = null;
+          if (from === 'content') {
+            if (!(content = $scope.preview.response.content).text) {
+              return null;
+            }
+            if (!content.decoded) {
+              content.decoded = atob(content.text);
+            }
+            data = content.decoded;
+          } else if (from === 'status') {
+            data = '' + $scope.preview.response.status;
+          } else if (from.indexOf('header-')) {
+            from = from.slice(7);
+            _ref1 = $scope.preview.response.headers;
+            for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
+              header = _ref1[_i];
+              if (header.name.toLowerCase() === from) {
+                data = header.value;
+              }
+            }
+          }
+          if (!data) {
+            return null;
+          }
+          try {
+            re = new RegExp(re);
+          } catch (_error) {
+            error = _error;
+            return null;
+          }
+          if (m = data.match(re)) {
+            if (m[1]) {
+              return m[1];
+            } else {
+              return m[0];
+            }
+          }
+          return null;
+        };
       };
     });
   });

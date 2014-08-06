@@ -55,4 +55,9 @@ define (require) ->
         dict[each.name] = each.value
       return dict
 
+    get_public_suffix: node_tough.getPublicSuffix
+    get_domain: (url) ->
+      exports.get_public_suffix exports.url_parse(url).hostname
+
+
   return exports

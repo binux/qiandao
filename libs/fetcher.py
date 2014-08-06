@@ -5,6 +5,7 @@
 #         http://binux.me
 # Created on 2014-08-06 11:55:41
 
+import base64
 import logging
 import urlparse
 from tornado import gen, concurrent, httpclient
@@ -48,6 +49,11 @@ class Fetcher(object):
             headers: [{name: , value: }, ]
             cookies: [{name: , value: }, ]
             data:
+          }
+          rule: {
+            success_asserts: [{re: , from: 'content'}, ]
+            failed_asserts: [{re: , from: 'content'}, ]
+            extract_variables: [{name: , re:, from: 'content'}, ]
           }
           env: {
             variable: value
@@ -138,7 +144,7 @@ class Fetcher(object):
                     content = dict(
                         size = len(response.body),
                         mimeType = response.headers.get('content-type'),
-                        text = response.body.encode('base64').replace('\n', ''),
+                        text = base64.b64encode(response.body),
                         ),
                     redirectURL = response.headers.get('Location'),
                     headersSize = -1,

@@ -197,6 +197,86 @@
             <span class="label {{ status_label(preview.response.status) }}">{{ preview.response.status }}</span>
           </div>
 
+          <details class="preview-assert" open onclick="return false">
+            <summary>
+              请求成功条件断言
+              <small>支持正则，任意条件满足即为请求成功（没有失败条件命中时）</small>
+              <a class="btn btn-info btn-xxs"
+                ng-click="entry.success_asserts.unshift({re:'', from:'content'})">ADD</a>
+            </summary>
+            <dl class="dl-horizontal">
+              <dt ng-repeat-start="rule in entry.success_asserts">
+                <select ng-model="rule.from" ng-options="v for v in ['content', 'status', 'header-location']"></select>
+                <div class="input-wrapper">
+                  <input placeholder="rule" ng-model="rule.re">
+                </div>
+                <span class="eq">=</span>
+              </dt>
+              <dd ng-repeat-end>
+              <span class="btn btn-default btn-xxs remove pull-right"
+                ng-click="delete(rule.$$hashKey, entry.success_asserts)"></span>
+              <span>{{ preview_match(rule.re, rule.from) }}</span>
+              <span ng-switch="preview_match(rule.re, rule.from)">
+                <span class="glyphicon glyphicon-remove text-danger" ng-switch-when="null"></span>
+                <span class="glyphicon glyphicon-ok text-success" ng-switch-default></span>
+              </span>
+              </dd>
+            </dl>
+          </details>
+
+          <details class="preview-assert" open onclick="return false">
+            <summary>
+              请求失败条件断言
+              <small>支持正则，任意条件满足即为请求失败</small>
+              <a class="btn btn-info btn-xxs"
+                ng-click="entry.failed_asserts.unshift({re:'', from:'content'})">ADD</a>
+            </summary>
+            <dl class="dl-horizontal">
+              <dt ng-repeat-start="rule in entry.failed_asserts">
+                <select ng-model="rule.from" ng-options="v for v in ['content', 'status', 'header-location']"></select>
+                <div class="input-wrapper">
+                  <input placeholder="rule" ng-model="rule.re">
+                </div>
+                <span class="eq">=</span>
+              </dt>
+              <dd ng-repeat-end>
+              <span class="btn btn-default btn-xxs remove pull-right"
+                ng-click="delete(rule.$$hashKey, entry.failed_asserts)"></span>
+              <span>{{ preview_match(rule.re, rule.from) }}</span>
+              <span ng-switch="preview_match(rule.re, rule.from)">
+                <span class="glyphicon glyphicon-remove text-danger" ng-switch-default></span>
+                <span class="glyphicon glyphicon-minus text-info" ng-switch-when="null"></span>
+              </span>
+              </dd>
+            </dl>
+          </details>
+
+          <details class="extract-variables" open onclick="return false">
+            <summary>
+              变量提取
+              <small>支持正则，支持括号表达式</small>
+              <a class="btn btn-info btn-xxs"
+                ng-click="entry.extract_variables.unshift({name: '', re:'', from:'content'})">ADD</a>
+            </summary>
+            <dl class="dl-horizontal">
+              <dt ng-repeat-start="rule in entry.extract_variables">
+                <div class="input-wrapper">
+                  <input placeholder="name" ng-model="rule.name">
+                </div>
+                <span class="eq">=</span>
+                <div class="input-wrapper">
+                  <input placeholder="rule" ng-model="rule.re">
+                </div>
+                <span class="eq">=</span>
+              </dt>
+              <dd ng-repeat-end>
+              <span class="btn btn-default btn-xxs remove pull-right"
+                ng-click="delete(rule.$$hashKey, entry.extract_variables)"></span>
+              <span>{{ preview_match(rule.re, rule.from) }}</span>
+              </dd>
+            </dl>
+          </details>
+
           <iframe sandbox></iframe>
         </div>
         <!-- /.preview -->
@@ -215,3 +295,4 @@
   </div><!-- /.modal -->
 </div>
 {% endraw %}
+            <summary>变量提取 <small>支持正则，支持括号表达式</summary>

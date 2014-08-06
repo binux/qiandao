@@ -81,6 +81,20 @@
 
     <!-- entries list -->
     <div class="col-md-9" id="entries">
+      <div class="alert alert-info" role="alert" ng-show="(har.log.entries | filter: {checked: true}).length == 0">
+        请分析定位 <strong>签到</strong> 请求，在请求前打勾，如果推荐的请求中没有，请在右侧筛选
+      </div>
+      <div class="alert alert-info" role="alert" ng-show="(har.log.entries | filter: {checked: true}).length == 1">
+        您可以再次点击
+        <a href="#" ng-click="recommend();filter.recommend=true;filter.checked=undefined">推荐关联请求</a>
+        ，帮助定位 <strong>登录</strong> 请求，点击 URL 编辑请求，为其加入用户名、密码变量
+      </div>
+      <div class="alert alert-info" role="alert" ng-show="(har.log.entries | filter: {checked: true}).length > 1">
+        完成登录请求定位后，请<strong>依次</strong>点击每个
+        <a href="#" ng-click="filter.recommend=undefined;filter.checked=true">已选择请求</a>
+        ，切换到 <strong>测试</strong> 面板，对请求进行测试。
+      </div>
+
       <div class="list-group">
         <li class="list-group-item pageref"
           ng-repeat-start="entry in har.log.entries | filter: filter | filter: track_item()"

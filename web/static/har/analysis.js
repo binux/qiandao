@@ -199,6 +199,33 @@
         }
         return replace_variables(post_data(xhr(mime_type(analyze_cookies(headers(sort(har)))))), variables);
       },
+      recommend_default: function(har) {
+        var domain, entry, _i, _len, _ref, _ref1;
+        domain = null;
+        _ref = har.log.entries;
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          entry = _ref[_i];
+          if (!domain) {
+            domain = utils.get_domain(entry.request.url);
+          }
+          if (domain !== utils.get_domain(entry.request.url)) {
+            entry.recommend = false;
+          } else if ((_ref1 = entry.response.status) === 304 || _ref1 === 0) {
+            entry.recommend = false;
+          } else if (exports.variables_in_entry(entry).length > 0) {
+            entry.recommend = true;
+          } else if (Math.floor(entry.response.status / 100) === 3) {
+            entry.recommend = true;
+          } else if (entry.response.cookies.length > 0) {
+            entry.recommend = true;
+          } else if (entry.request.method === 'POST') {
+            entry.recommend = true;
+          } else {
+            entry.recommend = false;
+          }
+        }
+        return har;
+      },
       recommend: function(har) {
         var c, checked, cookie, e, entry, related_cookies, set_cookie, start_time, started, _i, _j, _k, _l, _len, _len1, _len2, _len3, _m, _ref, _ref1, _ref2, _ref3, _related_cookies;
         _ref = har.log.entries;
@@ -218,6 +245,9 @@
           }
           return _results;
         })();
+        if (checked.length === 0) {
+          return exports.recommend_default(har);
+        }
         related_cookies = [];
         for (_j = 0, _len1 = checked.length; _j < _len1; _j++) {
           entry = checked[_j];

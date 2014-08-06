@@ -9,7 +9,6 @@ define (require, exports, module) ->
   require 'angular'
 
   require '/static/har/contenteditable'
-  require '/static/har/editablelist'
   require '/static/har/update_ctrl'
   require '/static/har/entry_list'
   require '/static/har/entry_editor'
@@ -32,7 +31,6 @@ define (require, exports, module) ->
   )
 
   editor = angular.module('HAREditor', [
-    'contenteditable'
     'editablelist'
     'upload_ctrl'
     'entry_list'

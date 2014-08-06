@@ -123,11 +123,36 @@ define (require, exports, module) ->
     analyze: (har, variables={}) ->
       replace_variables((post_data xhr mime_type analyze_cookies headers sort har), variables)
 
+    recommend_default: (har) ->
+      domain = null
+      for entry in har.log.entries
+        if not domain
+          domain = utils.get_domain(entry.request.url)
+
+        if domain != utils.get_domain(entry.request.url)
+          entry.recommend = false
+        else if entry.response.status in [304, 0]
+          entry.recommend = false
+        else if exports.variables_in_entry(entry).length > 0
+          entry.recommend = true
+        else if entry.response.status // 100 == 3
+          entry.recommend = true
+        else if entry.response.cookies.length > 0
+          entry.recommend = true
+        else if entry.request.method == 'POST'
+          entry.recommend = true
+        else
+          entry.recommend = false
+      return har
+
     recommend: (har) ->
       for entry in har.log.entries
         entry.recommend = if entry.checked then true else false
 
       checked = (e for e in har.log.entries when e.checked)
+      if checked.length == 0
+        return exports.recommend_default(har)
+
       related_cookies = []
       for entry in checked
         for cookie in entry.request.cookies
