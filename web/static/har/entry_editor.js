@@ -37,7 +37,7 @@
             _ref1 = $scope.entry.extract_variables;
             for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
               rule = _ref1[_i];
-              if (ret = $scope.preview_match(rule.re)) {
+              if (ret = $scope.preview_match(rule.re, rule.from)) {
                 env[rule.name] = ret;
               }
             }
@@ -131,6 +131,7 @@
       };
       return $scope.do_test = function() {
         var c, h, _ref;
+        angular.element('.do-test').button('loading');
         $http.post('/har/test', {
           request: {
             method: $scope.entry.request.method,
@@ -178,7 +179,7 @@
           }
         }).success(function(data, status, headers, config) {
           var _ref, _ref1;
-          console.log('success', data, status);
+          angular.element('.do-test').button('reset');
           if (status !== 200) {
             $scope.alert(data);
             return;
@@ -194,13 +195,16 @@
             }), 0);
           }
         }).error(function(data, status, headers, config) {
+          angular.element('.do-test').button('reset');
           console.log('error', data, status, headers, config);
           return $scope.alert(data);
         });
         return $scope.preview_match = function(re, from) {
           var content, data, error, header, m, _i, _len, _ref1;
           data = null;
-          if (from === 'content') {
+          if (!from) {
+            return null;
+          } else if (from === 'content') {
             if (!(content = $scope.preview.response.content).text) {
               return null;
             }

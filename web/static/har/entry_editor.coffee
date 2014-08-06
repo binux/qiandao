@@ -36,7 +36,7 @@ define (require, exports, module) ->
             # update env from extract_variables
             env = utils.list2dict($scope.env)
             for rule in $scope.entry.extract_variables
-              if ret = $scope.preview_match(rule.re)
+              if ret = $scope.preview_match(rule.re, rule.from)
                 env[rule.name] = ret
             $scope.env = utils.dict2list(env)
 
@@ -100,6 +100,7 @@ define (require, exports, module) ->
 
     # fetch test
     $scope.do_test = () ->
+      angular.element('.do-test').button('loading')
       $http.post('/har/test', {
         request:
           method: $scope.entry.request.method
@@ -116,7 +117,7 @@ define (require, exports, module) ->
           session: $scope.session
       }).
       success((data, status, headers, config) ->
-        console.log 'success', data, status
+        angular.element('.do-test').button('reset')
         if (status != 200)
           $scope.alert(data)
           return
@@ -134,13 +135,16 @@ define (require, exports, module) ->
               base64,#{data.har.response.content.text}")), 0)
       ).
       error((data, status, headers, config) ->
+        angular.element('.do-test').button('reset')
         console.log 'error', data, status, headers, config
         $scope.alert(data)
       )
 
       $scope.preview_match = (re, from) ->
         data = null
-        if from == 'content'
+        if not from
+          return null
+        else if from == 'content'
           if not (content = $scope.preview.response.content).text
             return null
           if not content.decoded

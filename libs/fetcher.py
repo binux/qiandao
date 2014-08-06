@@ -184,25 +184,25 @@ class Fetcher(object):
             else:
                 return ''
 
-        for rule in rule.get('success_asserts') or '':
-            if not re.match(rule['re'], getdata(rule['from'])):
+        for r in rule.get('success_asserts') or '':
+            if not re.search(r['re'], getdata(r['from'])):
                 success = False
                 break
 
-        for rule in rule.get('failed_asserts') or '':
-            if re.match(rule['re'], getdata(rule['from'])):
+        for r in rule.get('failed_asserts') or '':
+            if re.search(r['re'], getdata(r['from'])):
                 success = False
                 break
 
-        for rule in rule.get('extract_variables') or '':
-            m = re.match(rule['re'], getdata(rule['from']))
+        for r in rule.get('extract_variables') or '':
+            m = re.search(r['re'], getdata(r['from']))
             if m:
                 m = m.groups()
                 if len(m) > 1:
                     m = m[1]
                 else:
                     m = m[0]
-                env['variables'][rule['name']] = m
+                env['variables'][r['name']] = m
 
         return success
 
