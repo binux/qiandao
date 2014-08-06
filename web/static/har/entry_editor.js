@@ -172,8 +172,10 @@
             failed_asserts: $scope.entry.failed_asserts,
             extract_variables: $scope.entry.extract_variables
           },
-          env: utils.list2dict($scope.env),
-          session: $scope.session
+          env: {
+            variables: utils.list2dict($scope.env),
+            session: $scope.session
+          }
         }).success(function(data, status, headers, config) {
           var _ref, _ref1;
           console.log('success', data, status);
@@ -182,8 +184,9 @@
             return;
           }
           $scope.preview = data.har;
-          $scope.env = utils.dict2list(data.env);
-          $scope.session = data.session;
+          $scope.preview.success = data.success;
+          $scope.env = utils.dict2list(data.env.variables);
+          $scope.session = data.env.session;
           $scope.panel = 'preview';
           if (((_ref = data.har.response) != null ? (_ref1 = _ref.content) != null ? _ref1.text : void 0 : void 0) != null) {
             return setTimeout((function() {

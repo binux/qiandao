@@ -5,6 +5,7 @@
 #         http://binux.me
 # Created on 2014-08-06 11:55:41
 
+import re
 import base64
 import logging
 import urlparse
@@ -56,15 +57,18 @@ class Fetcher(object):
             extract_variables: [{name: , re:, from: 'content'}, ]
           }
           env: {
-            variable: value
-          }
-          session: {
+            variables: {
+              name: value
+            }
+            session: [
+            ]
           }
         }
         """
 
         env = obj['env']
-        request = Fetcher.render(obj['request'], env)
+        rule = obj['rule']
+        request = Fetcher.render(obj['request'], env['variables'])
 
         method = request['method']
         url = request['url']
@@ -85,13 +89,15 @@ class Fetcher(object):
                 )
 
         session = cookie_utils.CookieSession()
-        session.from_json(obj['session'])
+        session.from_json(obj['env']['session'])
         session.update(cookies)
         cookie_header = session.get_cookie_header(req)
         if cookie_header:
             req.headers['Cookie'] = cookie_header
 
-        return req, env, session
+        env['session'] = session
+
+        return req, rule, env
 
     @staticmethod
     def response2har(response):
@@ -163,14 +169,59 @@ class Fetcher(object):
             )
         return entry
 
+    @staticmethod
+    def run_rule(response, rule, env):
+        success = True
+
+        def getdata(_from):
+            if _from == 'content':
+                return response.body
+            elif _from == 'status':
+                return '%s' % response.code
+            elif _from.startswith('header-'):
+                _from = _from[7:]
+                return response.headers.get(_from, '')
+            else:
+                return ''
+
+        for rule in rule.get('success_asserts') or '':
+            if not re.match(rule['re'], getdata(rule['from'])):
+                success = False
+                break
+
+        for rule in rule.get('failed_asserts') or '':
+            if re.match(rule['re'], getdata(rule['from'])):
+                success = False
+                break
+
+        for rule in rule.get('extract_variables') or '':
+            m = re.match(rule['re'], getdata(rule['from']))
+            if m:
+                m = m.groups()
+                if len(m) > 1:
+                    m = m[1]
+                else:
+                    m = m[0]
+                env['variables'][rule['name']] = m
+
+        return success
+
     @gen.coroutine
     def fetch(self, obj):
-        req, env, session = self.build_request(obj)
-        response = yield self.client.fetch(req)
-        session.extract_cookies_to_jar(response.request, response)
-        har = self.response2har(response)
+        req, rule, env = self.build_request(obj)
+
+        try:
+            response = yield self.client.fetch(req)
+        except httpclient.HTTPError as e:
+            if not e.response:
+                raise
+            response = e.response
+
+        env['session'].extract_cookies_to_jar(response.request, response)
+        success = self.run_rule(response, rule, env)
+
         raise gen.Return({
-                'har': har,
-                'env': env,
-                'session': session.to_json(),
-                })
+            'success': success,
+            'response': response,
+            'env': env,
+            })

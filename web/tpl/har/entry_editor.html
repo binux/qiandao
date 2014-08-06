@@ -195,6 +195,10 @@
           <div>
             <span>Status Code:</span>
             <span class="label {{ status_label(preview.response.status) }}">{{ preview.response.status }}</span>
+            <span ng-switch="preview.success">
+              <span class="glyphicon glyphicon-ok text-success" ng-switch-when="true"></span>
+              <span class="glyphicon glyphicon-remove text-danger" ng-switch-when="false"></span>
+            </span>
           </div>
 
           <details class="preview-assert" open onclick="return false">

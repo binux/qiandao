@@ -19,7 +19,17 @@ class HARTest(BaseHandler):
     @gen.coroutine
     def post(self):
         data = json.loads(self.request.body)
-        result = yield Fetcher().fetch(data)
+        ret = yield Fetcher().fetch(data)
+
+        result = {
+                'success': ret['success'],
+                'har': Fetcher.response2har(ret['response']),
+                'env': {
+                    'variables': ret['env']['variables'],
+                    'session': ret['env']['session'].to_json(),
+                    }
+                }
+
         self.finish(result)
 
 handlers = [

@@ -111,17 +111,20 @@ define (require, exports, module) ->
           success_asserts: $scope.entry.success_asserts
           failed_asserts: $scope.entry.failed_asserts
           extract_variables: $scope.entry.extract_variables
-        env: utils.list2dict($scope.env)
-        session: $scope.session
+        env:
+          variables: utils.list2dict($scope.env)
+          session: $scope.session
       }).
       success((data, status, headers, config) ->
         console.log 'success', data, status
         if (status != 200)
           $scope.alert(data)
           return
+
         $scope.preview = data.har
-        $scope.env = utils.dict2list(data.env)
-        $scope.session = data.session
+        $scope.preview.success = data.success
+        $scope.env = utils.dict2list(data.env.variables)
+        $scope.session = data.env.session
         $scope.panel = 'preview'
 
         if data.har.response?.content?.text?
