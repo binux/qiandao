@@ -80,16 +80,16 @@
     </div>
 
     <!-- entries list -->
-    <div class="col-md-9" id="entries">
-      <div class="alert alert-info" role="alert" ng-show="(har.log.entries | filter: {checked: true}).length == 0">
+    <div class="col-md-9" id="entries" ng-switch="(har.log.entries | filter: {checked: true}).length">
+      <div class="alert alert-info" role="alert" ng-switch-when="0">
         请分析定位 <strong>签到</strong> 请求，在请求前打勾，如果推荐的请求中没有，请在右侧筛选
       </div>
-      <div class="alert alert-info" role="alert" ng-show="(har.log.entries | filter: {checked: true}).length == 1">
+      <div class="alert alert-info" role="alert" ng-switch-when="1">
         您可以再次点击
         <a href="#" ng-click="recommend();filter.recommend=true;filter.checked=undefined">推荐关联请求</a>
         ，帮助定位 <strong>登录</strong> 请求，点击 URL 编辑请求，为其加入用户名、密码变量
       </div>
-      <div class="alert alert-info" role="alert" ng-show="(har.log.entries | filter: {checked: true}).length > 1">
+      <div class="alert alert-info" role="alert" ng-switch-default>
         完成登录请求定位后，请<strong>依次</strong>点击每个
         <a href="#" ng-click="filter.recommend=undefined;filter.checked=true">已选择请求</a>
         ，切换到 <strong>测试</strong> 面板，对请求进行测试。
@@ -104,7 +104,7 @@
 
         <a href="#" class="list-group-item entry" ng-repeat-end>
           <div class="entry-checked">
-            <input ng-model="entry.checked" type="checkbox">
+            <input ng-model="entry.checked" ng-click="save_change()" type="checkbox">
           </div>
           <span class="label pull-right {{ status_label(entry.response.status) }}">{{ entry.response.status }}</span>
           <span class="label pull-right label-info" ng-show="entry.filter_set_cookie">set-cookie</span>
@@ -136,6 +136,10 @@
         <div class="modal-body">
           <div class="alert alert-danger" role="alert" style="display: none;">
             <strong>Oh snap!</strong> Change a few things up and try submitting again.
+          </div>
+          <div class="alert alert-info" role="alert" ng-if="local_har">
+            您有一个正在编辑的 HAR 文件，是否打开？
+            <a href="#" ng-click="load_local_har()">[ {{ local_har }} ]</a>
           </div>
           <div class="form-horizontal" role="form">
             <div class="form-group">

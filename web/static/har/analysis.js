@@ -3,7 +3,7 @@
   var __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
   define(function(require, exports, module) {
-    var analyze_cookies, headers, mime_type, post_data, replace_variables, sort, utils, xhr;
+    var analyze_cookies, headers, mime_type, post_data, replace_variables, rm_content, sort, utils, xhr;
     utils = require('/static/utils');
     xhr = function(har) {
       var entry, h, _i, _len, _ref;
@@ -192,12 +192,23 @@
       }
       return har;
     };
+    rm_content = function(har) {
+      var entry, _i, _len, _ref, _ref1;
+      _ref = har.log.entries;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        entry = _ref[_i];
+        if (((_ref1 = entry.response.content) != null ? _ref1.text : void 0) != null) {
+          entry.response.content.text = void 0;
+        }
+      }
+      return har;
+    };
     exports = {
       analyze: function(har, variables) {
         if (variables == null) {
           variables = {};
         }
-        return replace_variables(post_data(xhr(mime_type(analyze_cookies(headers(sort(har)))))), variables);
+        return replace_variables(post_data(xhr(mime_type(analyze_cookies(headers(sort(rm_content(har))))))), variables);
       },
       recommend_default: function(har) {
         var domain, entry, _i, _len, _ref, _ref1;

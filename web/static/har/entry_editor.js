@@ -44,9 +44,11 @@
             return $scope.env = utils.dict2list(env);
           });
         }
-        return $scope.$apply(function() {
+        $scope.$apply(function() {
           return $scope.preview = void 0;
         });
+        console.log('har-change');
+        return $rootScope.$broadcast('har-change');
       });
       $scope.alert = function(message) {
         return angular.element('.panel-test .alert').text(message).show();

@@ -9,7 +9,7 @@ define (require, exports, module) ->
   require 'angular'
 
   require '/static/har/contenteditable'
-  require '/static/har/update_ctrl'
+  require '/static/har/upload_ctrl'
   require '/static/har/entry_list'
   require '/static/har/entry_editor'
 

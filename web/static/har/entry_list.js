@@ -7,15 +7,26 @@
     return angular.module('entry_list', []).controller('EntryList', function($scope, $rootScope) {
       $scope.filter = {};
       $rootScope.$on('har-loaded', function(ev, data) {
-        return $scope.$apply(function() {
-          console.log(data);
-          $scope.har = data.har;
-          $scope.env = utils.dict2list(data.env);
-          $scope.session = [];
-          $scope.recommend();
-          return $scope.filter.recommend = true;
-        });
+        console.log(data);
+        $scope.filename = data.filename;
+        $scope.har = data.har;
+        $scope.env = utils.dict2list(data.env);
+        $scope.session = [];
+        utils.storage.set('har_filename', data.filename);
+        utils.storage.set('har_har', data.har);
+        utils.storage.set('har_env', data.env);
+        $scope.recommend();
+        return $scope.filter.recommend = true;
       });
+      $scope.$on('har-change', function() {
+        return $scope.save_change();
+      });
+      $scope.save_change = utils.debounce((function() {
+        if ($scope.filename) {
+          console.log('local saved');
+          return utils.storage.set('har_har', $scope.har);
+        }
+      }), 1000);
       $scope.status_label = function(status) {
         if (Math.floor(status / 100) === 2) {
           return 'label-success';

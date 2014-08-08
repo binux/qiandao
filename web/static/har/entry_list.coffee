@@ -13,15 +13,27 @@ define (require, exports, module) ->
 
       # on uploaded event
       $rootScope.$on('har-loaded', (ev, data) ->
-        $scope.$apply ->
-          console.log data
-          $scope.har = data.har
-          $scope.env = utils.dict2list(data.env)
-          $scope.session = []
+        console.log data
+        $scope.filename = data.filename
+        $scope.har = data.har
+        $scope.env = utils.dict2list(data.env)
+        $scope.session = []
 
-          $scope.recommend()
-          $scope.filter.recommend = true
+        utils.storage.set('har_filename', data.filename)
+        utils.storage.set('har_har', data.har)
+        utils.storage.set('har_env', data.env)
+
+        $scope.recommend()
+        $scope.filter.recommend = true
       )
+      $scope.$on('har-change', () ->
+        $scope.save_change()
+      )
+      $scope.save_change = utils.debounce((() ->
+        if ($scope.filename)
+          console.log 'local saved'
+          utils.storage.set('har_har', $scope.har)
+      ), 1000)
 
       $scope.status_label = (status) ->
         if status // 100 == 2

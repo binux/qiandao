@@ -118,10 +118,15 @@ define (require, exports, module) ->
 
     return har
 
+  rm_content = (har) ->
+    for entry in har.log.entries
+      if entry.response.content?.text?
+        entry.response.content.text = undefined
+    return har
 
   exports =
     analyze: (har, variables={}) ->
-      replace_variables((post_data xhr mime_type analyze_cookies headers sort har), variables)
+      replace_variables((post_data xhr mime_type analyze_cookies headers sort rm_content har), variables)
 
     recommend_default: (har) ->
       domain = null

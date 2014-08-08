@@ -5,7 +5,19 @@
 #         http://binux.me
 # Created on 2014-07-30 12:21:48
 
+from Crypto.Hash import SHA256
+
 debug = True
 gzip = True
 bind = '0.0.0.0'
 port = 8923
+
+class mysql(object):
+    host = 'localhost'
+    port = '3306'
+    database = 'qiandao'
+    user = 'root'
+    passwd = None
+
+pbkdf2_iterations = 1000
+aes_key = SHA256.new('binux').digest()

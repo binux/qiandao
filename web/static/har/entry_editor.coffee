@@ -42,6 +42,8 @@ define (require, exports, module) ->
 
       $scope.$apply ->
         $scope.preview = undefined
+      console.log 'har-change'
+      $rootScope.$broadcast('har-change')
     )
 
     # alert message for test panel

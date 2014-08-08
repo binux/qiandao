@@ -84,6 +84,79 @@
       get_public_suffix: node_tough.getPublicSuffix,
       get_domain: function(url) {
         return exports.get_public_suffix(exports.url_parse(url).hostname);
+      },
+      debounce: function(func, wait, immediate) {
+        var later, timeout, timestamp;
+        timestamp = 0;
+        timeout = 0;
+        later = function() {
+          var args, context, last, result;
+          last = (new Date().getTime()) - timestamp;
+          if ((0 < last && last < wait)) {
+            return timeout = setTimeout(later, wait - last);
+          } else {
+            timeout = null;
+            if (!immediate) {
+              result = func.apply(context, args);
+              if (!timeout) {
+                return context = args = null;
+              }
+            }
+          }
+        };
+        return function() {
+          var args, callNow, context, result;
+          context = this;
+          args = arguments;
+          timestamp = new Date().getTime();
+          callNow = immediate && !timeout;
+          if (!timeout) {
+            timeout = setTimeout(later, wait);
+          }
+          if (callNow) {
+            result = func.apply(context, args);
+            context = args = null;
+          }
+          return result;
+        };
+      },
+      storage: {
+        set: function(key, value) {
+          var error;
+          if (window.localStorage == null) {
+            return false;
+          }
+          try {
+            return window.localStorage.setItem(key, angular.toJson(value));
+          } catch (_error) {
+            error = _error;
+            return null;
+          }
+        },
+        get: function(key) {
+          var error;
+          if (window.localStorage == null) {
+            return null;
+          }
+          try {
+            return angular.fromJson(window.localStorage.getItem(key));
+          } catch (_error) {
+            error = _error;
+            return null;
+          }
+        },
+        del: function(key) {
+          var error;
+          if (window.localStorage == null) {
+            return false;
+          }
+          try {
+            return window.localStorage.removeItem(key);
+          } catch (_error) {
+            error = _error;
+            return null;
+          }
+        }
       }
     };
     return exports;

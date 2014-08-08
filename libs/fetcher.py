@@ -72,8 +72,8 @@ class Fetcher(object):
 
         method = request['method']
         url = request['url']
-        headers = {e['name']: e['value'] for e in request['headers']}
-        cookies = {e['name']: e['value'] for e in request['cookies']}
+        headers = dict((e['name'], e['value']) for e in request['headers'])
+        cookies = dict((e['name'], e['value']) for e in request['cookies'])
         data = request.get('data')
 
         req = httpclient.HTTPRequest(
