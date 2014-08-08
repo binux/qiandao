@@ -19,5 +19,6 @@ class mysql(object):
     user = 'root'
     passwd = None
 
-pbkdf2_iterations = 1000
+pbkdf2_iterations = 400
 aes_key = SHA256.new('binux').digest()
+cookie_secret = SHA256.new('binux').digest()

@@ -1,0 +1,120 @@
+#!/usr/bin/env python
+# -*- encoding: utf-8 -*-
+# vim: set et sw=4 ts=4 sts=4 ff=unix fenc=utf8:
+# Author: Binux<i@binux.me>
+#         http://binux.me
+# Created on 2014-08-07 17:36:17
+
+import time
+import logging
+import umsgpack
+import mysql.connector
+
+import config
+from libs import crypto, utils
+from basedb import BaseDB
+
+logger = logging.getLogger('qiandao.userdb')
+class UserDB(BaseDB):
+    '''
+    User DB
+
+    id, email, emaill_verified, password, userkey, nickname, role, ctime, mtime, atime, cip, mip, aip
+    '''
+    __tablename__ = 'user'
+
+    class UserDBException(Exception): pass
+    class NoUserException(UserDBException): pass
+    class DeplicateUser(UserDBException): pass
+    class UserNameError(UserDBException): pass
+
+    def __init__(self, host=config.mysql.host, port=config.mysql.port,
+            database=config.mysql.database, user=config.mysql.user, passwd=config.mysql.passwd):
+        self.conn = mysql.connector.connect(user=user, password=passwd, host=host, port=port, database=database)
+
+    @property
+    def dbcur(self):
+        return self.conn.cursor()
+
+    @staticmethod
+    def check_nickname(nickname):
+        if isinstance(nickname, unicode):
+            nickname = nickname.encode('utf8')
+        return len(nickname) < 64
+
+    def add(self, email, password, ip):
+        if self.getuser(email=email, fields='1') is None:
+            raise DeplicateUser('duplicate username')
+
+        now = time.time()
+        if isinstance(ip, basestring):
+            ip = utils.ip2int(ip)
+        userkey = umsgpack.unpackb(crypto.password_hash(password))[0]
+
+        insert = dict(
+                email = email,
+                email_verified = 0,
+                pasword = crypto.aes_encrypt(
+                    crypto.password_hash(password), userkey),
+                userkey = crypto.aes_encrypt(userkey),
+                nickname = None,
+                role = None,
+                ctime = now,
+                mtime = now,
+                atime = now,
+                cip = now,
+                mip = now,
+                aip = now,
+                )
+        return self._insert(**insert)
+
+    def challenge(self, email, password):
+        user = self.getuser(email=email, fields=('id', 'password'))
+        if not user:
+            return False
+        password_hash = self.decrypt(user['id'], user['password'])
+        if password_hash == crypto.password_hash(password, password_hash):
+            return True
+        return False
+
+    def mod(self, id, **kwargs):
+        assert 'id' not in kwargs, 'id not modifiable'
+        assert 'email' not in kwargs, 'email not modifiable'
+        assert 'userkey' not in kwargs, 'userkey not modifiable'
+
+        if 'password' in kwargs:
+            kwargs['password'] = self.encrypt(id, kwargs['password'])
+
+        now = time.time()
+        kwargs.update(dict(
+            mtime = now,
+            ))
+        return self._update(where="id=%s", where_values=(id, ), **kwargs)
+
+    def __getuserkey(self, id):
+        for (userkey, ) in self._select(what='userkey',
+                where='id=%s', where_values=(id, )):
+            return crypto.aes_decrypt(userkey)
+
+    def encrypt(self, id, data):
+        userkey = self.__getuserkey(id)
+        return crypto.aes_encrypt(data, userkey)
+
+    def decrypt(self, id, data):
+        userkey = self.__getuserkey(id)
+        return crypto.aes_decrypt(data, userkey)
+
+    def get(self, id=None, email=None, fields=None):
+        assert 'userkey' not in fields, 'userkey not allow to get'
+
+        if id:
+            where = 'id = %s'
+            value = (id, )
+        elif email:
+            where = 'email = %s'
+            value = (email, )
+        else:
+            raise UserDBException('get user need id or email')
+
+        for user in self._select2dic(what=fields, where=where, where_values=value):
+            return user

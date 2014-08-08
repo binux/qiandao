@@ -10,6 +10,7 @@ import logging
 import jinja2
 import tornado.web
 
+import db
 import config
 from web.handlers import handlers, ui_modules, ui_methods
 
@@ -20,6 +21,9 @@ class Application(tornado.web.Application):
                 static_path = os.path.join(os.path.dirname(__file__), "static"),
                 debug = config.debug,
                 gzip = config.gzip,
+
+                cookie_secret = config.cookie_secret,
+                login_url = '/login',
                 )
         super(Application, self).__init__(handlers, **settings)
 
@@ -28,6 +32,14 @@ class Application(tornado.web.Application):
                 extensions=['jinja2.ext.autoescape', 'jinja2.ext.loopcontrols', ],
                 autoescape=True,
                 auto_reload=config.debug)
+
+        class DB(object):
+            user = db.UserDB()
+            tpl = db.TPLDB()
+            task = db.TaskDB()
+            tasklog = db.TaskLogDB()
+            push_request = db.PRDB()
+        self.db = DB
 
         self.jinja_env.globals.update({
             'config': config,
