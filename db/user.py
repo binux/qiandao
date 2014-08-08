@@ -19,7 +19,7 @@ class UserDB(BaseDB):
     '''
     User DB
 
-    id, email, emaill_verified, password, userkey, nickname, role, ctime, mtime, atime, cip, mip, aip
+    id, email, email_verified, password, userkey, nickname, role, ctime, mtime, atime, cip, mip, aip
     '''
     __tablename__ = 'user'
 
@@ -43,8 +43,8 @@ class UserDB(BaseDB):
         return len(nickname) < 64
 
     def add(self, email, password, ip):
-        if self.getuser(email=email, fields='1') is None:
-            raise DeplicateUser('duplicate username')
+        if self.get(email=email, fields='1') is not None:
+            raise self.DeplicateUser('duplicate username')
 
         now = time.time()
         if isinstance(ip, basestring):
@@ -54,7 +54,7 @@ class UserDB(BaseDB):
         insert = dict(
                 email = email,
                 email_verified = 0,
-                pasword = crypto.aes_encrypt(
+                password = crypto.aes_encrypt(
                     crypto.password_hash(password), userkey),
                 userkey = crypto.aes_encrypt(userkey),
                 nickname = None,
@@ -69,7 +69,7 @@ class UserDB(BaseDB):
         return self._insert(**insert)
 
     def challenge(self, email, password):
-        user = self.getuser(email=email, fields=('id', 'password'))
+        user = self.get(email=email, fields=('id', 'password'))
         if not user:
             return False
         password_hash = self.decrypt(user['id'], user['password'])
@@ -85,10 +85,6 @@ class UserDB(BaseDB):
         if 'password' in kwargs:
             kwargs['password'] = self.encrypt(id, kwargs['password'])
 
-        now = time.time()
-        kwargs.update(dict(
-            mtime = now,
-            ))
         return self._update(where="id=%s", where_values=(id, ), **kwargs)
 
     def __getuserkey(self, id):

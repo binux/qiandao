@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block addheader %}
+<link href="{{ static_url('my.css') }}" rel="stylesheet" type="text/css">
+{% endblock %}
+
+{% block body %}
+<header>
+  <div class="container">
+    <h1>签到<sup>alpha</sup></h1>
+    <a href="/logout" class="btn btn-default pull-right logout">登出</a>
+    <div class="clearfix"></div>
+  </div>
+</header>
+
+<section class="task">
+  <div class="container">
+    <h2>
+      我的签到
+      <a href="/task/new" class="btn btn-default btn-xs glyphicon glyphicon-plus"></a>
+    </h2>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>网站</th>
+          <th>成功签到次数</th>
+          <th>失败次数</th>
+          <th>上次成功时间</th>
+          <th>状态</th>
+          <th>预计下次签到时间</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="tpl">
+  <div class="container">
+    <h2>
+      我的模板
+      <a href="/task/new" class="btn btn-default btn-xs glyphicon glyphicon-plus"></a>
+    </h2>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>网站</th>
+          <th>状态</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody>
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

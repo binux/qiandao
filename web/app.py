@@ -39,6 +39,7 @@ class Application(tornado.web.Application):
             task = db.TaskDB()
             tasklog = db.TaskLogDB()
             push_request = db.PRDB()
+            redis = db.RedisDB()
         self.db = DB
 
         self.jinja_env.globals.update({

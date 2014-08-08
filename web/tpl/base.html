@@ -20,12 +20,26 @@
         }
       })
     </script>
-    {% block head %}{% endblock %}
+    {% block head %}
+    <link href="{{ static_url('components/bootstrap/dist/css/bootstrap.min.css') }}" rel="stylesheet" type="text/css">
+    <script>
+      seajs.use('jquery');
+      seajs.use('bootstrap');
+    </script>
+    {% endblock %}
+    <link href="{{ static_url('base.css') }}" rel="stylesheet" type="text/css">
+    {% block addheader %}{% endblock %}
   </head>
 
   <body>
     {% block body %}{% endblock %}
-    {% block foot %}{% endblock %}
+    {% block foot %}
+    <footer>
+      <div class="container">
+        <p class="text-center">a <a href="http://binux.me/">Binux</a>'s project.</p>
+      </div>
+    </footer>
+    {% endblock %}
   </body>
 </html>
 <!-- vim: set et sw=2 ts=2 sts=2 ff=unix fenc=utf8: -->

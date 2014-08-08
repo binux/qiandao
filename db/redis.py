@@ -7,7 +7,7 @@
 
 import redis
 
-class RedisDB(self):
+class RedisDB(object):
     def __init__(self):
         pass
 

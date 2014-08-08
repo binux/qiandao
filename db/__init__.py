@@ -10,3 +10,4 @@ from tpl import TPLDB
 from task import TaskDB
 from tasklog import TaskLogDB
 from push_request import PRDB
+from redis import RedisDB

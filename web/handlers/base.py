@@ -7,6 +7,7 @@
 
 import jinja2
 import logging
+import umsgpack
 import tornado.web
 import tornado.websocket
 from tornado.web import HTTPError
@@ -21,7 +22,7 @@ class BaseHandler(tornado.web.RequestHandler):
     def __getattr__(self, key):
         if key in self.application_export:
             return getattr(self.application, key)
-        super(BaseHandler, self).__getattr__(key)
+        raise AttributeError('no such attr: %s' % key)
 
     def render_string(self, template_name, **kwargs):
         try:

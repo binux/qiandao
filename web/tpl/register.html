@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block addheader %}
+<link href="{{ static_url('register.css') }}" rel="stylesheet" type="text/css">
+{% endblock %}
+
+{% block body %}
+<div class="container">
+  <form method="POST">
+    <h1>签到<sup>alpha</sup></h1>
+    <div class="form-group {{ 'has-error' if email_error }}">
+      <label class="control-label" for="email">Email 地址</label>
+      <input type="email" class="form-control" name="email" id="email" placeholder="请输入 email 地址">
+      {% if email_error %}<p class="text-danger">{{ email_error }}</p>{% endif %}
+    </div>
+    <div class="form-group {{ 'has-error' if password_error }}">
+      <label for="password">密码</label>
+      <input type="password" class="form-control" name="password" id="password" placeholder="请输入 密码">
+      {% if password_error %}<p class="text-danger">{{ password_error }}</p>{% endif %}
+    </div>
+    <button type="submit" class="btn btn-default pull-right" onclick="document.forms[0].action='/register'">注册</button>
+    <button type="submit" class="btn btn-default pull-right" onclick="document.forms[0].action='/login'">登录</button>
+</div>
+{% endblock %}
