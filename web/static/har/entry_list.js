@@ -12,11 +12,17 @@
         $scope.har = data.har;
         $scope.env = utils.dict2list(data.env);
         $scope.session = [];
-        utils.storage.set('har_filename', data.filename);
-        utils.storage.set('har_har', data.har);
-        utils.storage.set('har_env', data.env);
+        $scope.sitename = data.sitename;
+        $scope.siteurl = data.siteurl;
         $scope.recommend();
-        return $scope.filter.recommend = true;
+        $scope.filter.recommend = true;
+        utils.storage.set('har_filename', data.filename);
+        utils.storage.set('har_env', data.env);
+        if (data.upload) {
+          return utils.storage.set('har_har', data.har);
+        } else {
+          return utils.storage.del('har_har');
+        }
       });
       $scope.$on('har-change', function() {
         return $scope.save_change();
@@ -74,8 +80,10 @@
             }
           }
         })();
-        $scope.sitename = first_entry && utils.get_domain(first_entry.request.url).split('.')[0];
-        return $scope.siteurl = first_entry && utils.url_parse(first_entry.request.url).host;
+        if ($scope.sitename == null) {
+          $scope.sitename = first_entry && utils.get_domain(first_entry.request.url).split('.')[0];
+        }
+        return $scope.siteurl != null ? $scope.siteurl : $scope.siteurl = first_entry && utils.url_parse(first_entry.request.url).host;
       };
       return $scope.save = function() {
         var alert_elem, c, data, entry, h, save_btn;
@@ -140,8 +148,16 @@
         };
         save_btn = angular.element('#save-har .btn').button('loading');
         alert_elem = angular.element('#save-har .alert').hide();
-        return $http.post('/har/save', data).success(function(data, status, headers, config) {
-          return save_btn.button('reset');
+        return $http.post(location.pathname.replace('edit', 'save'), data).success(function(data, status, headers, config) {
+          var pathname;
+          utils.storage.del('har_filename');
+          utils.storage.del('har_har');
+          utils.storage.del('har_env');
+          save_btn.button('reset');
+          pathname = "/har/edit/" + data.id;
+          if (pathname !== location.pathname) {
+            return location.pathname = pathname;
+          }
         }).error(function(data, status, headers, config) {
           alert_elem.text(data).show();
           return save_btn.button('reset');

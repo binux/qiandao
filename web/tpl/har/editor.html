@@ -174,8 +174,9 @@
             <strong>Oh snap!</strong> Change a few things up and try submitting again.
           </div>
           <div class="alert alert-info" role="alert" ng-if="local_har">
-            您有一个正在编辑的 HAR 文件，是否打开？
-            <a href="#" ng-click="load_local_har()">[ {{ local_har }} ]</a>
+            您有一个正在编辑的 HAR 文件（{{ local_har }}），是否打开？
+            <a href="#" ng-click="load_local_har()">[ 打开 ]</a> /
+            <a href="#" ng-click="delete_local()">[ 删除 ]</a>
           </div>
           <div class="form-horizontal" role="form">
             <div class="form-group">
@@ -209,3 +210,4 @@
 </div>
 {% endraw %}
 {% endblock %}
+            <a href="#" ng-click="load_local_har()">[  ]</a>

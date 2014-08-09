@@ -18,13 +18,18 @@ define (require, exports, module) ->
         $scope.har = data.har
         $scope.env = utils.dict2list(data.env)
         $scope.session = []
-
-        utils.storage.set('har_filename', data.filename)
-        utils.storage.set('har_har', data.har)
-        utils.storage.set('har_env', data.env)
+        $scope.sitename = data.sitename
+        $scope.siteurl = data.siteurl
 
         $scope.recommend()
         $scope.filter.recommend = true
+
+        utils.storage.set('har_filename', data.filename)
+        utils.storage.set('har_env', data.env)
+        if data.upload
+          utils.storage.set('har_har', data.har)
+        else
+          utils.storage.del('har_har')
       )
       $scope.$on('har-change', () ->
         $scope.save_change()
@@ -71,8 +76,8 @@ define (require, exports, module) ->
           for entry in $scope.har.log.entries when entry.checked
             return entry)()
 
-        $scope.sitename = first_entry and utils.get_domain(first_entry.request.url).split('.')[0]
-        $scope.siteurl = first_entry and utils.url_parse(first_entry.request.url).host
+        $scope.sitename ?= first_entry and utils.get_domain(first_entry.request.url).split('.')[0]
+        $scope.siteurl ?= first_entry and utils.url_parse(first_entry.request.url).host
 
       $scope.save = () ->
         data = {
@@ -96,9 +101,15 @@ define (require, exports, module) ->
 
         save_btn = angular.element('#save-har .btn').button('loading')
         alert_elem = angular.element('#save-har .alert').hide()
-        $http.post('/har/save', data)
+        $http.post(location.pathname.replace('edit', 'save'), data)
         .success((data, status, headers, config) ->
+          utils.storage.del('har_filename')
+          utils.storage.del('har_har')
+          utils.storage.del('har_env')
           save_btn.button('reset')
+          pathname = "/har/edit/#{data.id}"
+          if pathname != location.pathname
+            location.pathname = pathname
         )
         .error((data, status, headers, config) ->
           alert_elem.text(data).show()

@@ -8,10 +8,10 @@ define (require, exports, module) ->
   utils = require '/static/utils'
 
   angular.module('upload_ctrl', []).
-    controller('UploadCtrl', ($scope, $rootScope) ->
+    controller('UploadCtrl', ($scope, $rootScope, $http) ->
       element = angular.element('#upload-har')
 
-      element.modal('show').on('hide.bs.modal', -> $scope.uploaded?)
+      element.modal('show').on('hide.bs.modal', -> $scope.is_loaded?)
 
       element.find('input[type=file]').on('change', (ev) ->
         $scope.file = this.files[0]
@@ -22,7 +22,27 @@ define (require, exports, module) ->
       $scope.alert = (message) ->
         element.find('.alert').text(message).show()
 
-      $scope.loaded = (data) ->
+      $scope.loaded = (loaded) ->
+        $scope.is_loaded = true
+        $rootScope.$emit('har-loaded', loaded)
+        angular.element('#upload-har').modal('hide')
+        return true
+
+      $scope.load_remote = (id) ->
+        element.find('button').button('loading')
+        $http.post("/har/edit/#{id}")
+        .success((data, status, headers, config) ->
+          element.find('button').button('reset')
+          $scope.loaded(data)
+        )
+        .error((data, status, headers, config) ->
+          $scope.alert(data)
+          element.find('button').button('reset')
+        )
+      if not $scope.local_har and m = location.pathname.match(/\/har\/edit\/(\d+)/)
+        $scope.load_remote(m[1])
+
+      $scope.load_file = (data) ->
         loaded =
           filename: $scope.file.name
           har: analysis.analyze(data, {
@@ -32,20 +52,25 @@ define (require, exports, module) ->
           env:
             username: $scope.username
             password: $scope.password
-        $scope.uploaded = true
-        $rootScope.$emit('har-loaded', loaded)
-        angular.element('#upload-har').modal('hide')
-        return true
+          upload: true
+        $scope.loaded(loaded)
 
       $scope.load_local_har = () ->
         loaded =
           filename: utils.storage.get('har_filename')
           har: utils.storage.get('har_har')
           env: utils.storage.get('har_env')
-        $scope.uploaded = true
-        $rootScope.$emit('har-loaded', loaded)
-        angular.element('#upload-har').modal('hide')
-        return true
+          upload: true
+        $scope.loaded(loaded)
+
+      $scope.delete_local = () ->
+        utils.storage.del('har_har')
+        utils.storage.del('har_env')
+        utils.storage.del('har_filename')
+
+        $scope.local_har = undefined
+        if not $scope.local_har and m = location.pathname.match(/\/har\/edit\/(\d+)/)
+          $scope.load_remote(m[1])
 
       $scope.upload = ->
         if not $scope.file?
@@ -62,7 +87,7 @@ define (require, exports, module) ->
           $scope.$apply ->
             $scope.uploaded = true
             try
-              $scope.loaded(angular.fromJson(ev.target.result))
+              $scope.load_file(angular.fromJson(ev.target.result))
             catch error
               console.log error
               $scope.alert 'HAR 格式错误'

@@ -5,6 +5,7 @@
 #         http://binux.me
 # Created on 2014-08-01 10:35:08
 
+import time
 import json
 import umsgpack
 from tornado import gen
@@ -16,6 +17,38 @@ from libs.fetcher import Fetcher
 class HAREditor(BaseHandler):
     def get(self, id):
         return self.render('har/editor.html')
+
+    @tornado.web.authenticated
+    def post(self, id):
+        user = self.current_user
+        if not user:
+            self.set_status(401)
+            self.finish('需要登录')
+            return
+
+        tpl = self.db.tpl.get(id, fields=['id', 'userid', 'sitename', 'siteurl', 'har', 'variables', ])
+        if not tpl:
+            self.set_status(404)
+            self.finish('模板不存在')
+            return
+
+        if tpl['userid'] != user['id']:
+            self.set_status(401)
+            self.finish('没有访问此模板的权限')
+            return
+
+        tpl['har'] = self.db.user.decrypt(user['id'], tpl['har'])
+        tpl['variables'] = json.loads(tpl['variables'])
+
+        self.db.tpl.mod(id, atime=time.time())
+        self.finish(dict(
+            filename = tpl['sitename'] or '未命名模板',
+            har = tpl['har'],
+            env = {x: '' for x in tpl['variables']},
+            sitename = tpl['sitename'],
+            siteurl = tpl['siteurl'],
+            ))
+        return
 
 class HARTest(BaseHandler):
     @gen.coroutine
@@ -66,7 +99,7 @@ class HARSave(BaseHandler):
         return variables
 
     @tornado.web.authenticated
-    def post(self):
+    def post(self, id):
         userid = self.current_user['id']
         data = json.loads(self.request.body)
 
@@ -74,18 +107,19 @@ class HARSave(BaseHandler):
         tpl = self.db.user.encrypt(userid, data['tpl'])
         variables = json.dumps(list(self.get_variables(data['tpl'])))
 
-        if data.get('id'):
-            id = data['id']
+        if id:
             self.db.tpl.mod(id, har=har, tpl=tpl, variables=variables)
         else:
             id = self.db.tpl.add(userid, har, tpl, variables)
             if not id:
                 raise Exception('create tpl error')
         self.db.tpl.mod(id, sitename=data.get('sitename'), siteurl=data.get('siteurl'))
-        self.redirect('/har/edit/%d' % id)
+        self.finish({
+            'id': id
+            })
 
 handlers = [
         (r'/har/edit/?(\d+)?', HAREditor),
         (r'/har/test', HARTest),
-        (r'/har/save', HARSave),
+        (r'/har/save/?(\d+)?', HARSave),
         ]

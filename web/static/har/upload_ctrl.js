@@ -4,11 +4,11 @@
     var analysis, utils;
     analysis = require('/static/har/analysis');
     utils = require('/static/utils');
-    return angular.module('upload_ctrl', []).controller('UploadCtrl', function($scope, $rootScope) {
-      var element;
+    return angular.module('upload_ctrl', []).controller('UploadCtrl', function($scope, $rootScope, $http) {
+      var element, m;
       element = angular.element('#upload-har');
       element.modal('show').on('hide.bs.modal', function() {
-        return $scope.uploaded != null;
+        return $scope.is_loaded != null;
       });
       element.find('input[type=file]').on('change', function(ev) {
         return $scope.file = this.files[0];
@@ -19,7 +19,26 @@
       $scope.alert = function(message) {
         return element.find('.alert').text(message).show();
       };
-      $scope.loaded = function(data) {
+      $scope.loaded = function(loaded) {
+        $scope.is_loaded = true;
+        $rootScope.$emit('har-loaded', loaded);
+        angular.element('#upload-har').modal('hide');
+        return true;
+      };
+      $scope.load_remote = function(id) {
+        element.find('button').button('loading');
+        return $http.post("/har/edit/" + id).success(function(data, status, headers, config) {
+          element.find('button').button('reset');
+          return $scope.loaded(data);
+        }).error(function(data, status, headers, config) {
+          $scope.alert(data);
+          return element.find('button').button('reset');
+        });
+      };
+      if (!$scope.local_har && (m = location.pathname.match(/\/har\/edit\/(\d+)/))) {
+        $scope.load_remote(m[1]);
+      }
+      $scope.load_file = function(data) {
         var loaded;
         loaded = {
           filename: $scope.file.name,
@@ -30,24 +49,29 @@
           env: {
             username: $scope.username,
             password: $scope.password
-          }
+          },
+          upload: true
         };
-        $scope.uploaded = true;
-        $rootScope.$emit('har-loaded', loaded);
-        angular.element('#upload-har').modal('hide');
-        return true;
+        return $scope.loaded(loaded);
       };
       $scope.load_local_har = function() {
         var loaded;
         loaded = {
           filename: utils.storage.get('har_filename'),
           har: utils.storage.get('har_har'),
-          env: utils.storage.get('har_env')
+          env: utils.storage.get('har_env'),
+          upload: true
         };
-        $scope.uploaded = true;
-        $rootScope.$emit('har-loaded', loaded);
-        angular.element('#upload-har').modal('hide');
-        return true;
+        return $scope.loaded(loaded);
+      };
+      $scope.delete_local = function() {
+        utils.storage.del('har_har');
+        utils.storage.del('har_env');
+        utils.storage.del('har_filename');
+        $scope.local_har = void 0;
+        if (!$scope.local_har && (m = location.pathname.match(/\/har\/edit\/(\d+)/))) {
+          return $scope.load_remote(m[1]);
+        }
       };
       return $scope.upload = function() {
         var reader;
@@ -66,7 +90,7 @@
             var error;
             $scope.uploaded = true;
             try {
-              return $scope.loaded(angular.fromJson(ev.target.result));
+              return $scope.load_file(angular.fromJson(ev.target.result));
             } catch (_error) {
               error = _error;
               console.log(error);
