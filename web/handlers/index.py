@@ -9,6 +9,9 @@ from base import *
 
 class IndexHandlers(BaseHandler):
     def get(self):
+        if self.current_user:
+            self.redirect('/my/')
+            return
         return self.render('index.html')
 
 handlers = [

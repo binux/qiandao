@@ -1,6 +1,12 @@
 {% extends "base.html" %}
 
+{% block addheader %}
+<link href="{{ static_url('index.css') }}" rel="stylesheet" type="text/css">
+{% endblock %}
+
 {% block body %}
-<p>hello world!</p>
-{{ config.port }}
+<div class="container">
+  <h1 class="text-center">签到<sup>alpha</sup></h1>
+  <p>施工中...</p>
+</div>
 {% endblock %}
