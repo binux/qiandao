@@ -4,7 +4,7 @@
     var analysis, utils;
     analysis = require('/static/har/analysis');
     utils = require('/static/utils');
-    return angular.module('entry_list', []).controller('EntryList', function($scope, $rootScope) {
+    return angular.module('entry_list', []).controller('EntryList', function($scope, $rootScope, $http) {
       $scope.filter = {};
       $rootScope.$on('har-loaded', function(ev, data) {
         console.log(data);
@@ -59,8 +59,93 @@
         $scope.$broadcast('edit-entry', entry);
         return false;
       };
-      return $scope.recommend = function() {
+      $scope.recommend = function() {
         return analysis.recommend($scope.har);
+      };
+      $scope.pre_save = function() {
+        var first_entry;
+        first_entry = (function() {
+          var entry, _i, _len, _ref;
+          _ref = $scope.har.log.entries;
+          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+            entry = _ref[_i];
+            if (entry.checked) {
+              return entry;
+            }
+          }
+        })();
+        $scope.sitename = first_entry && utils.get_domain(first_entry.request.url).split('.')[0];
+        return $scope.siteurl = first_entry && utils.url_parse(first_entry.request.url).host;
+      };
+      return $scope.save = function() {
+        var alert_elem, c, data, entry, h, save_btn;
+        data = {
+          id: $scope.id,
+          har: $scope.har,
+          tpl: (function() {
+            var _i, _len, _ref, _ref1, _results;
+            _ref = $scope.har.log.entries;
+            _results = [];
+            for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+              entry = _ref[_i];
+              if (entry.checked) {
+                _results.push({
+                  request: {
+                    method: entry.request.method,
+                    url: entry.request.url,
+                    headers: (function() {
+                      var _j, _len1, _ref1, _results1;
+                      _ref1 = entry.request.headers;
+                      _results1 = [];
+                      for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
+                        h = _ref1[_j];
+                        if (h.checked) {
+                          _results1.push({
+                            name: h.name,
+                            value: h.value
+                          });
+                        }
+                      }
+                      return _results1;
+                    })(),
+                    cookies: (function() {
+                      var _j, _len1, _ref1, _results1;
+                      _ref1 = entry.request.cookies;
+                      _results1 = [];
+                      for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
+                        c = _ref1[_j];
+                        if (c.checked) {
+                          _results1.push({
+                            name: c.name,
+                            value: c.value
+                          });
+                        }
+                      }
+                      return _results1;
+                    })(),
+                    data: (_ref1 = entry.request.postData) != null ? _ref1.text : void 0
+                  },
+                  rule: {
+                    success_asserts: entry.success_asserts,
+                    failed_asserts: entry.failed_asserts,
+                    extract_variables: entry.extract_variables
+                  }
+                });
+              }
+            }
+            return _results;
+          })(),
+          sitename: $scope.sitename,
+          siteurl: $scope.siteurl
+        };
+        save_btn = angular.element('#save-har .btn').button('loading');
+        alert_elem = angular.element('#save-har .alert').hide();
+        return $http.post('/har/save', data).success(function(data, status, headers, config) {
+          return save_btn.button('reset');
+        }).error(function(data, status, headers, config) {
+          alert_elem.text(data).show();
+          return save_btn.button('reset');
+        });
       };
     });
   });

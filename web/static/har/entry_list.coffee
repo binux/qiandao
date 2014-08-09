@@ -8,7 +8,7 @@ define (require, exports, module) ->
   utils = require '/static/utils'
 
   angular.module('entry_list', []).
-    controller('EntryList', ($scope, $rootScope) ->
+    controller('EntryList', ($scope, $rootScope, $http) ->
       $scope.filter = {}
 
       # on uploaded event
@@ -65,4 +65,43 @@ define (require, exports, module) ->
 
       $scope.recommend = () ->
         analysis.recommend($scope.har)
+
+      $scope.pre_save = () ->
+        first_entry = (() ->
+          for entry in $scope.har.log.entries when entry.checked
+            return entry)()
+
+        $scope.sitename = first_entry and utils.get_domain(first_entry.request.url).split('.')[0]
+        $scope.siteurl = first_entry and utils.url_parse(first_entry.request.url).host
+
+      $scope.save = () ->
+        data = {
+          id: $scope.id,
+          har: $scope.har
+          tpl: ({
+            request:
+              method: entry.request.method
+              url: entry.request.url
+              headers: ({name: h.name, value: h.value} for h in entry.request.headers when h.checked)
+              cookies: ({name: c.name, value: c.value} for c in entry.request.cookies when c.checked)
+              data: entry.request.postData?.text
+            rule:
+              success_asserts: entry.success_asserts
+              failed_asserts: entry.failed_asserts
+              extract_variables: entry.extract_variables
+          } for entry in $scope.har.log.entries when entry.checked)
+          sitename: $scope.sitename
+          siteurl: $scope.siteurl
+        }
+
+        save_btn = angular.element('#save-har .btn').button('loading')
+        alert_elem = angular.element('#save-har .alert').hide()
+        $http.post('/har/save', data)
+        .success((data, status, headers, config) ->
+          save_btn.button('reset')
+        )
+        .error((data, status, headers, config) ->
+          alert_elem.text(data).show()
+          save_btn.button('reset')
+        )
     )

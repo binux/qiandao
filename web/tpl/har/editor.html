@@ -6,14 +6,6 @@
 <script>
   seajs.use('/static/har/editor', function(main) {
     main.init()
-
-    if (location.href.indexOf("?dev") > 0) {
-      $.get('/static/www.smzdm.com.har', function(data) {
-        var $scope = angular.element('#upload-har').scope();
-        $scope.username = 'binux'
-        $scope.loaded(angular.fromJson(data))
-      })
-    }
   });
 </script>
 {% endblock %}
@@ -23,6 +15,8 @@
 <div class="container">
   <div class="row" ng-controller="EntryList">
     <div class="col-md-3" id="editor-switch">
+      <h1 class="text-center">签到<sup>alpha</sup></h1>
+      
       <!--checked switch-->
       <div class="list-group">
         <a ng-class="{active: !filter.checked && !filter.recommend}" class="list-group-item" href="#" ng-click='filter.recommend=undefined;filter.checked=undefined'>
@@ -77,22 +71,25 @@
           请求中有变量
         </a>
       </div>
+
     </div>
 
     <!-- entries list -->
-    <div class="col-md-9" id="entries" ng-switch="(har.log.entries | filter: {checked: true}).length">
-      <div class="alert alert-info" role="alert" ng-switch-when="0">
-        请分析定位 <strong>签到</strong> 请求，在请求前打勾，如果推荐的请求中没有，请在右侧筛选
-      </div>
-      <div class="alert alert-info" role="alert" ng-switch-when="1">
-        您可以再次点击
-        <a href="#" ng-click="recommend();filter.recommend=true;filter.checked=undefined">推荐关联请求</a>
-        ，帮助定位 <strong>登录</strong> 请求，点击 URL 编辑请求，为其加入用户名、密码变量
-      </div>
-      <div class="alert alert-info" role="alert" ng-switch-default>
-        完成登录请求定位后，请<strong>依次</strong>点击每个
-        <a href="#" ng-click="filter.recommend=undefined;filter.checked=true">已选择请求</a>
-        ，切换到 <strong>测试</strong> 面板，对请求进行测试。
+    <div class="col-md-9" id="entries">
+      <div ng-switch="(har.log.entries | filter: {checked: true}).length">
+        <div class="alert alert-info" role="alert" ng-switch-when="0">
+          请分析定位 <strong>签到</strong> 请求，在请求前打勾，如果推荐的请求中没有，请在右侧筛选
+        </div>
+        <div class="alert alert-info" role="alert" ng-switch-when="1">
+          您可以再次点击
+          <a href="#" ng-click="recommend();filter.recommend=true;filter.checked=undefined">推荐关联请求</a>
+          ，帮助定位 <strong>登录</strong> 请求，点击 URL 编辑请求，为其加入用户名、密码变量
+        </div>
+        <div class="alert alert-info" role="alert" ng-switch-default>
+          完成登录请求定位后，请<strong>依次</strong>点击每个
+          <a href="#" ng-click="filter.recommend=undefined;filter.checked=true">已选择请求</a>
+          ，切换到 <strong>测试</strong> 面板，对请求进行测试。
+        </div>
       </div>
 
       <div class="list-group">
@@ -120,6 +117,45 @@
 
         <li class="list-group-item" ng-if="filted.length == 0">过滤条件下没有请求</li>
       </div>
+      <!-- ./entries list -->
+
+      <!-- save modal -->
+      <div>
+        <button class="btn btn-primary pull-right" data-toggle="modal" data-target="#save-har" ng-click="pre_save()">保存</button>
+      </div>
+      <div class="modal fade" id="save-har">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h4 class="modal-title">保存HAR</h4>
+            </div>
+            <div class="modal-body">
+              <div class="alert alert-danger" role="alert" style="display: none;">
+                <strong>Oh snap!</strong> Change a few things up and try submitting again.
+              </div>
+              <div class="form-horizontal" role="form">
+                <div class="form-group">
+                  <label class="col-sm-3 control-label">网站名</label>
+                  <div class="col-sm-9">
+                    <input ng-model="sitename">
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="col-sm-3 control-label">网站网址</label>
+                  <div class="col-sm-9">
+                    <input ng-model="siteurl">
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-primary" data-loading-text="保存中..." ng-click="save()">保存</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- /.save modal -->
+      
     </div>
 
 {% endraw %}
@@ -167,8 +203,8 @@
         <div class="modal-footer">
           <button type="button" class="btn btn-primary" data-loading-text="Loading..." ng-click="upload()">上传</button>
         </div>
-      </div><!-- /.modal-content -->
-    </div><!-- /.modal-dialog -->
+      </div>
+    </div>
   </div><!-- /.modal -->
 </div>
 {% endraw %}
