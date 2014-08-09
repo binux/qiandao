@@ -7,6 +7,7 @@
 {% block body %}
 <header>
   <div class="container">
+    <a href="/" class="btn btn-default pull-left index">首页</a>
     <h1 class="text-center">签到<sup>alpha</sup></h1>
     <a href="/logout" class="btn btn-default pull-right logout">登出</a>
     <div class="clearfix"></div>
@@ -101,6 +102,9 @@
         {% endfor %}
       </tbody>
     </table>
+    <div class="text-right">
+      <a href="/pushs" class="btn btn-default">我的发布请求</a>
+    </div>
   </div>
 </section>
 

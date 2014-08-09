@@ -71,10 +71,9 @@ def tpl2har(tpl):
 
 class PushListHandler(BaseHandler):
     @tornado.web.authenticated
-    def get(self, status=0):
+    def get(self, status=None):
         user = self.current_user
         admin = 'admin' in (user.get('role', '') or '')
-        status = status or 0
 
         @utils.func_cache
         def get_user(userid):
@@ -109,18 +108,23 @@ class PushListHandler(BaseHandler):
             return pr
 
         pushs = []
-        for each in self.db.push_request.list(from_userid = user['id'], status=status):
+        _f = {}
+        if status is not None:
+            _f['status'] = status
+        for each in self.db.push_request.list(from_userid = user['id'], **_f):
             pushs.append(join(each))
         if admin:
-            for each in self.db.push_request.list(from_userid = None, status=status):
+            for each in self.db.push_request.list(from_userid = None, **_f):
                 pushs.append(join(each))
+        pushs.reverse()
 
         pulls = []
-        for each in self.db.push_request.list(to_userid = user['id'], status=status):
+        for each in self.db.push_request.list(to_userid = user['id'], **_f):
             pulls.append(join(each))
         if admin:
-            for each in self.db.push_request.list(to_userid = None, status=status):
+            for each in self.db.push_request.list(to_userid = None, **_f):
                 pulls.append(join(each))
+        pulls.reverse()
 
         self.render('push_list.html', pushs=pushs, pulls=pulls)
 

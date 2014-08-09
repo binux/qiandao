@@ -22,6 +22,12 @@ header a.logout {
   right: 0;
   bottom: 0;
 }
+header a.index {
+  position: absolute;
+  margin-bottom: 10px;
+  left: 0;
+  bottom: 0;
+}
 section h2 a.btn {
   margin-top: -0.2em;
 }

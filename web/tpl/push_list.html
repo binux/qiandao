@@ -7,7 +7,11 @@
 {% block body %}
 <header>
   <div class="container">
-    <h1 class="text-center">签到<sup>alpha</sup></h1>
+    <a href="/" class="btn btn-default pull-left index">首页</a>
+    <h1 class="text-center">
+      <a href="/">签到</a>
+      <sup>alpha</sup>
+    </h1>
     <a href="/logout" class="btn btn-default pull-right logout">登出</a>
     <div class="clearfix"></div>
   </div>
@@ -62,7 +66,6 @@
           <td>{{ {0:'待处理', 1:'取消', 2:'拒绝', 3:'成功'}[each.status] }}</td>
           <td>{{ each.msg }}</td>
           <td>
-            <a href="/push/{{ each.id }}/view">查看</a>
             <a data-method="post" href="/push/{{ each.id }}/cancel">取消</a>
           </td>
         </tr>

@@ -52,7 +52,7 @@ class MainWorker(object):
             logging.exception(e)
         raise gen.Return(None)
 
-    scan_fields = ('id', 'tplid', 'userid', 'init_env', 'env', 'session', 'last_success', 'last_failed', 'success_count', 'failed_count', 'last_failed_count', 'next')
+    scan_fields = ('id', 'tplid', 'userid', 'init_env', 'env', 'session', 'last_success', 'last_failed', 'success_count', 'failed_count', 'last_failed_count', 'next', 'disabled', )
     def scan(self):
         return self.db.task.scan(fields=self.scan_fields)
 
