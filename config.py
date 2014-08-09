@@ -23,3 +23,8 @@ pbkdf2_iterations = 400
 aes_key = SHA256.new('binux').digest()
 cookie_secret = SHA256.new('binux').digest()
 check_task_loop = 10000
+
+try:
+    from local_config import *
+except ImportError:
+    pass
