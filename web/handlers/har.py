@@ -40,7 +40,7 @@ class HAREditor(BaseHandler):
         self.finish(dict(
             filename = tpl['sitename'] or '未命名模板',
             har = tpl['har'],
-            env = {x: '' for x in tpl['variables']},
+            env = dict((x, '') for x in tpl['variables']),
             sitename = tpl['sitename'],
             siteurl = tpl['siteurl'],
             ))

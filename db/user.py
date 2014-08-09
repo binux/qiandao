@@ -11,7 +11,7 @@ import umsgpack
 import mysql.connector
 
 import config
-from libs import crypto, utils
+from libs import mcrypto as crypto, utils
 from basedb import BaseDB
 
 logger = logging.getLogger('qiandao.userdb')
