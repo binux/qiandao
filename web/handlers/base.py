@@ -58,7 +58,7 @@ class BaseHandler(tornado.web.RequestHandler):
         if not ret:
             return ret
         user = umsgpack.unpackb(ret)
-        user['isadmin'] = 'admin' in user['role']
+        user['isadmin'] = 'admin' in user['role'] if user['role'] else False
         return user
 
 class BaseWebSocket(tornado.websocket.WebSocketHandler):
