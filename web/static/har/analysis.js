@@ -166,7 +166,9 @@
       variables_vk = {};
       for (k in variables) {
         v = variables[k];
-        variables_vk[v] = k;
+        if ((k != null ? k.length : void 0) && (v != null ? v.length : void 0)) {
+          variables_vk[v] = k;
+        }
       }
       console.log(variables_vk, variables);
       _ref = har.log.entries;

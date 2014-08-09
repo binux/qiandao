@@ -100,7 +100,8 @@ define (require, exports, module) ->
   replace_variables = (har, variables) ->
     variables_vk = {}
     for k, v of variables
-      variables_vk[v] = k
+      if k?.length and v?.length
+        variables_vk[v] = k
     console.log variables_vk, variables
 
     # url
