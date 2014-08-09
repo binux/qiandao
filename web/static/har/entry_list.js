@@ -2,11 +2,15 @@
 (function() {
   define(function(require, exports, module) {
     var analysis, utils;
+    require('jquery');
+    require('bootstrap');
+    require('angular');
     analysis = require('/static/har/analysis');
     utils = require('/static/utils');
     return angular.module('entry_list', []).controller('EntryList', function($scope, $rootScope, $http) {
       $scope.filter = {};
       $rootScope.$on('har-loaded', function(ev, data) {
+        var x;
         console.log(data);
         $scope.filename = data.filename;
         $scope.har = data.har;
@@ -14,21 +18,37 @@
         $scope.session = [];
         $scope.sitename = data.sitename;
         $scope.siteurl = data.siteurl;
+        $scope.readonly = data.readonly;
         $scope.recommend();
-        $scope.filter.recommend = true;
-        utils.storage.set('har_filename', data.filename);
-        utils.storage.set('har_env', data.env);
-        if (data.upload) {
-          return utils.storage.set('har_har', data.har);
-        } else {
-          return utils.storage.del('har_har');
+        if (((function() {
+          var _i, _len, _ref, _results;
+          _ref = $scope.har.log.entries;
+          _results = [];
+          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+            x = _ref[_i];
+            if (x.recommend) {
+              _results.push(x);
+            }
+          }
+          return _results;
+        })()).length > 0) {
+          $scope.filter.recommend = true;
+        }
+        if (!$scope.readonly) {
+          utils.storage.set('har_filename', data.filename);
+          utils.storage.set('har_env', data.env);
+          if (data.upload) {
+            return utils.storage.set('har_har', data.har);
+          } else {
+            return utils.storage.del('har_har');
+          }
         }
       });
       $scope.$on('har-change', function() {
         return $scope.save_change();
       });
       $scope.save_change = utils.debounce((function() {
-        if ($scope.filename) {
+        if ($scope.filename && !$scope.readonly) {
           console.log('local saved');
           return utils.storage.set('har_har', $scope.har);
         }

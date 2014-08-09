@@ -30,6 +30,8 @@
           <th>最近修改时间</th>
           <th>最近成功时间</th>
 
+          <th>状态</th>
+          <th>留言</th>
           <th>操作</th>
         </tr>
       </thead>
@@ -57,9 +59,11 @@
           <td>{{ format_date(each.to_tpl.mtime ) }}</td>
           <td>{{ format_date(each.to_tpl.last_success) }}</td>
 
+          <td>{{ {0:'待处理', 1:'取消', 2:'拒绝', 3:'成功'}[each.status] }}</td>
+          <td>{{ each.msg }}</td>
           <td>
             <a href="/push/{{ each.id }}/view">查看</a>
-            <a data-method="post" href="/push/{{ each.id }}/cancel">拒绝</a>
+            <a data-method="post" href="/push/{{ each.id }}/cancel">取消</a>
           </td>
         </tr>
         {% endfor %}
@@ -86,6 +90,8 @@
           <th>最近修改时间</th>
           <th>最近成功时间</th>
 
+          <th>状态</th>
+          <th>留言</th>
           <th>操作</th>
         </tr>
       </thead>
@@ -113,9 +119,11 @@
           <td>{{ format_date(each.to_tpl.mtime ) }}</td>
           <td>{{ format_date(each.to_tpl.last_success) }}</td>
 
+          <td>{{ {0:'待处理', 1:'取消', 2:'拒绝', 3:'成功'}[each.status] }}</td>
+          <td>{{ each.msg }}</td>
           <td>
             <a href="/push/{{ each.id }}/view">查看</a>
-            <a data-method="post" href="/push/{{ each.id }}/accapt">接受</a>
+            <a data-method="post" href="/push/{{ each.id }}/accept">接受</a>
             <a data-method="post" href="/push/{{ each.id }}/refuse">拒绝</a>
           </td>
         </tr>
@@ -125,4 +133,14 @@
   </div>
 </section>
 {% endif %}
+
+<script>
+  seajs.use('jquery', function() {
+    $("a[data-method]").on("click", function() {
+      var $this = $(this);
+      $('<form></form>').attr('method', $this.data('method')).attr('action', $this.attr('href')).submit();
+      return false;
+    })
+  })
+</script>
 {% endblock %}

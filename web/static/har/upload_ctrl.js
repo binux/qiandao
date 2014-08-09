@@ -2,10 +2,13 @@
 (function() {
   define(function(require, exports, module) {
     var analysis, utils;
+    require('jquery');
+    require('bootstrap');
+    require('angular');
     analysis = require('/static/har/analysis');
     utils = require('/static/utils');
     return angular.module('upload_ctrl', []).controller('UploadCtrl', function($scope, $rootScope, $http) {
-      var element, m;
+      var element;
       element = angular.element('#upload-har');
       element.modal('show').on('hide.bs.modal', function() {
         return $scope.is_loaded != null;
@@ -25,9 +28,9 @@
         angular.element('#upload-har').modal('hide');
         return true;
       };
-      $scope.load_remote = function(id) {
+      $scope.load_remote = function(url) {
         element.find('button').button('loading');
-        return $http.post("/har/edit/" + id).success(function(data, status, headers, config) {
+        return $http.post(url).success(function(data, status, headers, config) {
           element.find('button').button('reset');
           return $scope.loaded(data);
         }).error(function(data, status, headers, config) {
@@ -35,8 +38,8 @@
           return element.find('button').button('reset');
         });
       };
-      if (!$scope.local_har && (m = location.pathname.match(/\/har\/edit\/(\d+)/))) {
-        $scope.load_remote(m[1]);
+      if (!$scope.local_har && (location.pathname.match(/\/har\/edit\/(\d+)/) || location.pathname.match(/\/push\/\d+\/view/))) {
+        $scope.load_remote(location.href);
       }
       $scope.load_file = function(data) {
         var loaded;
@@ -69,8 +72,8 @@
         utils.storage.del('har_env');
         utils.storage.del('har_filename');
         $scope.local_har = void 0;
-        if (!$scope.local_har && (m = location.pathname.match(/\/har\/edit\/(\d+)/))) {
-          return $scope.load_remote(m[1]);
+        if (!$scope.local_har && (location.pathname.match(/\/har\/edit\/(\d+)/) || location.pathname.match(/\/push\/\d+\/view/))) {
+          return $scope.load_remote(location.href);
         }
       };
       return $scope.upload = function() {

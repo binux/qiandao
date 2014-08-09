@@ -73,6 +73,7 @@
           <td>
             <span class="sitename">{{ tpl.sitename or "未命名" }}</span>
             {% if tpl.siteurl %}<a href="{{ tpl.siteurl if tpl.siteurl.startswith('http:') else 'http://'+tpl.siteurl }}" target="_blank" class="glyphicon glyphicon-share"></a>{% endif %}
+            {% if tpl.fork %}[fork]{% endif %}
           </td>
           <td>
             {{ format_date(tpl.ctime) }}
@@ -94,7 +95,7 @@
             <a class="" href="/har/edit/{{ tpl.id }}" target="_blank">编辑</a>
             {% endif %}
             <a class="task-new" href="/task/new/{{ tpl.id }}">新建签到</a>
-            <a class="task-new" href="/tpl/push/{{ tpl.id }}">发布</a>
+            <a class="task-new" href="/tpl/{{ tpl.id }}/push">发布</a>
           </td>
         </tr>
         {% endfor %}

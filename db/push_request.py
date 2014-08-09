@@ -23,8 +23,8 @@ class PRDB(BaseDB):
 
     PENDING = 0
     CANCEL = 1
-    REJECT = 2
-    SUCCESS = 3
+    REFUSE = 2
+    ACCEPT = 3
 
     class NOTSET(object): pass
 
@@ -63,22 +63,13 @@ class PRDB(BaseDB):
         for pr in self._select2dic(what=fields, where='id=%s', where_values=(id, )):
             return pr
 
-    def list(self, from_userid=NOTSET, to_userid=NOTSET, status=NOTSET, fields=None):
-        where = "1=1"
+    def list(self, fields=None, **kwargs):
+        where = '1=1'
         where_values = []
-        if from_userid is not self.NOTSET:
-            if from_userid is None:
-                where += " and from_userid is %s"
+        for key, value in kwargs.iteritems():
+            if value is None:
+                where += ' and %s is %%s' % self.escape(key)
             else:
-                where += " and from_userid=%s"
-            where_values.append(from_userid)
-        if to_userid is not self.NOTSET:
-            if to_userid is None:
-                where += " and to_userid is %s"
-            else:
-                where += " and to_userid=%s"
-            where_values.append(to_userid)
-        if status is not self.NOTSET:
-            where += " and `status`=%s"
-            where_values.append(status)
+                where += ' and %s = %%s' % self.escape(key)
+            where_values.append(value)
         return self._select2dic(what=fields, where=where, where_values=where_values)

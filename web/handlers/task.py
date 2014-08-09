@@ -16,7 +16,7 @@ class TaskNewHandler(BaseHandler):
         fields = ('id', 'sitename', )
 
         tpls = sorted(self.db.tpl.list(userid=user['id'], fields=fields), key=lambda t: -t['id'])
-        tpls += list(self.db.tpl.list(userid=0, fields=fields))
+        tpls += list(self.db.tpl.list(userid=None, fields=fields))
 
         if not tplid:
             tplid = tpls[0]['id']

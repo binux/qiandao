@@ -211,7 +211,7 @@
         return replace_variables(post_data(xhr(mime_type(analyze_cookies(headers(sort(rm_content(har))))))), variables);
       },
       recommend_default: function(har) {
-        var domain, entry, _i, _len, _ref, _ref1;
+        var domain, entry, _i, _len, _ref, _ref1, _ref2;
         domain = null;
         _ref = har.log.entries;
         for (_i = 0, _len = _ref.length; _i < _len; _i++) {
@@ -227,7 +227,7 @@
             entry.recommend = true;
           } else if (Math.floor(entry.response.status / 100) === 3) {
             entry.recommend = true;
-          } else if (entry.response.cookies.length > 0) {
+          } else if (((_ref2 = entry.response.cookies) != null ? _ref2.length : void 0) > 0) {
             entry.recommend = true;
           } else if (entry.request.method === 'POST') {
             entry.recommend = true;

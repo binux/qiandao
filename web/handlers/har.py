@@ -21,10 +21,6 @@ class HAREditor(BaseHandler):
     @tornado.web.authenticated
     def post(self, id):
         user = self.current_user
-        if not user:
-            self.set_status(401)
-            self.finish('需要登录')
-            return
 
         tpl = self.db.tpl.get(id, fields=['id', 'userid', 'sitename', 'siteurl', 'har', 'variables', ])
         if not tpl:
@@ -48,7 +44,6 @@ class HAREditor(BaseHandler):
             sitename = tpl['sitename'],
             siteurl = tpl['siteurl'],
             ))
-        return
 
 class HARTest(BaseHandler):
     @gen.coroutine

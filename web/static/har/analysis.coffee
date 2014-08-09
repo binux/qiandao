@@ -142,7 +142,7 @@ define (require, exports, module) ->
           entry.recommend = true
         else if entry.response.status // 100 == 3
           entry.recommend = true
-        else if entry.response.cookies.length > 0
+        else if entry.response.cookies?.length > 0
           entry.recommend = true
         else if entry.request.method == 'POST'
           entry.recommend = true

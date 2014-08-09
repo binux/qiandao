@@ -4,6 +4,10 @@
 # Created on 2014-08-06 21:12:48
 
 define (require, exports, module) ->
+  require 'jquery'
+  require 'bootstrap'
+  require 'angular'
+
   analysis = require '/static/har/analysis'
   utils = require '/static/utils'
 
@@ -28,9 +32,9 @@ define (require, exports, module) ->
         angular.element('#upload-har').modal('hide')
         return true
 
-      $scope.load_remote = (id) ->
+      $scope.load_remote = (url) ->
         element.find('button').button('loading')
-        $http.post("/har/edit/#{id}")
+        $http.post(url)
         .success((data, status, headers, config) ->
           element.find('button').button('reset')
           $scope.loaded(data)
@@ -39,8 +43,8 @@ define (require, exports, module) ->
           $scope.alert(data)
           element.find('button').button('reset')
         )
-      if not $scope.local_har and m = location.pathname.match(/\/har\/edit\/(\d+)/)
-        $scope.load_remote(m[1])
+      if not $scope.local_har and (location.pathname.match(/\/har\/edit\/(\d+)/) or location.pathname.match(/\/push\/\d+\/view/))
+        $scope.load_remote(location.href)
 
       $scope.load_file = (data) ->
         loaded =
@@ -69,8 +73,8 @@ define (require, exports, module) ->
         utils.storage.del('har_filename')
 
         $scope.local_har = undefined
-        if not $scope.local_har and m = location.pathname.match(/\/har\/edit\/(\d+)/)
-          $scope.load_remote(m[1])
+        if not $scope.local_har and (location.pathname.match(/\/har\/edit\/(\d+)/) or location.pathname.match(/\/push\/\d+\/view/))
+          $scope.load_remote(location.href)
 
       $scope.upload = ->
         if not $scope.file?

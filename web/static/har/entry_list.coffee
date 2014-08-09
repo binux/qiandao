@@ -4,6 +4,10 @@
 # Created on 2014-08-06 21:14:54
 
 define (require, exports, module) ->
+  require 'jquery'
+  require 'bootstrap'
+  require 'angular'
+
   analysis = require '/static/har/analysis'
   utils = require '/static/utils'
 
@@ -18,24 +22,28 @@ define (require, exports, module) ->
         $scope.har = data.har
         $scope.env = utils.dict2list(data.env)
         $scope.session = []
+
         $scope.sitename = data.sitename
         $scope.siteurl = data.siteurl
+        $scope.readonly = data.readonly
 
         $scope.recommend()
-        $scope.filter.recommend = true
+        if (x for x in $scope.har.log.entries when x.recommend).length > 0
+          $scope.filter.recommend = true
 
-        utils.storage.set('har_filename', data.filename)
-        utils.storage.set('har_env', data.env)
-        if data.upload
-          utils.storage.set('har_har', data.har)
-        else
-          utils.storage.del('har_har')
+        if not $scope.readonly
+          utils.storage.set('har_filename', data.filename)
+          utils.storage.set('har_env', data.env)
+          if data.upload
+            utils.storage.set('har_har', data.har)
+          else
+            utils.storage.del('har_har')
       )
       $scope.$on('har-change', () ->
         $scope.save_change()
       )
       $scope.save_change = utils.debounce((() ->
-        if ($scope.filename)
+        if ($scope.filename and not $scope.readonly)
           console.log 'local saved'
           utils.storage.set('har_har', $scope.har)
       ), 1000)

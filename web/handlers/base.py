@@ -57,7 +57,9 @@ class BaseHandler(tornado.web.RequestHandler):
         ret = self.get_secure_cookie('user')
         if not ret:
             return ret
-        return umsgpack.unpackb(ret)
+        user = umsgpack.unpackb(ret)
+        user['isadmin'] = 'admin' in user['role']
+        return user
 
 class BaseWebSocket(tornado.websocket.WebSocketHandler):
     pass

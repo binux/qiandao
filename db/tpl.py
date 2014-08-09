@@ -60,6 +60,14 @@ class TPLDB(BaseDB):
         for tpl in self._select2dic(what=fields, where='id=%s', where_values=(id, )):
             return tpl
 
-    def list(self, userid, fields=None):
-        for tpl in self._select2dic(what=fields, where='userid=%s', where_values=(userid, )):
+    def list(self, fields=None, **kwargs):
+        where = '1=1'
+        where_values = []
+        for key, value in kwargs.iteritems():
+            if value is None:
+                where += ' and %s is %%s' % self.escape(key)
+            else:
+                where += ' and %s = %%s' % self.escape(key)
+            where_values.append(value)
+        for tpl in self._select2dic(what=fields, where=where, where_values=where_values):
             yield tpl

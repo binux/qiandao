@@ -106,8 +106,8 @@ class Fetcher(object):
                     bodySize = len(request.body) if request.body else 0,
                     )
             if request.body:
-                ret['postData'] = dict(
-                        mimeType = request.headers.get('content-type'),
+                ret['postdata'] = dict(
+                        mimetype = request.headers.get('content-type'),
                         text = request.body,
                         )
                 if ret['postData']['mimeType'] == 'application/x-www-form-urlencoded':
