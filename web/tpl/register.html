@@ -10,7 +10,7 @@
     <h1>签到<sup>alpha</sup></h1>
     <div class="form-group {{ 'has-error' if email_error }}">
       <label class="control-label" for="email">Email 地址</label>
-      <input type="email" class="form-control" name="email" id="email" placeholder="请输入 email 地址">
+      <input type="email" class="form-control" name="email" id="email" value="{{ email }}" placeholder="请输入 email 地址">
       {% if email_error %}<p class="text-danger">{{ email_error }}</p>{% endif %}
     </div>
     <div class="form-group {{ 'has-error' if password_error }}">

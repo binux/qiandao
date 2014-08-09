@@ -53,7 +53,6 @@ class TPLDB(BaseDB):
         return self._insert(**insert)
 
     def mod(self, id, **kwargs):
-        kwargs['mtime'] = time.time()
         return self._update(where="id=%s", where_values=(id, ), **kwargs)
 
     def get(self, id, fields=None):

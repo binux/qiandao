@@ -22,7 +22,7 @@ class LoginHandler(BaseHandler):
         if self.db.user.challenge(email, password):
             user = self.db.user.get(email=email, fields=('id', 'email', 'nickname', 'role'))
             if not user:
-                self.render('login.html', password_error=u'不存在此邮箱或密码错误')
+                self.render('login.html', password_error=u'不存在此邮箱或密码错误', email=email)
                 return
 
             self.set_secure_cookie('user', umsgpack.packb(user))
@@ -31,7 +31,7 @@ class LoginHandler(BaseHandler):
                 self.redirect('/my')
         else:
             self.db.redis.evil(self.ip, +5)
-            self.render('login.html', password_error=u'不存在此邮箱或密码错误')
+            self.render('login.html', password_error=u'不存在此邮箱或密码错误', email=email)
 
 class LogoutHandler(BaseHandler):
     def get(self):
@@ -53,7 +53,7 @@ class RegisterHandler(BaseHandler):
             self.render('register.html', email_error=u'邮箱格式不正确')
             return
         if len(password) < 6:
-            self.render('register.html', password_error=u'密码需要大于6位')
+            self.render('register.html', password_error=u'密码需要大于6位', email=email)
             return
 
         try:

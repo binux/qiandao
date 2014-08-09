@@ -84,7 +84,7 @@
           </td>
           <td>
             {% if tpl.last_success %}
-            <span class="last_success">{{ tpl.last_success }}</span>
+            <span class="last_success">{{ format_date(tpl.last_success) }}</span>
             {% else %}
             从未
             {% endif %}

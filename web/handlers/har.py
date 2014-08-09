@@ -117,7 +117,7 @@ class HARSave(BaseHandler):
             id = self.db.tpl.add(userid, har, tpl, variables)
             if not id:
                 raise Exception('create tpl error')
-        self.db.tpl.mod(id, sitename=data.get('sitename'), siteurl=data.get('siteurl'))
+        self.db.tpl.mod(id, sitename=data.get('sitename'), siteurl=data.get('siteurl'), mtime=time.time())
         self.finish({
             'id': id
             })
