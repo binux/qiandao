@@ -12,6 +12,7 @@ import tornado.web
 
 import db
 import config
+from libs import utils
 from web.handlers import handlers, ui_modules, ui_methods
 
 class Application(tornado.web.Application):
@@ -44,5 +45,6 @@ class Application(tornado.web.Application):
 
         self.jinja_env.globals.update({
             'config': config,
+            'format_date': utils.format_date,
             })
         self.jinja_env.filters.update(ui_methods)

@@ -42,29 +42,6 @@ class Fetcher(object):
 
     @staticmethod
     def build_request(obj):
-        """
-        obj = {
-          request: {
-            method: 
-            url: 
-            headers: [{name: , value: }, ]
-            cookies: [{name: , value: }, ]
-            data:
-          }
-          rule: {
-            success_asserts: [{re: , from: 'content'}, ]
-            failed_asserts: [{re: , from: 'content'}, ]
-            extract_variables: [{name: , re:, from: 'content'}, ]
-          }
-          env: {
-            variables: {
-              name: value
-            }
-            session: [
-            ]
-          }
-        }
-        """
 
         env = obj['env']
         rule = obj['rule']
@@ -88,8 +65,11 @@ class Fetcher(object):
                 allow_ipv6 = True,
                 )
 
-        session = cookie_utils.CookieSession()
-        session.from_json(obj['env']['session'])
+        if isinstance(env['session'], cookie_utils.CookieSession):
+            session = env['session']
+        else:
+            session = cookie_utils.CookieSession()
+            session.from_json(env['session'])
         session.update(cookies)
         cookie_header = session.get_cookie_header(req)
         if cookie_header:
@@ -208,6 +188,29 @@ class Fetcher(object):
 
     @gen.coroutine
     def fetch(self, obj):
+        """
+        obj = {
+          request: {
+            method: 
+            url: 
+            headers: [{name: , value: }, ]
+            cookies: [{name: , value: }, ]
+            data:
+          }
+          rule: {
+            success_asserts: [{re: , from: 'content'}, ]
+            failed_asserts: [{re: , from: 'content'}, ]
+            extract_variables: [{name: , re:, from: 'content'}, ]
+          }
+          env: {
+            variables: {
+              name: value
+            }
+            session: [
+            ]
+          }
+        }
+        """
         req, rule, env = self.build_request(obj)
 
         try:

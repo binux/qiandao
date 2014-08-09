@@ -3,11 +3,6 @@
 {% block head %}
 <link href="{{ static_url('components/bootstrap/dist/css/bootstrap.min.css') }}" rel="stylesheet" type="text/css">
 <link href="{{ static_url('har/editor.css') }}" rel="stylesheet" type="text/css">
-<script>
-  seajs.use('/static/har/editor', function(main) {
-    main.init()
-  });
-</script>
 {% endblock %}
 
 {% block body %}
@@ -208,6 +203,10 @@
     </div>
   </div><!-- /.modal -->
 </div>
+<script>
+  seajs.use('/static/har/editor', function(main) {
+    main.init()
+  });
+</script>
 {% endraw %}
 {% endblock %}
-            <a href="#" ng-click="load_local_har()">[  ]</a>

@@ -1,0 +1,28 @@
+<form method="POST" action="/task/new">
+  <h1 class="text-center">签到<sup>alpha</sup></h1>
+  <div class="form-group">
+    <label class="control-label" for="site-select">网站</label>
+    <select class="form-control" name="_binux_tplid">
+      {% for tpl in tpls %}
+      <option value="{{ tpl.id }}" {% if tpl['id'] == tplid %}selected{% endif %}>{{ tpl.sitename or '未命名' }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div id="variables">
+    {% include "task_new_var.html" %}
+  </div>
+  <input type="hidden" name="_binux_tested" value="0">
+  <button type="submit" data-loading-text="loading..." class="btn btn-default pull-right">提交</button>
+  <!--<button class="btn btn-default pull-right">测试</button>-->
+  <div class="clearfix"></div>
+  <script>
+    seajs.use('jquery', function() {
+      $('select[name=_binux_tplid]').on('change', function() {
+        $('#variables').load("/tpl/var/"+$(this).val());
+      })
+      $('form').on('submit', function() {
+        $('button[type=submit]').button('loading');
+      })
+    })
+  </script>
+</form>

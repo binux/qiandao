@@ -108,6 +108,15 @@ class HARSave(BaseHandler):
         variables = json.dumps(list(self.get_variables(data['tpl'])))
 
         if id:
+            _tmp = self.db.tpl.get(id, fields=('userid', 'lock'))
+            if _tmp['userid'] != userid:
+                self.set_status(401)
+                self.finish(u'没有权限')
+                return
+            if _tmp['lock']:
+                self.set_status(403)
+                self.finish(u'模板已锁定')
+                return
             self.db.tpl.mod(id, har=har, tpl=tpl, variables=variables)
         else:
             id = self.db.tpl.add(userid, har, tpl, variables)

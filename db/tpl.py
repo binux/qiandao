@@ -59,3 +59,7 @@ class TPLDB(BaseDB):
     def get(self, id, fields=None):
         for tpl in self._select2dic(what=fields, where='id=%s', where_values=(id, )):
             return tpl
+
+    def list(self, userid, fields=None):
+        for tpl in self._select2dic(what=fields, where='userid=%s', where_values=(userid, )):
+            yield tpl

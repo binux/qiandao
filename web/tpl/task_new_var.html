@@ -1,0 +1,6 @@
+{% for var in variables %}
+<div class="form-group">
+  <label class="control-label" for="input-{{ var }}">{{ var }}</label>
+  <input type="text" class="form-control" name="{{ var }}" id="input-{{ var }}" placeholder="请输入 {{ var }}">
+</div>
+{% endfor %}

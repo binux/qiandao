@@ -46,9 +46,10 @@ class TaskDB(BaseDB):
                 ctime = now,
                 mtime = now,
                 )
-        self._insert(**insert)
+        return self._insert(**insert)
 
     def mod(self, id, **kwargs):
+        assert id, 'need id'
         assert 'id' not in kwargs, 'id not modifiable'
         assert 'ctime' not in kwargs, 'ctime not modifiable'
 
@@ -56,5 +57,17 @@ class TaskDB(BaseDB):
         return self._update(where="id=%s", where_values=(id, ), **kwargs)
 
     def get(self, id, fields=None):
-        for tpl in self._select2dic(what=fields, where='id=%s', where_values=(id, )):
-            return tpl
+        assert id, 'need id'
+        for task in self._select2dic(what=fields, where='id=%s', where_values=(id, )):
+            return task
+
+    def list(self, userid, fields=None):
+        return self._select2dic(what=fields, where='userid=%s', where_values=(userid, ))
+
+    def delete(self, id):
+        self._delete(where="id=%s", where_values=(id, ))
+
+    def scan(self, now=None, fields=None):
+        if now is None:
+            now = time.time()
+        return self._select2dic(what=fields, where="`next` < %s", where_values=(now, ))

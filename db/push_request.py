@@ -19,12 +19,14 @@ class PRDB(BaseDB):
 
     id, from_tplid, from_userid, to_tplid, to_userid, status, msg, ctime, mtime, atime
     '''
-    __tablename__ = 'task'
+    __tablename__ = 'push_request'
 
     PENDING = 0
     CANCEL = 1
     REJECT = 2
     SUCCESS = 3
+
+    class NOTSET(object): pass
 
     def __init__(self, host=config.mysql.host, port=config.mysql.port,
             database=config.mysql.database, user=config.mysql.user, passwd=config.mysql.passwd):
@@ -58,5 +60,25 @@ class PRDB(BaseDB):
         return self._update(where="id=%s", where_values=(id, ), **kwargs)
 
     def get(self, id, fields=None):
-        for tpl in self._select2dic(what=fields, where='id=%s', where_values=(id, )):
-            return tpl
+        for pr in self._select2dic(what=fields, where='id=%s', where_values=(id, )):
+            return pr
+
+    def list(self, from_userid=NOTSET, to_userid=NOTSET, status=NOTSET, fields=None):
+        where = "1=1"
+        where_values = []
+        if from_userid is not self.NOTSET:
+            if from_userid is None:
+                where += " and from_userid is %s"
+            else:
+                where += " and from_userid=%s"
+            where_values.append(from_userid)
+        if to_userid is not self.NOTSET:
+            if to_userid is None:
+                where += " and to_userid is %s"
+            else:
+                where += " and to_userid=%s"
+            where_values.append(to_userid)
+        if status is not self.NOTSET:
+            where += " and `status`=%s"
+            where_values.append(status)
+        return self._select2dic(what=fields, where=where, where_values=where_values)

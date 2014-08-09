@@ -26,6 +26,7 @@ class BaseDB(object):
 
     def _execute(self, sql_query, values=[]):
         dbcur = self.dbcur
+        print sql_query
         dbcur.execute(sql_query, values)
         return dbcur
     

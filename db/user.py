@@ -93,11 +93,17 @@ class UserDB(BaseDB):
             return crypto.aes_decrypt(userkey)
 
     def encrypt(self, id, data):
-        userkey = self.__getuserkey(id)
+        if id:
+            userkey = self.__getuserkey(id)
+        else:
+            userkey = config.aes_key
         return crypto.aes_encrypt(data, userkey)
 
     def decrypt(self, id, data):
-        userkey = self.__getuserkey(id)
+        if id:
+            userkey = self.__getuserkey(id)
+        else:
+            userkey = config.aes_key
         return crypto.aes_decrypt(data, userkey)
 
     def get(self, id=None, email=None, fields=None):

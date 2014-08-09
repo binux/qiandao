@@ -19,7 +19,7 @@ class TaskLogDB(BaseDB):
 
     id, taskid, success, ctime, msg
     '''
-    __tablename__ = 'task'
+    __tablename__ = 'tasklog'
 
     def __init__(self, host=config.mysql.host, port=config.mysql.port,
             database=config.mysql.database, user=config.mysql.user, passwd=config.mysql.passwd):
@@ -35,7 +35,7 @@ class TaskLogDB(BaseDB):
         insert = dict(
                 taskid = taskid,
                 success = success,
+                msg = msg,
                 ctime = now,
-                msg = msg
                 )
         return self._insert(**insert)

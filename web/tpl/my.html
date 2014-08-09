@@ -7,7 +7,7 @@
 {% block body %}
 <header>
   <div class="container">
-    <h1>签到<sup>alpha</sup></h1>
+    <h1 class="text-center">签到<sup>alpha</sup></h1>
     <a href="/logout" class="btn btn-default pull-right logout">登出</a>
     <div class="clearfix"></div>
   </div>
@@ -17,7 +17,7 @@
   <div class="container">
     <h2>
       我的签到
-      <a href="/task/new" class="btn btn-default btn-xs glyphicon glyphicon-plus"></a>
+      <a href="/task/new" class="btn btn-default btn-xs task-new glyphicon glyphicon-plus"></a>
     </h2>
     <table class="table">
       <thead>
@@ -32,6 +32,20 @@
         </tr>
       </thead>
       <tbody>
+        {% for task in tasks %}
+        <tr>
+          <td>{{ task.sitename }}</td>
+          <td>{{ task.success_count }}</td>
+          <td>{{ task.failed_count }}</td>
+          <td>{{ format_date(task.last_success) if task.last_success else '从未' }}</td>
+          <td>{{ my_status(task) }}</td>
+          <td>{{ format_date(task.next) if task.next else '从不' }}</td>
+          <td>
+            <!--<a href="#">修改</a>-->
+            <a data-method="POST" href="/task/del/{{ task.id }}">删除</a>
+          </td>
+        </tr>
+        {% endfor %}
       </tbody>
     </table>
   </div>
@@ -41,19 +55,75 @@
   <div class="container">
     <h2>
       我的模板
-      <a href="/task/new" class="btn btn-default btn-xs glyphicon glyphicon-plus"></a>
+      <a href="/har/edit" class="btn btn-default btn-xs glyphicon glyphicon-plus" target="_blank"></a>
     </h2>
     <table class="table">
       <thead>
         <tr>
           <th>网站</th>
-          <th>状态</th>
+          <th>创建时间</th>
+          <th>最近修改时间</th>
+          <th>最近成功时间</th>
           <th>操作</th>
         </tr>
       </thead>
       <tbody>
+        {% for tpl in tpls %}
+        <tr>
+          <td>
+            <span class="sitename">{{ tpl.sitename or "未命名" }}</span>
+            {% if tpl.siteurl %}<a href="{{ tpl.siteurl if tpl.siteurl.startswith('http:') else 'http://'+tpl.siteurl }}" target="_blank" class="glyphicon glyphicon-share"></a>{% endif %}
+          </td>
+          <td>
+            {{ format_date(tpl.ctime) }}
+          </td>
+          <td>
+            {{ format_date(tpl.mtime) }}
+          </td>
+          <td>
+            {% if tpl.last_success %}
+            <span class="last_success">{{ tpl.last_success }}</span>
+            {% else %}
+            从未
+            {% endif %}
+          </td>
+          <td>
+            {% if tpl.lock %}
+            [锁定]
+            {% else %}
+            <a class="" href="/har/edit/{{ tpl.id }}" target="_blank">编辑</a>
+            {% endif %}
+            <a class="task-new" href="/task/new/{{ tpl.id }}">新建签到</a>
+            <a class="task-new" href="/tpl/push/{{ tpl.id }}">发布</a>
+          </td>
+        </tr>
+        {% endfor %}
       </tbody>
     </table>
   </div>
 </section>
+
+<div class="modal fade" id="task-new" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+    </div>
+  </div>
+</div>
+
+<script>
+  seajs.use('jquery', function() {
+    $(".task-new").on('click', function() {
+      $('#task-new .modal-content').load($(this).attr('href'), function() {
+        $('#task-new').modal('show');
+      })
+      return false;
+    })
+
+    $("a[data-method]").on("click", function() {
+      var $this = $(this);
+      $('<form></form>').attr('method', $this.data('method')).attr('action', $this.attr('href')).submit();
+      return false;
+    })
+  })
+</script>
 {% endblock %}
