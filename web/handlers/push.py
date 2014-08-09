@@ -134,6 +134,9 @@ class PushActionHandler(BaseHandler):
         user = self.current_user
         pr = self.db.push_request.get(prid)
 
+        if pr['status'] != self.db.push_request.PENDING:
+            raise HTTPError(400)
+
         if action in ('accept', 'refuse'):
             if pr['to_userid']:
                 if user['id'] != pr['to_userid']:
@@ -206,6 +209,9 @@ class PushViewHandler(BaseHandler):
     def post(self, prid):
         user = self.current_user
         pr = self.db.push_request.get(prid, fields=('id', 'from_tplid', 'from_userid', 'to_tplid', 'to_userid'))
+        if pr['status'] != self.db.push_request.PENDING:
+            raise HTTPError(401)
+
         if pr['to_userid']:
             if user['id'] != pr['to_userid']:
                 raise HTTPError(401)
