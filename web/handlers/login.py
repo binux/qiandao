@@ -23,20 +23,24 @@ class LoginHandler(BaseHandler):
         password = self.get_argument('password')
         next = self.get_argument('next', None)
         if not email or not password:
-            return self.render('login.html', password_error=u'请输入用户名和密码', email=email)
+            self.render('login.html', password_error=u'请输入用户名和密码', email=email)
+            return
 
         if self.db.user.challenge(email, password):
             user = self.db.user.get(email=email, fields=('id', 'email', 'nickname', 'role'))
             if not user:
-                return self.render('login.html', password_error=u'不存在此邮箱或密码错误', email=email)
+                self.render('login.html', password_error=u'不存在此邮箱或密码错误', email=email)
+                return
 
             self.set_secure_cookie('user', umsgpack.packb(user))
             self.db.user.mod(user['id'], atime=time.time(), aip=self.ip2int)
             if not next:
-                return self.redirect('/my')
+                self.redirect('/my')
+                return
         else:
             self.db.redis.evil(self.ip, +5)
-            return self.render('login.html', password_error=u'不存在此邮箱或密码错误', email=email)
+            self.render('login.html', password_error=u'不存在此邮箱或密码错误', email=email)
+            return
 
 class LogoutHandler(BaseHandler):
     def get(self):
@@ -53,7 +57,8 @@ class RegisterHandler(BaseHandler):
         password = self.get_argument('password')
 
         if not email:
-            return self.render('register.html', email_error=u'请输入邮箱')
+            self.render('register.html', email_error=u'请输入邮箱')
+            return
         if email.count('@') != 1 or email.count('.') == 0:
             self.render('register.html', email_error=u'邮箱格式不正确')
             return
