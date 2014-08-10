@@ -23,10 +23,10 @@ class MyHandler(BaseHandler):
     @tornado.web.authenticated
     def get(self):
         user = self.current_user
-        tpls = self.db.tpl.list(userid=user['id'], fields=('id', 'siteurl', 'sitename', 'disabled', 'lock', 'last_success', 'ctime', 'mtime', 'fork'))
+        tpls = self.db.tpl.list(userid=user['id'], fields=('id', 'siteurl', 'sitename', 'disabled', 'lock', 'last_success', 'ctime', 'mtime', 'fork'), limit=None)
 
         tasks = []
-        for task in self.db.task.list(user['id'], fields=('id', 'tplid', 'disabled', 'last_success', 'success_count', 'failed_count', 'last_failed', 'next', 'last_failed_count')):
+        for task in self.db.task.list(user['id'], fields=('id', 'tplid', 'disabled', 'last_success', 'success_count', 'failed_count', 'last_failed', 'next', 'last_failed_count'), limit=None):
             tpl = self.db.tpl.get(task['tplid'], fields=('sitename', ) )
             task['sitename'] = tpl and tpl['sitename'] or '未命名'
             tasks.append(task)

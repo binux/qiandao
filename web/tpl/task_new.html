@@ -4,7 +4,11 @@
     <label class="control-label" for="site-select">网站</label>
     <select class="form-control" name="_binux_tplid">
       {% for tpl in tpls %}
+      {% if tpl.id %}
       <option value="{{ tpl.id }}" {% if tpl['id'] == tplid %}selected{% endif %}>{{ tpl.sitename or '未命名' }}</option>
+      {% else %}
+      <option disabled>以下为公共模板</option>
+      {% endif %}
       {% endfor %}
     </select>
   </div>

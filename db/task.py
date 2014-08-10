@@ -61,8 +61,8 @@ class TaskDB(BaseDB):
         for task in self._select2dic(what=fields, where='id=%s', where_values=(id, )):
             return task
 
-    def list(self, userid, fields=None):
-        return self._select2dic(what=fields, where='userid=%s', where_values=(userid, ))
+    def list(self, userid, fields=None, limit=100):
+        return self._select2dic(what=fields, where='userid=%s', where_values=(userid, ), limit=limit)
 
     def delete(self, id):
         self._delete(where="id=%s", where_values=(id, ))

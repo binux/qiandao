@@ -63,7 +63,7 @@ class PRDB(BaseDB):
         for pr in self._select2dic(what=fields, where='id=%s', where_values=(id, )):
             return pr
 
-    def list(self, fields=None, **kwargs):
+    def list(self, fields=None, limit=100, **kwargs):
         where = '1=1'
         where_values = []
         for key, value in kwargs.iteritems():
@@ -72,4 +72,4 @@ class PRDB(BaseDB):
             else:
                 where += ' and %s = %%s' % self.escape(key)
             where_values.append(value)
-        return self._select2dic(what=fields, where=where, where_values=where_values)
+        return self._select2dic(what=fields, where=where, where_values=where_values, limit=limit)

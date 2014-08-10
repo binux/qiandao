@@ -39,3 +39,15 @@ class TaskLogDB(BaseDB):
                 ctime = now,
                 )
         return self._insert(**insert)
+
+    def list(self, fields=None, limit=100, **kwargs):
+        where = '1=1'
+        where_values = []
+        for key, value in kwargs.iteritems():
+            if value is None:
+                where += ' and %s is %%s' % self.escape(key)
+            else:
+                where += ' and %s = %%s' % self.escape(key)
+            where_values.append(value)
+        for tasklog in self._select2dic(what=fields, where=where, where_values=where_values, limit=limit):
+            yield tasklog

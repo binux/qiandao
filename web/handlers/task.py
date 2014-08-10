@@ -16,6 +16,7 @@ class TaskNewHandler(BaseHandler):
         fields = ('id', 'sitename', )
 
         tpls = sorted(self.db.tpl.list(userid=user['id'], fields=fields), key=lambda t: -t['id'])
+        tpls.append({})
         tpls += list(self.db.tpl.list(userid=None, fields=fields))
 
         if not tplid:
@@ -53,6 +54,18 @@ class TaskNewHandler(BaseHandler):
         referer = self.request.headers.get('referer', '/my/')
         self.redirect(referer)
 
+class TaskLogHandler(BaseHandler):
+    @tornado.web.authenticated
+    def get(self, taskid):
+        user = self.current_user
+        task = self.db.task.get(taskid, fields=('id', 'tplid', 'userid', 'disabled'))
+        if task['userid'] != user['id']:
+            raise HTTPError(401)
+
+        tasklog = self.db.tasklog.list(taskid = taskid, fields=('success', 'ctime', 'msg'))
+
+        self.render('tasklog.html', task=task, tasklog=tasklog)
+
 class TaskDelHandler(BaseHandler):
     @tornado.web.authenticated
     def post(self, taskid):
@@ -68,5 +81,6 @@ class TaskDelHandler(BaseHandler):
 
 handlers = [
         ('/task/new/?(\d+)?', TaskNewHandler),
-        ('/task/del/(\d+)', TaskDelHandler),
+        ('/task/(\d+)/del', TaskDelHandler),
+        ('/task/(\d+)/log', TaskLogHandler),
         ]

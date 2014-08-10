@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block addheader %}
+<link href="{{ static_url('my.css') }}" rel="stylesheet" type="text/css">
+{% endblock %}
+
+{% block body %}
+<header>
+  <div class="container">
+    <a href="/" class="btn btn-default pull-left index">首页</a>
+    <h1 class="text-center">
+      <a href="/">签到</a>
+      <sup>alpha</sup>
+    </h1>
+    <a href="/logout" class="btn btn-default pull-right logout">登出</a>
+    <div class="clearfix"></div>
+  </div>
+</header>
+
+<section>
+  <div class="container">
+    <h2>
+      公开模板
+    </h2>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>网站</th>
+          <th>创建时间</th>
+          <th>最近修改时间</th>
+          <th>最近成功时间</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for tpl in tpls %}
+        <tr>
+          <td>
+            <span class="sitename">{{ tpl.sitename or "未命名" }}</span>
+            {% if tpl.siteurl %}<a href="{{ tpl.siteurl if tpl.siteurl.startswith('http:') else 'http://'+tpl.siteurl }}" target="_blank" class="glyphicon glyphicon-share"></a>{% endif %}
+            {% if tpl.fork %}[fork]{% endif %}
+          </td>
+          <td>
+            {{ format_date(tpl.ctime) }}
+          </td>
+          <td>
+            {{ format_date(tpl.mtime) }}
+          </td>
+          <td>
+            {% if tpl.last_success %}
+            <span class="last_success">{{ format_date(tpl.last_success) }}</span>
+            {% else %}
+            从未
+            {% endif %}
+          </td>
+          <td>
+            <a class="" href="/har/edit/{{ tpl.id }}" target="_blank">查看</a>
+            <a class="task-new" href="/task/new/{{ tpl.id }}">新建签到</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<div class="modal fade" id="task-new" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+    </div>
+  </div>
+</div>
+
+<script>
+  $(function() {
+    $(".task-new").on('click', function() {
+      $('#task-new .modal-content').load($(this).attr('href'), function() {
+        $('#task-new').modal('show');
+      })
+      return false;
+    })
+  })
+</script>
+{% endblock %}

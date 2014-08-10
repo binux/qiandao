@@ -58,7 +58,14 @@ class TPLVarHandler(BaseHandler):
             return
         self.render('task_new_var.html', variables=json.loads(tpl['variables']))
 
+class PublicTPLHandler(BaseHandler):
+    def get(self):
+        tpls = self.db.tpl.list(userid=None, limit=None, fields=('id', 'siteurl', 'sitename', 'disabled', 'lock', 'last_success', 'ctime', 'mtime', 'fork'))
+
+        self.render('tpls_public.html', tpls=tpls)
+
 handlers = [
         ('/tpl/(\d+)/push', TPLPushHandler),
         ('/tpl/(\d+)/var', TPLVarHandler),
+        ('/tpls/public', PublicTPLHandler),
         ]

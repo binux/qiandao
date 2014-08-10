@@ -22,18 +22,18 @@ class HAREditor(BaseHandler):
     def post(self, id):
         user = self.current_user
 
-        tpl = self.db.tpl.get(id, fields=['id', 'userid', 'sitename', 'siteurl', 'har', 'variables', ])
+        tpl = self.db.tpl.get(id, fields=['id', 'userid', 'sitename', 'siteurl', 'har', 'variables', 'lock'])
         if not tpl:
             self.set_status(404)
             self.finish('模板不存在')
             return
 
-        if tpl['userid'] != user['id']:
+        if tpl['userid'] and tpl['userid'] != user['id']:
             self.set_status(401)
             self.finish('没有访问此模板的权限')
             return
 
-        tpl['har'] = self.db.user.decrypt(user['id'], tpl['har'])
+        tpl['har'] = self.db.user.decrypt(tpl['userid'], tpl['har'])
         tpl['variables'] = json.loads(tpl['variables'])
 
         self.db.tpl.mod(id, atime=time.time())
@@ -43,6 +43,7 @@ class HAREditor(BaseHandler):
             env = dict((x, '') for x in tpl['variables']),
             sitename = tpl['sitename'],
             siteurl = tpl['siteurl'],
+            readonly = tpl['lock'],
             ))
 
 class HARTest(BaseHandler):
