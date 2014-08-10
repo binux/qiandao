@@ -72,6 +72,16 @@ class MainWorker(object):
             next = None
         return next
 
+    @staticmethod
+    def fix_next_time(next, gmt_offset=-8*60):
+        date = datetime.datetime.utcfromtimestamp(next)
+        local_date = date - datetime.timedelta(minutes=gmt_offset)
+        if local_date.hour < 2:
+            next += 2 * 60 * 60
+        if local_date.hour > 21:
+            next -= 3 * 60 * 60
+        return next
+
     @gen.coroutine
     def do(self, task):
         if task['next'] > time.time():
@@ -121,7 +131,7 @@ class MainWorker(object):
             failed_time_delta = 0
             for i in range(last_failed_count):
                 failed_time_delta += self.failed_count_to_time(last_failed_count)
-            next = time.time() + (tplobj['interval'] if tplobj['interval'] else 24 * 60 * 60) - failed_time_delta
+            next = self.fix_next_time(time.time() + (tplobj['interval'] if tplobj['interval'] else 24 * 60 * 60) - failed_time_delta)
 
             self.db.tasklog.add(taskid, True)
             self.db.task.mod(taskid, last_success=time.time(),
