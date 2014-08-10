@@ -2,9 +2,6 @@
 (function() {
   define(function(require, exports, module) {
     var analysis, utils;
-    require('jquery');
-    require('bootstrap');
-    require('angular');
     analysis = require('/static/har/analysis');
     utils = require('/static/utils');
     return angular.module('upload_ctrl', []).controller('UploadCtrl', function($scope, $rootScope, $http) {

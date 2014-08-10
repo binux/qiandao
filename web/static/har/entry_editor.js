@@ -2,9 +2,6 @@
 (function() {
   define(function(require, exports, module) {
     var utils;
-    require('jquery');
-    require('bootstrap');
-    require('angular');
     require('/static/har/contenteditable');
     require('/static/har/editablelist');
     utils = require('/static/utils');

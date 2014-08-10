@@ -12,21 +12,13 @@
     <script src="{{ static_url('components/seajs/dist/sea.js') }}"></script>
     <script>
       seajs.config({
-        base: "/static/components",
-        alias: {
-          "jquery": "jquery/dist/jquery.min",
-          "bootstrap": "bootstrap/dist/js/bootstrap.min",
-          "angular": "angularjs/angular.min",
-        }
+        base: "/static",
       })
     </script>
     {% block head %}
     <link href="{{ static_url('components/bootstrap/dist/css/bootstrap.min.css') }}" rel="stylesheet" type="text/css">
-    <script>
-      seajs.use('jquery', function() {
-        seajs.use('bootstrap');
-      });
-    </script>
+    <script src="{{ static_url('components/jquery/dist/jquery.min.js') }}"></script>
+    <script src="{{ static_url('components/bootstrap/dist/js/bootstrap.min.js') }}"></script>
     {% endblock %}
     <link href="{{ static_url('base.css') }}" rel="stylesheet" type="text/css">
     {% block addheader %}{% endblock %}

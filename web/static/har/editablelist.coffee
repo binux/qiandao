@@ -4,10 +4,6 @@
 # Created on 2014-08-05 14:47:55
 
 define (require, exports, module) ->
-  require 'jquery'
-  require 'bootstrap'
-  require 'angular'
-
   angular.module('editablelist', [])
     .directive('editablelist', ()->
       restrict: 'A'

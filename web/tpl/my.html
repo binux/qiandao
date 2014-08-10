@@ -116,7 +116,7 @@
 </div>
 
 <script>
-  seajs.use('jquery', function() {
+  $(function() {
     $(".task-new").on('click', function() {
       $('#task-new .modal-content').load($(this).attr('href'), function() {
         $('#task-new').modal('show');

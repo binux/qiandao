@@ -4,10 +4,6 @@
 # Created on 2014-08-04 19:34:02
 
 define (require, exports, module) ->
-  require 'jquery'
-  require 'bootstrap'
-  require 'angular'
-
   angular.module('contenteditable', [])
     .directive('contenteditable', ['$timeout', ($timeout) ->
       restrict: 'A'

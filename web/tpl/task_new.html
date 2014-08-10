@@ -16,7 +16,7 @@
   <!--<button class="btn btn-default pull-right">测试</button>-->
   <div class="clearfix"></div>
   <script>
-    seajs.use('jquery', function() {
+    $(function() {
       $('select[name=_binux_tplid]').on('change', function() {
         $('#variables').load("/tpl/"+$(this).val()+"/var");
       })

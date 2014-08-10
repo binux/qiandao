@@ -142,7 +142,7 @@
 {% endif %}
 
 <script>
-  seajs.use('jquery', function() {
+  $(function() {
     $("a[data-method]").on("click", function() {
       var $this = $(this);
       $('<form></form>').attr('method', $this.data('method')).attr('action', $this.attr('href')).submit();

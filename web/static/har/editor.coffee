@@ -4,10 +4,6 @@
 # Created on 2014-08-01 11:02:45
 
 define (require, exports, module) ->
-  require 'jquery'
-  require 'bootstrap'
-  require 'angular'
-
   require '/static/har/contenteditable'
   require '/static/har/upload_ctrl'
   require '/static/har/entry_list'

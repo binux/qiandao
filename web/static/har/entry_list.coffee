@@ -4,10 +4,6 @@
 # Created on 2014-08-06 21:14:54
 
 define (require, exports, module) ->
-  require 'jquery'
-  require 'bootstrap'
-  require 'angular'
-
   analysis = require '/static/har/analysis'
   utils = require '/static/utils'
 
