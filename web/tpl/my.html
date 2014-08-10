@@ -43,9 +43,9 @@
           <td>{{ format_date(task.next) if task.next else '从不' }}</td>
           <td>
             <!--<a href="#">修改</a>-->
-            <a href="/har/edit/{{ task.id }}" target="_blank">查看模板</a>
+            <a href="/tpl/{{ task.id }}/edit" target="_blank">查看模板</a>
             <a href="/task/{{ task.id }}/log" target="_blank">执行日志</a>
-            <a data-method="POST" href="/task/{{ task.id }}/del">删除</a>
+            <a data-method="POST" href="/task/{{ task.id }}/del" data-confirm="是否要删除任务?">删除</a>
           </td>
         </tr>
         {% endfor %}
@@ -98,7 +98,8 @@
             {% if tpl.lock %}
             [锁定]
             {% else %}
-            <a class="" href="/har/edit/{{ tpl.id }}" target="_blank">编辑</a>
+            <a href="/tpl/{{ tpl.id }}/edit" target="_blank">编辑</a>
+            <a data-method="POST" href="/tpl/{{ tpl.id }}/del" data-confirm="是否要删除模板?">删除</a>
             {% endif %}
             <a class="task-new" href="/task/new/{{ tpl.id }}">新建签到</a>
             <a class="task-new" href="/tpl/{{ tpl.id }}/push">发布</a>
@@ -131,6 +132,9 @@
 
     $("a[data-method]").on("click", function() {
       var $this = $(this);
+      if ($this.data('confirm') && !!!window.confirm($this.data('confirm'))) {
+        return false;
+      }
       $('<form></form>').attr('method', $this.data('method')).attr('action', $this.attr('href')).submit();
       return false;
     })

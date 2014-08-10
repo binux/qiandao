@@ -58,6 +58,22 @@ class TPLVarHandler(BaseHandler):
             return
         self.render('task_new_var.html', variables=json.loads(tpl['variables']))
 
+def TPLDelHandler(BaseHandler):
+    @tornado.web.authenticated
+    def post(self, tplid):
+        user = self.current_user
+        tpl = self.db.tpl.get(tplid, fields=('id', 'userid'))
+        if tpl['userid']:
+            if user['id'] != tpl['userid']:
+                raise HTTPError(401)
+        else:
+            if not user['isadmin']:
+                raise HTTPError(401)
+
+        self.db.tpl.delete(tplid)
+        referer = self.request.headers.get('referer', '/my/')
+        self.redirect(referer)
+
 class PublicTPLHandler(BaseHandler):
     def get(self):
         tpls = self.db.tpl.list(userid=None, limit=None, fields=('id', 'siteurl', 'sitename', 'disabled', 'lock', 'last_success', 'ctime', 'mtime', 'fork'))
@@ -67,5 +83,6 @@ class PublicTPLHandler(BaseHandler):
 handlers = [
         ('/tpl/(\d+)/push', TPLPushHandler),
         ('/tpl/(\d+)/var', TPLVarHandler),
+        ('/tpl/(\d+)/del', TPLDelHandler),
         ('/tpls/public', PublicTPLHandler),
         ]

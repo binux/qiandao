@@ -59,6 +59,9 @@ class TPLDB(BaseDB):
         for tpl in self._select2dic(what=fields, where='id=%s', where_values=(id, )):
             return tpl
 
+    def delete(self, id):
+        self._delete(where="id=%s", where_values=(id, ))
+
     def list(self, fields=None, limit=100, **kwargs):
         where = '1=1'
         where_values = []

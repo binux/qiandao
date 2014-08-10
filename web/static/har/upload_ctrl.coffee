@@ -7,6 +7,12 @@ define (require, exports, module) ->
   analysis = require '/static/har/analysis'
   utils = require '/static/utils'
 
+  remoteload = () ->
+    for each in [/\/har\/edit\/(\d+)/, /\/push\/\d+\/view/, /\/tpl\/\d+\/edit/, /\/tpl\/\d+\/view/]
+      if location.pathname.match(each)
+        return true
+    return false
+
   angular.module('upload_ctrl', []).
     controller('UploadCtrl', ($scope, $rootScope, $http) ->
       element = angular.element('#upload-har')
@@ -39,7 +45,7 @@ define (require, exports, module) ->
           $scope.alert(data)
           element.find('button').button('reset')
         )
-      if not $scope.local_har and (location.pathname.match(/\/har\/edit\/(\d+)/) or location.pathname.match(/\/push\/\d+\/view/))
+      if not $scope.local_har and remoteload()
         $scope.load_remote(location.href)
 
       $scope.load_file = (data) ->
@@ -69,7 +75,7 @@ define (require, exports, module) ->
         utils.storage.del('har_filename')
 
         $scope.local_har = undefined
-        if not $scope.local_har and (location.pathname.match(/\/har\/edit\/(\d+)/) or location.pathname.match(/\/push\/\d+\/view/))
+        if not $scope.local_har and remoteload()
           $scope.load_remote(location.href)
 
       $scope.upload = ->

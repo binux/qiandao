@@ -124,7 +124,8 @@ class HARSave(BaseHandler):
             })
 
 handlers = [
-        (r'/har/edit/?(\d+)?', HAREditor),
+        (r'/tpl/(\d+)/edit', HAREditor),
+        (r'/har/edit', HAREditor),
         (r'/har/test', HARTest),
         (r'/har/save/?(\d+)?', HARSave),
         ]

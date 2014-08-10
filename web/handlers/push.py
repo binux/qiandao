@@ -160,7 +160,9 @@ class PushActionHandler(BaseHandler):
     def accept(self, pr):
         tplobj = self.db.tpl.get(pr['from_tplid'], fields=('id', 'userid', 'tpl', 'variables', 'sitename', 'siteurl', 'banner', 'interval'))
         if not tplobj:
-            raise Exception('from tpl missing.')
+            self.cancel(pr)
+            raise HTTPError(404)
+
         # re-encrypt
         tpl = self.db.user.decrypt(pr['from_userid'], tplobj['tpl'])
         har = self.db.user.encrypt(pr['to_userid'], tpl2har(tpl))
