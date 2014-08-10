@@ -24,6 +24,7 @@ class LoginHandler(BaseHandler):
         next = self.get_argument('next', None)
         if not email or not password:
             self.render('login.html', password_error=u'请输入用户名和密码', email=email)
+            return
 
         if self.db.user.challenge(email, password):
             user = self.db.user.get(email=email, fields=('id', 'email', 'nickname', 'role'))
@@ -35,9 +36,11 @@ class LoginHandler(BaseHandler):
             self.db.user.mod(user['id'], atime=time.time(), aip=self.ip2int)
             if not next:
                 self.redirect('/my')
+                return
         else:
             self.db.redis.evil(self.ip, +5)
             self.render('login.html', password_error=u'不存在此邮箱或密码错误', email=email)
+            return
 
 class LogoutHandler(BaseHandler):
     def get(self):
