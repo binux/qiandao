@@ -113,7 +113,7 @@
           id: $scope.id,
           har: $scope.har,
           tpl: (function() {
-            var _i, _len, _ref, _ref1, _results;
+            var _i, _len, _ref, _ref1, _ref2, _results;
             _ref = $scope.har.log.entries;
             _results = [];
             for (_i = 0, _len = _ref.length; _i < _len; _i++) {
@@ -153,7 +153,8 @@
                       }
                       return _results1;
                     })(),
-                    data: (_ref1 = entry.request.postData) != null ? _ref1.text : void 0
+                    data: (_ref1 = entry.request.postData) != null ? _ref1.text : void 0,
+                    mimeType: (_ref2 = entry.request.postData) != null ? _ref2.mimeType : void 0
                   },
                   rule: {
                     success_asserts: entry.success_asserts,

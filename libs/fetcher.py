@@ -33,7 +33,9 @@ class Fetcher(object):
         def _render(obj, key):
             if not obj.get(key):
                 return
-            if key in ('url', 'data'):
+            if key == 'url':
+                obj[key] = Template(obj[key]).render(**env_encoded)
+            elif key == 'data' and obj.get('mimeType', '').lower() == 'application/x-www-form-urlencoded':
                 obj[key] = Template(obj[key]).render(**env_encoded)
             else:
                 obj[key] = Template(obj[key]).render(**env)

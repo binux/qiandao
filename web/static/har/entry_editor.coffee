@@ -110,6 +110,7 @@ define (require, exports, module) ->
           headers: ({name: h.name, value: h.value} for h in $scope.entry.request.headers when h.checked)
           cookies: ({name: c.name, value: c.value} for c in $scope.entry.request.cookies when c.checked)
           data: $scope.entry.request.postData?.text
+          mimeType: $scope.entry.request.postData?.mimeType
         rule:
           success_asserts: $scope.entry.success_asserts
           failed_asserts: $scope.entry.failed_asserts
@@ -147,7 +148,8 @@ define (require, exports, module) ->
         if not from
           return null
         else if from == 'content'
-          if not (content = $scope.preview.response.content).text
+          content = $scope.preview.response?.content
+          if not content? or not content.text?
             return null
           if not content.decoded
             content.decoded = atob(content.text)

@@ -128,7 +128,7 @@
         return $sce.trustAsHtml(string.replace(re, '<span class="label label-primary">$&</span>'));
       };
       return $scope.do_test = function() {
-        var c, h, _ref;
+        var c, h, _ref, _ref1;
         angular.element('.do-test').button('loading');
         $http.post('/har/test', {
           request: {
@@ -164,7 +164,8 @@
               }
               return _results;
             })(),
-            data: (_ref = $scope.entry.request.postData) != null ? _ref.text : void 0
+            data: (_ref = $scope.entry.request.postData) != null ? _ref.text : void 0,
+            mimeType: (_ref1 = $scope.entry.request.postData) != null ? _ref1.mimeType : void 0
           },
           rule: {
             success_asserts: $scope.entry.success_asserts,
@@ -198,12 +199,13 @@
           return $scope.alert(data);
         });
         return $scope.preview_match = function(re, from) {
-          var content, data, error, header, m, _i, _len, _ref1;
+          var content, data, error, header, m, _i, _len, _ref2, _ref3;
           data = null;
           if (!from) {
             return null;
           } else if (from === 'content') {
-            if (!(content = $scope.preview.response.content).text) {
+            content = (_ref2 = $scope.preview.response) != null ? _ref2.content : void 0;
+            if ((content == null) || (content.text == null)) {
               return null;
             }
             if (!content.decoded) {
@@ -214,9 +216,9 @@
             data = '' + $scope.preview.response.status;
           } else if (from.indexOf('header-')) {
             from = from.slice(7);
-            _ref1 = $scope.preview.response.headers;
-            for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
-              header = _ref1[_i];
+            _ref3 = $scope.preview.response.headers;
+            for (_i = 0, _len = _ref3.length; _i < _len; _i++) {
+              header = _ref3[_i];
               if (header.name.toLowerCase() === from) {
                 data = header.value;
               }

@@ -142,7 +142,7 @@
 
 
       <!-- preview-headers -->
-      <div class="modal-body" ng-show="panel=='preview-headers'">
+      <div class="modal-body" ng-if="preview" ng-show="panel=='preview-headers'">
         <dl class="dl-horizontal">
           <dt>Request URL</dt>
           <dd>{{ preview.request.url }}</dd>
@@ -190,7 +190,7 @@
 
 
         <!-- preview -->
-        <div class="modal-body panel-preview" ng-show="panel=='preview'">
+        <div class="modal-body panel-preview" ng-if="preview" ng-show="panel=='preview'">
           <div>
             <span>Status Code:</span>
             <span class="label {{ status_label(preview.response.status) }}">{{ preview.response.status }}</span>

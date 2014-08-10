@@ -97,6 +97,7 @@ define (require, exports, module) ->
               headers: ({name: h.name, value: h.value} for h in entry.request.headers when h.checked)
               cookies: ({name: c.name, value: c.value} for c in entry.request.cookies when c.checked)
               data: entry.request.postData?.text
+              mimeType: entry.request.postData?.mimeType
             rule:
               success_asserts: entry.success_asserts
               failed_asserts: entry.failed_asserts
