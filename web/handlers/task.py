@@ -48,7 +48,7 @@ class TaskNewHandler(BaseHandler):
         if tested:
             self.db.task.mod(taskid, next=time.time() + 24*60*60)
         else:
-            self.db.task.mod(taskid, next=time.time() + 2*60)
+            self.db.task.mod(taskid, next=time.time() + 15)
 
         referer = self.request.headers.get('referer', '/my/')
         self.redirect(referer)
