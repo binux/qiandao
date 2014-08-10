@@ -15,7 +15,9 @@ from tornado.web import HTTPError
 import config
 from libs import utils
 
-__ALL__ = ['HTTPError', 'BaseHandler', 'BaseWebSocket', 'BaseUIModule', ]
+logger = logging.getLogger('qiandao.handler')
+
+__ALL__ = ['HTTPError', 'BaseHandler', 'BaseWebSocket', 'BaseUIModule', 'logger', ]
 
 class BaseHandler(tornado.web.RequestHandler):
     application_export = set(('db', ))

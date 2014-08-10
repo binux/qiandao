@@ -87,7 +87,7 @@ class RegisterHandler(BaseHandler):
             <p>您也可以不验证邮箱继续使用签到的服务，我们不会继续给您发送任何邮件。</p>
             """ % (verified_code, verified_code), async=True)
         except Exception as e:
-            logging.exception(e)
+            logger.exception(e)
 
         self.set_secure_cookie('user', umsgpack.packb(user))
         self.redirect('/my')
@@ -110,7 +110,7 @@ class VerifyHandler(BaseHandler):
                     )
             self.finish('验证成功')
         except Exception as e:
-            logging.error(e)
+            logger.error(e)
             self.set_status(400)
             self.finish('验证失败')
 
