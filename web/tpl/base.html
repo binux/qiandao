@@ -14,7 +14,7 @@
       seajs.config({
         base: "/static/components",
         alias: {
-          "jquery": "jquery/dist/jquery",
+          "jquery": "jquery/dist/jquery.min",
           "bootstrap": "bootstrap/dist/js/bootstrap.min",
           "angular": "angularjs/angular.min",
         }
@@ -23,8 +23,9 @@
     {% block head %}
     <link href="{{ static_url('components/bootstrap/dist/css/bootstrap.min.css') }}" rel="stylesheet" type="text/css">
     <script>
-      seajs.use('jquery');
-      seajs.use('bootstrap');
+      seajs.use('jquery', function() {
+        seajs.use('bootstrap');
+      });
     </script>
     {% endblock %}
     <link href="{{ static_url('base.css') }}" rel="stylesheet" type="text/css">
