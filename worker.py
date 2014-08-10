@@ -199,11 +199,11 @@ class MainWorker(object):
                 try:
                     _ = yield utils.send_mail(to=user['email'], subject=u"%s - 签到失败" % tpl['sitename'],
                     text=u"""
-                    您的 %(sitename)s [ %(siteurl)s ] 签到任务，执行 %(cnt)d次 失败。%(disable)s
-                    
-                    下一次重试在一天之后，为防止签到中断，给您发送这份邮件。
+您的 %(sitename)s [ %(siteurl)s ] 签到任务，执行 %(cnt)d次 失败。%(disable)s
 
-                    访问： http://qiandao.today/task/%(taskid)s/log 查看日志。
+下一次重试在一天之后，为防止签到中断，给您发送这份邮件。
+
+访问： http://qiandao.today/task/%(taskid)s/log 查看日志。
                     """ % dict(
                         sitename = tpl['sitename'] or u'未命名',
                         siteurl = tpl['siteurl'] or u'',

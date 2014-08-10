@@ -20,7 +20,10 @@ class TaskNewHandler(BaseHandler):
         tpls += list(self.db.tpl.list(userid=None, fields=fields))
 
         if not tplid:
-            tplid = tpls[0]['id']
+            for tpl in tpls:
+                if tpl.get('id'):
+                    tplid = tpl['id']
+                    break
         tplid = int(tplid)
 
         tpl = self.db.tpl.get(tplid, fields=('userid', 'variables'))
