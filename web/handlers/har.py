@@ -15,8 +15,8 @@ from base import *
 from libs.fetcher import Fetcher
 
 class HAREditor(BaseHandler):
-    def get(self, id):
-        return self.render('har/editor.html')
+    def get(self, id=None):
+        return self.render('har/editor.html', tplid=id)
 
     @tornado.web.authenticated
     def post(self, id):
@@ -36,14 +36,14 @@ class HAREditor(BaseHandler):
         tpl['har'] = self.db.user.decrypt(tpl['userid'], tpl['har'])
         tpl['variables'] = json.loads(tpl['variables'])
 
-        self.db.tpl.mod(id, atime=time.time())
+        #self.db.tpl.mod(id, atime=time.time())
         self.finish(dict(
             filename = tpl['sitename'] or '未命名模板',
             har = tpl['har'],
             env = dict((x, '') for x in tpl['variables']),
             sitename = tpl['sitename'],
             siteurl = tpl['siteurl'],
-            readonly = tpl['lock'],
+            readonly = (tpl['userid'] != user['id']) or tpl['lock'],
             ))
 
 class HARTest(BaseHandler):
@@ -125,7 +125,10 @@ class HARSave(BaseHandler):
 
 handlers = [
         (r'/tpl/(\d+)/edit', HAREditor),
+        (r'/tpl/(\d+)/save', HARSave),
+
         (r'/har/edit', HAREditor),
-        (r'/har/test', HARTest),
         (r'/har/save/?(\d+)?', HARSave),
+
+        (r'/har/test', HARTest),
         ]

@@ -114,7 +114,7 @@ define (require, exports, module) ->
           utils.storage.del('har_har')
           utils.storage.del('har_env')
           save_btn.button('reset')
-          pathname = "/har/edit/#{data.id}"
+          pathname = "/tpl/#{data.id}/edit"
           if pathname != location.pathname
             location.pathname = pathname
         )

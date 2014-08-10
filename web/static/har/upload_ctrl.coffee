@@ -8,7 +8,7 @@ define (require, exports, module) ->
   utils = require '/static/utils'
 
   remoteload = () ->
-    for each in [/\/har\/edit\/(\d+)/, /\/push\/\d+\/view/, /\/tpl\/\d+\/edit/, /\/tpl\/\d+\/view/]
+    for each in [/\/har\/edit\/(\d+)/, /\/push\/\d+\/view/, /\/tpl\/\d+\/edit/]
       if location.pathname.match(each)
         return true
     return false

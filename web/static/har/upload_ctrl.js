@@ -6,7 +6,7 @@
     utils = require('/static/utils');
     remoteload = function() {
       var each, _i, _len, _ref;
-      _ref = [/\/har\/edit\/(\d+)/, /\/push\/\d+\/view/, /\/tpl\/\d+\/edit/, /\/tpl\/\d+\/view/];
+      _ref = [/\/har\/edit\/(\d+)/, /\/push\/\d+\/view/, /\/tpl\/\d+\/edit/];
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         each = _ref[_i];
         if (location.pathname.match(each)) {

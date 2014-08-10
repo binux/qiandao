@@ -9,6 +9,9 @@
 {% endblock %}
 
 {% block body %}
+<script>
+  TPLID={{ tplid or 0 }};
+</script>
 {% raw %}
 <div class="container">
   <div class="row" ng-controller="EntryList">
