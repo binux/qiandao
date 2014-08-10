@@ -9,19 +9,23 @@ import re
 import base64
 import logging
 import urlparse
+from io import BytesIO
+from datetime import datetime
+
+import pycurl
+from jinja2 import Template
 from tornado import gen, concurrent, httpclient
 
-from datetime import datetime
-from jinja2 import Template
+import config
 from libs import cookie_utils
 
 logger = logging.getLogger('qiandao.fetcher')
 
 class Fetcher(object):
-    def __init__(self):
-        httpclient.AsyncHTTPClient.configure(
-                "tornado.curl_httpclient.CurlAsyncHTTPClient")
+    def __init__(self, download_size_limit=config.download_size_limit):
+        httpclient.AsyncHTTPClient.configure('tornado.curl_httpclient.CurlAsyncHTTPClient')
         self.client = httpclient.AsyncHTTPClient()
+        self.download_size_limit = download_size_limit
 
     @staticmethod
     def render(request, env):
@@ -41,7 +45,7 @@ class Fetcher(object):
         return request
 
     @staticmethod
-    def build_request(obj):
+    def build_request(obj, download_size_limit=config.download_size_limit):
 
         env = obj['env']
         rule = obj['rule']
@@ -53,6 +57,17 @@ class Fetcher(object):
         cookies = dict((e['name'], e['value']) for e in request['cookies'])
         data = request.get('data')
 
+        def set_size_limit_callback(curl):
+            def size_limit(download_size, downloaded, upload_size, uploaded):
+                if download_size and download_size > download_size_limit:
+                    return 1
+                if downloaded > download_size_limit:
+                    return 1
+                return 0
+            curl.setopt(pycurl.NOPROGRESS, 0)
+            curl.setopt(pycurl.PROGRESSFUNCTION, size_limit)
+            return curl
+
         req = httpclient.HTTPRequest(
                 url = url,
                 method = method,
@@ -63,6 +78,7 @@ class Fetcher(object):
                 decompress_response = True,
                 allow_nonstandard_methods = True,
                 allow_ipv6 = True,
+                prepare_curl_callback = set_size_limit_callback,
                 )
 
         if isinstance(env['session'], cookie_utils.CookieSession):
@@ -116,7 +132,6 @@ class Fetcher(object):
                                 urlparse.parse_qsl(request.body)]
 
             return ret
-
 
         def build_response(response):
             cookies = cookie_utils.CookieSession()
@@ -211,7 +226,7 @@ class Fetcher(object):
           }
         }
         """
-        req, rule, env = self.build_request(obj)
+        req, rule, env = self.build_request(obj, self.download_size_limit)
 
         try:
             response = yield self.client.fetch(req)
