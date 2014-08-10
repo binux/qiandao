@@ -19,6 +19,9 @@ class LoginHandler(BaseHandler):
         email = self.get_argument('email')
         password = self.get_argument('password')
         next = self.get_argument('next', None)
+        if not email or not password:
+            self.render('login.html', password_error=u'请输入用户名和密码', email=email)
+
         if self.db.user.challenge(email, password):
             user = self.db.user.get(email=email, fields=('id', 'email', 'nickname', 'role'))
             if not user:

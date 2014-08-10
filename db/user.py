@@ -116,7 +116,7 @@ class UserDB(BaseDB):
             where = 'email = %s'
             value = (email, )
         else:
-            raise UserDBException('get user need id or email')
+            raise self.UserDBException('get user need id or email')
 
         for user in self._select2dic(what=fields, where=where, where_values=value):
             return user
