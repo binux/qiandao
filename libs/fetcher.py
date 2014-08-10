@@ -61,7 +61,11 @@ class Fetcher(object):
         url = request['url']
         headers = dict((e['name'], e['value']) for e in request['headers'])
         cookies = dict((e['name'], e['value']) for e in request['cookies'])
-        data = request.get('data', '')
+        if method == 'GET':
+            data = None
+        elif method == 'POST':
+            data = request.get('data', '')
+        data = request.get('data')
 
         def set_size_limit_callback(curl):
             def size_limit(download_size, downloaded, upload_size, uploaded):
