@@ -142,27 +142,39 @@
       return har;
     };
     post_data = function(har) {
-      var entry, key, result, value, _i, _len, _ref, _ref1, _ref2, _ref3;
+      var entry, error, key, result, value, _i, _len, _ref, _ref1, _ref2, _ref3, _ref4;
       _ref = har.log.entries;
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         entry = _ref[_i];
-        if (((_ref1 = entry.request.postData) != null ? _ref1.text : void 0) && ((_ref2 = entry.request.postData) != null ? _ref2.mimeType : void 0) === "application/x-www-form-urlencoded") {
-          result = [];
-          _ref3 = utils.querystring_parse(entry.request.postData.text);
-          for (key in _ref3) {
-            value = _ref3[key];
+        if (!((_ref1 = entry.request.postData) != null ? _ref1.text : void 0)) {
+          continue;
+        }
+        if (!((_ref2 = entry.request.postData) != null ? (_ref3 = _ref2.mimeType) != null ? _ref3.toLowerCase().indexOf("application/x-www-form-urlencoded") : void 0 : void 0) === 0) {
+          entry.request.postData.params = void 0;
+          continue;
+        }
+        result = [];
+        try {
+          _ref4 = utils.querystring_parse(entry.request.postData.text);
+          for (key in _ref4) {
+            value = _ref4[key];
             result.push({
               name: key,
               value: value
             });
           }
           entry.request.postData.params = result;
+        } catch (_error) {
+          error = _error;
+          console.log(error);
+          entry.request.postData.params = void 0;
+          continue;
         }
       }
       return har;
     };
     replace_variables = function(har, variables) {
-      var changed, entry, k, key, query, url, v, value, variables_vk, _i, _len, _ref, _ref1;
+      var changed, each, entry, error, k, key, obj, query, url, v, value, variables_vk, _i, _j, _k, _len, _len1, _len2, _ref, _ref1, _ref2, _ref3, _ref4;
       variables_vk = {};
       for (k in variables) {
         v = variables[k];
@@ -170,11 +182,15 @@
           variables_vk[v] = k;
         }
       }
-      console.log(variables_vk, variables);
       _ref = har.log.entries;
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         entry = _ref[_i];
-        url = utils.url_parse(entry.request.url, true);
+        try {
+          url = utils.url_parse(entry.request.url, true);
+        } catch (_error) {
+          error = _error;
+          continue;
+        }
         changed = false;
         _ref1 = url.query;
         for (key in _ref1) {
@@ -190,6 +206,27 @@
             url.search = "?" + query;
           }
           entry.request.url = utils.url_unparse(url);
+          entry.request.queryString = utils.dict2list(url.query);
+        }
+        _ref2 = har.log.entries;
+        for (_j = 0, _len1 = _ref2.length; _j < _len1; _j++) {
+          entry = _ref2[_j];
+          if (((_ref3 = entry.request.postData) != null ? _ref3.params : void 0) == null) {
+            continue;
+          }
+          changed = false;
+          _ref4 = entry.request.postData.params;
+          for (_k = 0, _len2 = _ref4.length; _k < _len2; _k++) {
+            each = _ref4[_k];
+            if (each.value in variables_vk) {
+              each.value = "{{ " + variables_vk[each.value] + " }}";
+              changed = true;
+            }
+          }
+          if (changed) {
+            obj = utils.list2dict(entry.request.postData.params);
+            entry.request.postData.text = utils.querystring_unparse_with_variables(obj);
+          }
         }
       }
       return har;
@@ -210,7 +247,7 @@
         if (variables == null) {
           variables = {};
         }
-        return replace_variables(post_data(xhr(mime_type(analyze_cookies(headers(sort(rm_content(har))))))), variables);
+        return replace_variables(xhr(mime_type(analyze_cookies(headers(sort(post_data(rm_content(har))))))), variables);
       },
       recommend_default: function(har) {
         var domain, entry, _i, _len, _ref, _ref1, _ref2;
@@ -321,7 +358,7 @@
       },
       variables: function(string) {
         var m, re, _results;
-        re = /{{\s*([\w]+?)\s*}}/g;
+        re = /{{\s*([\w]+)[^}]*?\s*}}/g;
         _results = [];
         while (m = re.exec(string)) {
           _results.push(m[1]);

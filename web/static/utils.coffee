@@ -34,10 +34,10 @@ define (require) ->
 
       replace_list = {}
       for key, value of obj
-        re = /{{\s*(\w+?)\s*}}/g
+        re = /{{\s*([\w]+)[^}]*?\s*}}/g
         while m = re.exec(key)
           replace_list[encodeURIComponent(m[0])] = m[0]
-        re = /{{\s*(\w+?)\s*}}/g
+        re = /{{\s*([\w]+)[^}]*?\s*}}/g
         while m = re.exec(value)
           replace_list[encodeURIComponent(m[0])] = m[0]
       for key, value of replace_list

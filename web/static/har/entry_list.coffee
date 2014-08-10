@@ -84,8 +84,11 @@ define (require, exports, module) ->
           for entry in $scope.har.log.entries when entry.checked
             return entry)()
 
-        $scope.sitename ?= first_entry and utils.get_domain(first_entry.request.url).split('.')[0]
-        $scope.siteurl ?= first_entry and utils.url_parse(first_entry.request.url).host
+        try
+          $scope.sitename ?= first_entry and utils.get_domain(first_entry.request.url).split('.')[0]
+          $scope.siteurl ?= first_entry and utils.url_parse(first_entry.request.url).host
+        catch error
+          null
 
       $scope.save = () ->
         data = {

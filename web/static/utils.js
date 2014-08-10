@@ -43,11 +43,11 @@
         replace_list = {};
         for (key in obj) {
           value = obj[key];
-          re = /{{\s*(\w+?)\s*}}/g;
+          re = /{{\s*([\w]+)[^}]*?\s*}}/g;
           while (m = re.exec(key)) {
             replace_list[encodeURIComponent(m[0])] = m[0];
           }
-          re = /{{\s*(\w+?)\s*}}/g;
+          re = /{{\s*([\w]+)[^}]*?\s*}}/g;
           while (m = re.exec(value)) {
             replace_list[encodeURIComponent(m[0])] = m[0];
           }

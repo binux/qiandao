@@ -6,6 +6,7 @@
 # Created on 2014-08-06 11:55:41
 
 import re
+import urllib
 import base64
 import logging
 import urlparse
@@ -29,8 +30,13 @@ class Fetcher(object):
 
     @staticmethod
     def render(request, env):
+        env_encoded = dict((k, urllib.quote_plus(v.encode('utf8') if isinstance(v, unicode) else v)) for k, v in env.iteritems())
         def _render(obj, key):
-            if obj.get(key):
+            if not obj.get(key):
+                return
+            if key in ('url', 'data'):
+                obj[key] = Template(obj[key]).render(**env_encoded)
+            else:
                 obj[key] = Template(obj[key]).render(**env)
 
         _render(request, 'method')
@@ -122,8 +128,8 @@ class Fetcher(object):
                     bodySize = len(request.body) if request.body else 0,
                     )
             if request.body:
-                ret['postdata'] = dict(
-                        mimetype = request.headers.get('content-type'),
+                ret['postData'] = dict(
+                        mimeType = request.headers.get('content-type'),
                         text = request.body,
                         )
                 if ret['postData']['mimeType'] == 'application/x-www-form-urlencoded':

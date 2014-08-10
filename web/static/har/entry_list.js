@@ -89,7 +89,7 @@
         return analysis.recommend($scope.har);
       };
       $scope.pre_save = function() {
-        var first_entry;
+        var error, first_entry;
         first_entry = (function() {
           var entry, _i, _len, _ref;
           _ref = $scope.har.log.entries;
@@ -100,10 +100,15 @@
             }
           }
         })();
-        if ($scope.sitename == null) {
-          $scope.sitename = first_entry && utils.get_domain(first_entry.request.url).split('.')[0];
+        try {
+          if ($scope.sitename == null) {
+            $scope.sitename = first_entry && utils.get_domain(first_entry.request.url).split('.')[0];
+          }
+          return $scope.siteurl != null ? $scope.siteurl : $scope.siteurl = first_entry && utils.url_parse(first_entry.request.url).host;
+        } catch (_error) {
+          error = _error;
+          return null;
         }
-        return $scope.siteurl != null ? $scope.siteurl : $scope.siteurl = first_entry && utils.url_parse(first_entry.request.url).host;
       };
       return $scope.save = function() {
         var alert_elem, c, data, entry, h, save_btn;

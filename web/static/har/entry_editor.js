@@ -61,39 +61,39 @@
         return angular.element('.panel-test .alert').hide();
       };
       $scope.$watch('entry.request.url', function() {
-        var key, queryString, value;
+        var error, key, queryString, value;
         if ($scope.entry == null) {
           return;
         }
-        queryString = (function() {
-          var _ref, _results;
-          _ref = utils.url_parse($scope.entry.request.url, true).query;
-          _results = [];
-          for (key in _ref) {
-            value = _ref[key];
-            _results.push({
-              name: key,
-              value: value
-            });
-          }
-          return _results;
-        })();
+        try {
+          queryString = (function() {
+            var _ref, _results;
+            _ref = utils.url_parse($scope.entry.request.url, true).query;
+            _results = [];
+            for (key in _ref) {
+              value = _ref[key];
+              _results.push({
+                name: key,
+                value: value
+              });
+            }
+            return _results;
+          })();
+        } catch (_error) {
+          error = _error;
+          queryString = [];
+        }
         if (!angular.equals(queryString, $scope.entry.request.queryString)) {
           return $scope.entry.request.queryString = queryString;
         }
       });
       $scope.$watch('entry.request.queryString', (function() {
-        var each, query, url, _i, _len, _ref;
+        var query, url;
         if ($scope.entry == null) {
           return;
         }
         url = utils.url_parse($scope.entry.request.url);
-        query = {};
-        _ref = $scope.entry.request.queryString;
-        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-          each = _ref[_i];
-          query[each.name] = each.value;
-        }
+        query = utils.list2dict($scope.entry.request.queryString);
         query = utils.querystring_unparse_with_variables(query);
         if (query) {
           url.search = "?" + query;
@@ -104,16 +104,11 @@
         }
       }), true);
       $scope.$watch('entry.request.postData.params', (function() {
-        var obj, param, _i, _len, _ref, _ref1;
-        if (((_ref = $scope.entry) != null ? _ref.postData : void 0) == null) {
+        var obj, _ref, _ref1;
+        if (((_ref = $scope.entry) != null ? (_ref1 = _ref.request) != null ? _ref1.postData : void 0 : void 0) == null) {
           return;
         }
-        obj = {};
-        _ref1 = $scope.entry.request.postData.params;
-        for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
-          param = _ref1[_i];
-          obj[param.name] = param.value;
-        }
+        obj = utils.list2dict($scope.entry.request.postData.params);
         return $scope.entry.request.postData.text = utils.querystring_unparse_with_variables(obj);
       }), true);
       $scope["delete"] = function(hashKey, array) {
@@ -132,7 +127,7 @@
           place_holder = '';
         }
         string = string || place_holder;
-        re = /{{\s*([\w]+?)\s*}}/g;
+        re = /{{\s*([\w]+)[^}]*?\s*}}/g;
         return $sce.trustAsHtml(string.replace(re, '<span class="label label-primary">$&</span>'));
       };
       return $scope.do_test = function() {

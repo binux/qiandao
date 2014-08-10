@@ -24,7 +24,7 @@ define (require, exports, module) ->
       $scope.local_har = utils.storage.get('har_filename') if utils.storage.get('har_har')?
 
       $scope.alert = (message) ->
-        element.find('.alert').text(message).show()
+        element.find('.alert-danger').text(message).show()
 
       $scope.loaded = (loaded) ->
         $scope.is_loaded = true
@@ -90,12 +90,7 @@ define (require, exports, module) ->
         reader.onload = (ev) ->
           $scope.$apply ->
             $scope.uploaded = true
-            try
-              $scope.load_file(angular.fromJson(ev.target.result))
-            catch error
-              console.log error
-              $scope.alert 'HAR 格式错误'
-            finally
-              element.find('button').button('reset')
+            $scope.load_file(angular.fromJson(ev.target.result))
+            element.find('button').button('reset')
         reader.readAsText $scope.file
     )

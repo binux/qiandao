@@ -90,11 +90,20 @@ define (require, exports, module) ->
 
   post_data = (har) ->
     for entry in har.log.entries
-      if entry.request.postData?.text and entry.request.postData?.mimeType == "application/x-www-form-urlencoded"
-        result = []
+      if not entry.request.postData?.text
+        continue
+      if not entry.request.postData?.mimeType?.toLowerCase().indexOf("application/x-www-form-urlencoded") == 0
+        entry.request.postData.params = undefined
+        continue
+      result = []
+      try
         for key, value of utils.querystring_parse(entry.request.postData.text)
           result.push({name: key, value: value})
         entry.request.postData.params = result
+      catch error
+        console.log(error)
+        entry.request.postData.params = undefined
+        continue
     return har
 
   replace_variables = (har, variables) ->
@@ -102,11 +111,14 @@ define (require, exports, module) ->
     for k, v of variables
       if k?.length and v?.length
         variables_vk[v] = k
-    console.log variables_vk, variables
+    #console.log variables_vk, variables
 
     # url
     for entry in har.log.entries
-      url = utils.url_parse(entry.request.url, true)
+      try
+        url = utils.url_parse(entry.request.url, true)
+      catch error
+        continue
       changed = false
       for key, value of url.query
         if value of variables_vk
@@ -116,6 +128,20 @@ define (require, exports, module) ->
         query = utils.querystring_unparse_with_variables(url.query)
         url.search = "?#{query}" if query
         entry.request.url = utils.url_unparse(url)
+        entry.request.queryString = utils.dict2list(url.query)
+
+      # post data
+      for entry in har.log.entries
+        if not entry.request.postData?.params?
+          continue
+        changed = false
+        for each in entry.request.postData.params
+          if each.value of variables_vk
+            each.value = "{{ #{variables_vk[each.value]} }}"
+            changed = true
+        if changed
+          obj = utils.list2dict(entry.request.postData.params)
+          entry.request.postData.text = utils.querystring_unparse_with_variables(obj)
 
     return har
 
@@ -127,7 +153,7 @@ define (require, exports, module) ->
 
   exports =
     analyze: (har, variables={}) ->
-      replace_variables((post_data xhr mime_type analyze_cookies headers sort rm_content har), variables)
+      replace_variables((xhr mime_type analyze_cookies headers sort post_data rm_content har), variables)
 
     recommend_default: (har) ->
       domain = null
@@ -184,7 +210,7 @@ define (require, exports, module) ->
       return har
 
     variables: (string) ->
-      re = /{{\s*([\w]+?)\s*}}/g
+      re = /{{\s*([\w]+)[^}]*?\s*}}/g
       while m = re.exec(string)
         m[1]
 

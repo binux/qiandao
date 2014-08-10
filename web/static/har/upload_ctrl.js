@@ -20,7 +20,7 @@
         $scope.local_har = utils.storage.get('har_filename');
       }
       $scope.alert = function(message) {
-        return element.find('.alert').text(message).show();
+        return element.find('.alert-danger').text(message).show();
       };
       $scope.loaded = function(loaded) {
         $scope.is_loaded = true;
@@ -90,17 +90,9 @@
         reader = new FileReader();
         reader.onload = function(ev) {
           return $scope.$apply(function() {
-            var error;
             $scope.uploaded = true;
-            try {
-              return $scope.load_file(angular.fromJson(ev.target.result));
-            } catch (_error) {
-              error = _error;
-              console.log(error);
-              return $scope.alert('HAR 格式错误');
-            } finally {
-              element.find('button').button('reset');
-            }
+            $scope.load_file(angular.fromJson(ev.target.result));
+            return element.find('button').button('reset');
           });
         };
         return reader.readAsText($scope.file);
