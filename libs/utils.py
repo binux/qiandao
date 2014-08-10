@@ -50,14 +50,10 @@ def format_date(date, gmt_offset=-8*60, relative=True, shorter=False, full_forma
         date = datetime.datetime.utcfromtimestamp(date)
     now = datetime.datetime.utcnow()
     if date > now:
-        #if relative and (date - now).seconds < 60:
-            ## Due to click skew, things are some things slightly
-            ## in the future. Round timestamps in the immediate
-            ## future down to now in relative mode.
-            #date = now
-        #else:
-            ## Otherwise, future dates always use the full format.
-            full_format = True
+        later = u"后"
+        date, now = now, date
+    else:
+        later = u"前"
     local_date = date - datetime.timedelta(minutes=gmt_offset)
     local_now = now - datetime.timedelta(minutes=gmt_offset)
     local_yesterday = local_now - datetime.timedelta(hours=24)
@@ -69,34 +65,31 @@ def format_date(date, gmt_offset=-8*60, relative=True, shorter=False, full_forma
     if not full_format:
         if relative and days == 0:
             if seconds < 50:
-                return ("1 second ago" if seconds == 1 else \
-                        "%(seconds)d seconds ago") % {"seconds": seconds}
+                return u"%(seconds)d 秒" % {"seconds": seconds} + later
 
             if seconds < 50 * 60:
                 minutes = round(seconds / 60.0)
-                return ("1 minute ago" if minutes == 1 else \
-                        "%(minutes)d minutes ago") % {"minutes": minutes}
+                return u"%(minutes)d 分钟" % {"minutes": minutes} + later
 
             hours = round(seconds / (60.0 * 60))
-            return ("1 hour ago" if hours else \
-                    "%(hours)d hours ago" ) % {"hours": hours}
+            return u"%(hours)d 小时" % {"hours": hours} + later
 
         if days == 0:
             format = "%(time)s"
         elif days == 1 and local_date.day == local_yesterday.day and \
                 relative:
-            format = "yesterday" if shorter else "yesterday at %(time)s"
-        elif days < 5:
-            format = "%(weekday)s" if shorter else "%(weekday)s at %(time)s"
+            format = u"昨天" if shorter else u"昨天 %(time)s"
+        #elif days < 5:
+            #format = "%(weekday)s" if shorter else "%(weekday)s %(time)s"
         elif days < 334:  # 11mo, since confusing for same month last year
             format = "%(month_name)s-%(day)s" if shorter else \
-                "%(month_name)s-%(day)s at %(time)s"
+                "%(month_name)s-%(day)s %(time)s"
 
     if format is None:
-        format = "%(month_name)s %(day)s, %(year)s" if shorter else \
-            "%(month_name)s %(day)s, %(year)s at %(time)s"
+        format = "%(year)s-%(month_name)s-%(day)s" if shorter else \
+            "%(year)s-%(month_name)s-%(day)s %(time)s"
 
-    str_time = "%d:%02d" % (local_date.hour, local_date.minute)
+    str_time = "%d:%02d:%02d" % (local_date.hour, local_date.minute, local_date.second)
 
     return format % {
         "month_name": local_date.month - 1,
