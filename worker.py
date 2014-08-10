@@ -13,6 +13,7 @@ from tornado import gen
 import db
 import time
 import config
+from libs import utils
 from libs.fetcher import Fetcher
 
 tornado.log.enable_pretty_logging()
@@ -33,24 +34,39 @@ class MainWorker(object):
         self.running = self.run()
         def done(future):
             self.running = None
-            return future.result()
+            success, failed = future.result()
+            if success or failed:
+                logger.info('%d task done. %d success, %d failed' % (success+failed, success, failed))
+            return
         self.running.add_done_callback(done)
 
     @gen.coroutine
     def run(self):
         running = []
+        success = 0
+        failed = 0
         try:
             for task in self.scan():
                 running.append(self.do(task))
                 if len(running) > 50:
-                    logging.info('scaned %d task, waiting...', len(running))
-                    _ = yield running[:10]
+                    logging.debug('scaned %d task, waiting...', len(running))
+                    result = yield running[:10]
+                    for each in result:
+                        if each:
+                            success += 1
+                        else:
+                            failed += 1
                     running = running[10:]
-            logging.info('scaned %d task, waiting...', len(running))
-            _ = yield running
+            logging.debug('scaned %d task, waiting...', len(running))
+            result = yield running
+            for each in result:
+                if each:
+                    success += 1
+                else:
+                    failed += 1
         except Exception as e:
             logging.exception(e)
-        raise gen.Return(None)
+        raise gen.Return((success, failed))
 
     scan_fields = ('id', 'tplid', 'userid', 'init_env', 'env', 'session', 'last_success', 'last_failed', 'success_count', 'failed_count', 'last_failed_count', 'next', 'disabled', )
     def scan(self):
@@ -84,81 +100,98 @@ class MainWorker(object):
 
     @gen.coroutine
     def do(self, task):
-        if task['next'] > time.time():
-            raise gen.Return(False)
+        user = self.db.user.get(task['userid'], fields=('id', 'email', 'email_verified', 'nickname'))
+        tpl = self.db.tpl.get(task['tplid'], fields=('userid', 'tpl', 'interval', 'last_success'))
+
         if task['disabled']:
-            self.db.task.mod(task['id'], next=None)
+            self.db.tasklog.add(task['id'], False, msg='task disabled.')
+            self.db.task.mod(task['id'], next=None, disabled=1)
             raise gen.Return(False)
+
+        if not user:
+            self.db.tasklog.add(task['id'], False, msg='no such user, disabled.')
+            self.db.task.mod(task['id'], next=None, disabled=1)
+            raise gen.Return(False)
+
+        if not tpl:
+            self.db.tasklog.add(task['id'], False, msg='tpl missing, task disabled.')
+            self.db.task.mod(task['id'], next=None, disabled=1)
+            raise gen.Return(False)
+
+        if tpl['userid'] and tpl['userid'] != user['id']:
+            self.db.tasklog.add(task['id'], False, msg='no permission error, task disabled.')
+            self.db.task.mod(task['id'], next=None, disabled=1)
+            raise gen.Return(False)
+
         start = time.time()
-        taskid = task['id']
-        tplid = task['tplid']
-        userid = task['userid']
-        init_env = task['init_env']
-        env = task['env']
-        session = task['session']
-        last_success = task['last_success']
-        last_failed = task['last_failed']
-        success_count = task['success_count']
-        failed_count = task['failed_count']
-        last_failed_count = task['last_failed_count']
-        next = task['next']
-
         try:
-
-            tplobj = self.db.tpl.get(tplid, fields=('userid', 'tpl', 'interval', 'last_success'))
-            if not tplobj:
-                self.db.task.mod(task['id'], next=None, disabled=1)
-                raise gen.Return(False)
-
-            if tplobj['userid'] and tplobj['userid'] != userid:
-                raise Exception('cannot decrypt the tpl, user may not the owner.')
-
-            tpl = self.db.user.decrypt(0 if not tplobj['userid'] else userid, tplobj['tpl'])
-            variables = self.db.user.decrypt(userid, init_env)
-            session = []
+            fetch_tpl = self.db.user.decrypt(0 if not tpl['userid'] else task['userid'], tpl['tpl'])
             env = dict(
-                    variables = variables,
-                    session = session
+                    variables = self.db.user.decrypt(task['userid'], task['init_env']),
+                    session = [],
                     )
 
-            env = yield self.fetch(tpl, env)
+            new_env = yield self.fetch(fetch_tpl, env)
 
-            variables = self.db.user.encrypt(userid, env['variables'])
-            session = self.db.user.encrypt(userid,
-                    env['session'] if isinstance(env['session'], basestring) else env['session'].to_json())
+            variables = self.db.user.encrypt(task['userid'], new_env['variables'])
+            session = self.db.user.encrypt(task['userid'],
+                    new_env['session'] if isinstance(new_env['session'], basestring) else new_env['session'].to_json())
 
             # todo next not mid night
             failed_time_delta = 0
-            for i in range(last_failed_count):
-                failed_time_delta += self.failed_count_to_time(last_failed_count)
-            next = self.fix_next_time(time.time() + (tplobj['interval'] if tplobj['interval'] else 24 * 60 * 60) - failed_time_delta)
+            for i in range(task['last_failed_count']):
+                failed_time_delta += self.failed_count_to_time(task['last_failed_count'])
+            next = self.fix_next_time(
+                    time.time() + (tpl['interval'] if tpl['interval'] else 24 * 60 * 60) - failed_time_delta)
 
-            self.db.tasklog.add(taskid, True)
-            self.db.task.mod(taskid, last_success=time.time(),
-                    last_failed_count=0, success_count=success_count+1,
-                    env=variables, session=session, next=next)
-            if time.time() - (tplobj['last_success'] or 0) > 60 * 60:
+            # success feedback
+            self.db.tasklog.add(task['id'], success=True)
+            self.db.task.mod(task['id'],
+                    last_success=time.time(),
+                    last_failed_count=0,
+                    success_count=task['success_count']+1,
+                    env=variables,
+                    session=session,
+                    mtime = time.time(),
+                    next=next)
+            if time.time() - (tpl['last_success'] or 0) > 60 * 60:
                 self.db.tpl.mod(tplid, last_success=time.time())
-            logger.info('taskid:%d tplid:%d successed! %.4fs', task['id'], task['tplid'], time.time()-start)
-        except Exception as e:
-            logger.error('taskid:%d tplid:%d failed! %s %.4fs', task['id'], task['tplid'], e, time.time()-start)
-            self.db.tasklog.add(task['id'], False, msg=repr(e))
 
-            next_time_delta = self.failed_count_to_time(last_failed_count)
+            logger.info('taskid:%d tplid:%d successed! %.4fs', task['id'], task['tplid'], time.time()-start)
+            raise gen.Return(True)
+
+        except Exception as e:
+            # failed feedback
+
+            next_time_delta = self.failed_count_to_time(task['last_failed_count'])
             if next_time_delta:
+                disabled = False
                 next = time.time() + next_time_delta
             else:
+                _ = yield self.task_failed(task, user, tpl)
+                disabled = True
                 next = None
-                self.task_failed(task)
 
+            self.db.tasklog.add(task['id'], success=False, msg=repr(e))
             self.db.task.mod(task['id'],
                     last_failed=time.time(),
-                    failed_count=task['failed_count']+1, last_failed_count=last_failed_count+1,
+                    failed_count=task['failed_count']+1,
+                    last_failed_count=task['last_failed_count']+1,
+                    disabled = disabled,
+                    mtime = time.time(),
                     next=next)
-        raise gen.Return(None)
 
-    def task_failed(self, task):
-        self.db.task.mod(task['id'], disabled=1)
+            logger.error('taskid:%d tplid:%d failed! %s %.4fs', task['id'], task['tplid'], e, time.time()-start)
+            raise gen.Return(False)
+
+    def task_failed(self, task, user, tpl):
+        pass
+        #if user['email'] and user['email_verified']:
+            #return utils.send_mail(to=user['email'],
+                    #subject=u"%s - 签到失败提醒" % (tpl['sitename']),
+                    #text=u"""
+                    #您在 签到.today ( http://qiandao.today )
+                    #""")
 
     @staticmethod
     @gen.coroutine

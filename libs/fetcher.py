@@ -10,7 +10,6 @@ import urllib
 import base64
 import logging
 import urlparse
-from io import BytesIO
 from datetime import datetime
 
 import pycurl
@@ -18,7 +17,7 @@ from jinja2 import Template
 from tornado import gen, concurrent, httpclient
 
 import config
-from libs import cookie_utils
+from libs import cookie_utils, utils
 
 logger = logging.getLogger('qiandao.fetcher')
 

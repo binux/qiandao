@@ -25,6 +25,8 @@ cookie_secret = SHA256.new('binux').digest()
 check_task_loop = 10000
 download_size_limit = 1*1024*1024
 
+mailgun_key = ""
+
 try:
     from local_config import *
 except ImportError:

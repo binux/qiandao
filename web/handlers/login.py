@@ -7,9 +7,12 @@
 
 import re
 import time
+import base64
 import umsgpack
+from tornado import gen
 
 from base import *
+from libs import utils
 
 class LoginHandler(BaseHandler):
     def get(self):
@@ -45,6 +48,7 @@ class RegisterHandler(BaseHandler):
     def get(self):
         return self.render('register.html')
 
+    @gen.coroutine
     def post(self):
         email = self.get_argument('email')
         password = self.get_argument('password')
@@ -61,14 +65,58 @@ class RegisterHandler(BaseHandler):
 
         try:
             self.db.user.add(email=email, password=password, ip=self.ip2int)
-            user = self.db.user.get(email=email, fields=('id', 'email', 'nickname', 'role'))
-            self.set_secure_cookie('user', umsgpack.packb(user))
-            self.redirect('/my')
         except self.db.user.DeplicateUser as e:
             self.render('register.html', email_error=u'email地址已注册')
+        user = self.db.user.get(email=email, fields=('id', 'email', 'nickname', 'role'))
+
+        try:
+            verified_code = [user['email'], time.time()]
+            verified_code = self.db.user.encrypt(user['id'], verified_code)
+            verified_code = self.db.user.encrypt(0, [user['id'], verified_code])
+            verified_code = base64.b64encode(verified_code)
+            _ = yield utils.send_mail(to=email, subject=u"欢迎注册 签到", html=u"""
+
+            <h1 style="margin-left: 30px;">签到<sup>alpha</sup></h1>
+
+            <p>点击以下链接验证邮箱，当您的签到失败的时候，会自动给您发送通知邮件。</p>
+
+            <p><a href="http://qiandao.today/verify/%s">http://qiandao.today/verify/%s</a></p>
+
+            <p>点击或复制到浏览器中打开</p>
+
+            <p>您也可以不验证邮箱继续使用签到的服务，我们不会继续给您发送任何邮件。</p>
+            """ % (verified_code, verified_code), async=True)
+        except Exception as e:
+            logging.exception(e)
+
+        self.set_secure_cookie('user', umsgpack.packb(user))
+        self.redirect('/my')
+
+class VerifyHandler(BaseHandler):
+    def get(self, code):
+        try:
+            verified_code = base64.b64decode(code)
+            userid, verified_code = self.db.user.decrypt(0, verified_code)
+            user = self.db.user.get(userid, fields=('id', 'email', 'email_verified'))
+            assert user
+            assert not user['email_verified']
+            email, time_time = self.db.user.decrypt(userid, verified_code)
+            assert time.time() - time_time < 30 * 24 * 60 * 60
+            assert user['email'] == email
+
+            self.db.user.mod(userid,
+                    email_verified=True,
+                    mtime=time.time()
+                    )
+            self.finish('验证成功')
+        except Exception as e:
+            logging.error(e)
+            self.set_status(400)
+            self.finish('验证失败')
 
 handlers = [
         ('/login', LoginHandler),
         ('/logout', LogoutHandler),
         ('/register', RegisterHandler),
+        ('/verify/(.*)', VerifyHandler),
         ]

@@ -99,3 +99,40 @@ def format_date(date, gmt_offset=-8*60, relative=True, shorter=False, full_forma
         "time": str_time
     }
 
+def utf8(string):
+    if isinstance(string, unicode):
+        return string.encode('utf8')
+    return string
+
+import urllib
+import config
+from tornado import httpclient
+
+def send_mail(to, subject, text=None, html=None, async=False, _from=u"签到提醒 <noreply@qiandao.today>"):
+    httpclient.AsyncHTTPClient.configure('tornado.curl_httpclient.CurlAsyncHTTPClient')
+    if async:
+        client = httpclient.AsyncHTTPClient()
+    else:
+        client = httpclient.HTTPClient()
+
+    body = {
+            'from': utf8(_from),
+            'to': utf8(to),
+            'subject': utf8(subject),
+            }
+
+    if text:
+        body['text'] = utf8(text)
+    elif html:
+        body['html'] = utf8(html)
+    else:
+        raise Exception('nedd text or html')
+
+    req = httpclient.HTTPRequest(
+            method = "POST",
+            url = "https://api.mailgun.net/v2/qiandao.today/messages",
+            auth_username = "api",
+            auth_password = config.mailgun_key,
+            body = urllib.urlencode(body)
+            )
+    return client.fetch(req)

@@ -23,4 +23,9 @@
       <button type="submit" class="btn btn-default" onclick="document.forms[0].action='/register'">注册</button>
     </div>
 </div>
+<script>
+  $('button[type=submit]').on('click', function() {
+    $(this).button('loading');
+  })
+</script>
 {% endblock %}
