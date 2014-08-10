@@ -62,9 +62,9 @@ class UserDB(BaseDB):
                 ctime = now,
                 mtime = now,
                 atime = now,
-                cip = now,
-                mip = now,
-                aip = now,
+                cip = ip,
+                mip = ip,
+                aip = ip,
                 )
         return self._insert(**insert)
 
