@@ -5,13 +5,14 @@
 #         http://binux.me
 # Created on 2014-08-09 14:43:13
 
+import time
+import datetime
 import logging
 import tornado.log
 import tornado.ioloop
 from tornado import gen
 
 import db
-import time
 import config
 from libs import utils
 from libs.fetcher import Fetcher
@@ -83,7 +84,7 @@ class MainWorker(object):
         elif last_failed_count == 3:
             next = 360 * 60
         elif last_failed_count < 8:
-            next = 12 * 60 * 60
+            next = 11 * 60 * 60
         else:
             next = None
         return next
@@ -98,10 +99,26 @@ class MainWorker(object):
             next -= 3 * 60 * 60
         return next
 
+    @staticmethod
+    def is_tommorrow(next, gmt_offset=-8*60):
+        date = datetime.datetime.utcfromtimestamp(next)
+        now = datetime.datetime.utcnow()
+        local_date = date - datetime.timedelta(minutes=gmt_offset)
+        local_now = now - datetime.timedelta(minutes=gmt_offset)
+        local_tomorrow = local_now + datetime.timedelta(hours=24)
+
+        if local_date.day == local_tomorrow.day:
+            return True
+        elif local_date.hour > 22:
+            return True
+        else:
+            return False
+
     @gen.coroutine
     def do(self, task):
         user = self.db.user.get(task['userid'], fields=('id', 'email', 'email_verified', 'nickname'))
-        tpl = self.db.tpl.get(task['tplid'], fields=('userid', 'tpl', 'interval', 'last_success'))
+        tpl = self.db.tpl.get(task['tplid'], fields=('id', 'userid', 'sitename', 'siteurl', 'tpl',
+            'interval', 'last_success'))
 
         if task['disabled']:
             self.db.tasklog.add(task['id'], False, msg='task disabled.')
@@ -155,20 +172,16 @@ class MainWorker(object):
                     mtime = time.time(),
                     next=next)
             if time.time() - (tpl['last_success'] or 0) > 60 * 60:
-                self.db.tpl.mod(tplid, last_success=time.time())
+                self.db.tpl.mod(tpl['id'], last_success=time.time())
 
             logger.info('taskid:%d tplid:%d successed! %.4fs', task['id'], task['tplid'], time.time()-start)
-            raise gen.Return(True)
-
         except Exception as e:
             # failed feedback
-
             next_time_delta = self.failed_count_to_time(task['last_failed_count'])
             if next_time_delta:
                 disabled = False
                 next = time.time() + next_time_delta
             else:
-                _ = yield self.task_failed(task, user, tpl)
                 disabled = True
                 next = None
 
@@ -181,10 +194,31 @@ class MainWorker(object):
                     mtime = time.time(),
                     next=next)
 
+            if task['success_count'] and task['last_failed_count'] and user['email_verified'] and user['email']\
+                    and self.is_tommorrow(next):
+                try:
+                    _ = yield utils.send_mail(to=user['email'], subject=u"%s - 签到失败" % tpl['sitename'],
+                    text=u"""
+                    您的 %(sitename)s [ %(siteurl)s ] 签到任务，执行 %(cnt)d次 失败。%(disable)s
+                    
+                    下一次重试在一天之后，为防止签到中断，给您发送这份邮件。
+
+                    访问： http://qiandao.today/task/%(taskid)s/log 查看日志。
+                    """ % dict(
+                        sitename = tpl['sitename'] or u'未命名',
+                        siteurl = tpl['siteurl'] or u'',
+                        cnt = task['last_failed_count'] + 1,
+                        disable = u"因连续多次失败，已停止。" if disabled else u"",
+                        taskid = task['id'],
+                        ), async=True)
+                except Exception as e:
+                    logging.error('send mail error: %s', e)
+
             logger.error('taskid:%d tplid:%d failed! %s %.4fs', task['id'], task['tplid'], e, time.time()-start)
             raise gen.Return(False)
+        raise gen.Return(True)
 
-    def task_failed(self, task, user, tpl):
+    def task_failed(self, task, user, tpl, e):
         pass
         #if user['email'] and user['email_verified']:
             #return utils.send_mail(to=user['email'],
@@ -206,9 +240,11 @@ class MainWorker(object):
                     ))
                 env = result['env']
             except Exception as e:
-                raise Exception('failed at %d request, %r', i, e)
+                raise Exception('failed at %d request, error:%s, %s' % (
+                    i, e.message, entry['request']['url']))
             if not result['success']:
-                raise Exception('failed at %d request, code:%s', i, result['response'].code)
+                raise Exception('failed at %d request, code:%s, %s' % (
+                    i, result['response'].code, entry['request']['url']))
         raise gen.Return(env)
 
 if __name__ == '__main__':

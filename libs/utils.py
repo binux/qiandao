@@ -57,6 +57,7 @@ def format_date(date, gmt_offset=-8*60, relative=True, shorter=False, full_forma
     local_date = date - datetime.timedelta(minutes=gmt_offset)
     local_now = now - datetime.timedelta(minutes=gmt_offset)
     local_yesterday = local_now - datetime.timedelta(hours=24)
+    local_tomorrow = local_now + datetime.timedelta(hours=24)
     difference = now - date
     seconds = difference.seconds
     days = difference.days
@@ -79,6 +80,9 @@ def format_date(date, gmt_offset=-8*60, relative=True, shorter=False, full_forma
         elif days == 1 and local_date.day == local_yesterday.day and \
                 relative:
             format = u"昨天" if shorter else u"昨天 %(time)s"
+        elif days == 1 and local_date.day == local_tomorrow.day and \
+                relative:
+            format = u"明天" if shorter else u"明天 %(time)s"
         #elif days < 5:
             #format = "%(weekday)s" if shorter else "%(weekday)s %(time)s"
         elif days < 334:  # 11mo, since confusing for same month last year
