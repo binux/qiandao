@@ -23,24 +23,20 @@ class LoginHandler(BaseHandler):
         password = self.get_argument('password')
         next = self.get_argument('next', None)
         if not email or not password:
-            self.render('login.html', password_error=u'请输入用户名和密码', email=email)
-            return
+            return self.render('login.html', password_error=u'请输入用户名和密码', email=email)
 
         if self.db.user.challenge(email, password):
             user = self.db.user.get(email=email, fields=('id', 'email', 'nickname', 'role'))
             if not user:
-                self.render('login.html', password_error=u'不存在此邮箱或密码错误', email=email)
-                return
+                return self.render('login.html', password_error=u'不存在此邮箱或密码错误', email=email)
 
             self.set_secure_cookie('user', umsgpack.packb(user))
             self.db.user.mod(user['id'], atime=time.time(), aip=self.ip2int)
             if not next:
-                self.redirect('/my')
-                return
+                return self.redirect('/my')
         else:
             self.db.redis.evil(self.ip, +5)
-            self.render('login.html', password_error=u'不存在此邮箱或密码错误', email=email)
-            return
+            return self.render('login.html', password_error=u'不存在此邮箱或密码错误', email=email)
 
 class LogoutHandler(BaseHandler):
     def get(self):
@@ -57,8 +53,7 @@ class RegisterHandler(BaseHandler):
         password = self.get_argument('password')
 
         if not email:
-            self.render('register.html', email_error=u'请输入邮箱')
-            return
+            return self.render('register.html', email_error=u'请输入邮箱')
         if email.count('@') != 1 or email.count('.') == 0:
             self.render('register.html', email_error=u'邮箱格式不正确')
             return
@@ -70,6 +65,7 @@ class RegisterHandler(BaseHandler):
             self.db.user.add(email=email, password=password, ip=self.ip2int)
         except self.db.user.DeplicateUser as e:
             self.render('register.html', email_error=u'email地址已注册')
+            return
         user = self.db.user.get(email=email, fields=('id', 'email', 'nickname', 'role'))
 
         try:
