@@ -53,7 +53,6 @@ class Fetcher(object):
 
     @staticmethod
     def build_request(obj, download_size_limit=config.download_size_limit):
-
         env = obj['env']
         rule = obj['rule']
         request = Fetcher.render(obj['request'], env['variables'])
@@ -237,6 +236,7 @@ class Fetcher(object):
           }
         }
         """
+        obj = dict(obj)
         req, rule, env = self.build_request(obj, self.download_size_limit)
 
         try:

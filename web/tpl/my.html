@@ -125,7 +125,11 @@
 <script>
   $(function() {
     $(".task-new").on('click', function() {
-      $('#task-new .modal-content').load($(this).attr('href'), function() {
+      var $this = $(this);
+      var text = $this.text();
+      $this.text('loading...');
+      $('#task-new .modal-content').load($this.attr('href'), function() {
+        $this.text(text);
         $('#task-new').modal('show');
       })
       return false;
