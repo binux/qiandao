@@ -168,6 +168,7 @@ define (require, exports, module) ->
         try
           re = new RegExp(re)
         catch error
+          console.log(error)
           return null
 
         if m = data.match(re)

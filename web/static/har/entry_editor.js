@@ -231,6 +231,7 @@
             re = new RegExp(re);
           } catch (_error) {
             error = _error;
+            console.log(error);
             return null;
           }
           if (m = data.match(re)) {

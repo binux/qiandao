@@ -29,14 +29,19 @@ def tpl2har(tpl):
                     {'name': x['name'], 'value': x['value'], 'checked': True} for x in\
                             en['request'].get('cookies', [])],
                 headersSize = -1,
-                bodySize = len(en['request'].get('body')) if en['request'].get('body') else 0,
+                bodySize = len(en['request'].get('data')) if en['request'].get('data') else 0,
 
 
                 )
-        if en['request'].get('body'):
-            request['postdata'] = dict(
-                    text = en['request'].get('body'),
+        if en['request'].get('data'):
+            request['postData'] = dict(
+                    mimeType = en['request'].get('mimeType'),
+                    text = en['request'].get('data'),
                     )
+            if en['request'].get('mimeType') == 'application/x-www-form-urlencoded':
+                params = [{'name': x[0], 'value': x[1]} \
+                    for x in urlparse.parse_qsl(en['request']['data'], True)]
+                request['postData']['params'] = params
         return request
 
     entries = []
@@ -133,6 +138,8 @@ class PushActionHandler(BaseHandler):
     def post(self, prid, action):
         user = self.current_user
         pr = self.db.push_request.get(prid)
+        if not pr:
+            raise HTTPError(404)
 
         if pr['status'] != self.db.push_request.PENDING:
             raise HTTPError(400)
@@ -151,7 +158,6 @@ class PushActionHandler(BaseHandler):
 
         tpl_lock = len(list(self.db.push_request.list(from_tplid=pr['from_tplid'],
             status=self.db.push_request.PENDING, fields='1')))
-        print tpl_lock
         if not tpl_lock:
             self.db.tpl.mod(pr['from_tplid'], lock=False)
 
@@ -210,7 +216,9 @@ class PushViewHandler(BaseHandler):
     @tornado.web.authenticated
     def post(self, prid):
         user = self.current_user
-        pr = self.db.push_request.get(prid, fields=('id', 'from_tplid', 'from_userid', 'to_tplid', 'to_userid'))
+        pr = self.db.push_request.get(prid, fields=('id', 'from_tplid', 'from_userid', 'to_tplid', 'to_userid', 'status'))
+        if not pr:
+            raise HTTPError(404)
         if pr['status'] != self.db.push_request.PENDING:
             raise HTTPError(401)
 

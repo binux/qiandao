@@ -156,6 +156,7 @@ class Fetcher(object):
                         size = len(response.body),
                         mimeType = response.headers.get('content-type'),
                         text = base64.b64encode(response.body),
+                        decoded = utils.decode(response.body, response.headers),
                         ),
                     redirectURL = response.headers.get('Location'),
                     headersSize = -1,
