@@ -91,9 +91,11 @@ class TaskRunHandler(BaseHandler):
             fetcher = Fetcher()
             new_env = yield fetcher.do_fetch(fetch_tpl, env)
         except Exception as e:
+            self.db.tasklog.add(task['id'], success=False, msg=e.message)
             self.finish('<h1 class="alert alert-danger text-center">签到失败</h1><div class="well">%s</div>' % e)
             return
 
+        self.db.tasklog.add(task['id'], success=True)
         self.db.task.mod(task['id'],
                 last_success = time.time(),
                 last_failed_count = 0,

@@ -186,7 +186,7 @@ class MainWorker(object):
                 disabled = True
                 next = None
 
-            self.db.tasklog.add(task['id'], success=False, msg=repr(e))
+            self.db.tasklog.add(task['id'], success=False, msg=e.message)
             self.db.task.mod(task['id'],
                     last_failed=time.time(),
                     failed_count=task['failed_count']+1,
