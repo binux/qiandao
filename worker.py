@@ -149,7 +149,7 @@ class MainWorker(object):
                     session = [],
                     )
 
-            new_env = yield fetcher.do_fetch(fetch_tpl, env)
+            new_env = yield self.fetcher.do_fetch(fetch_tpl, env)
 
             variables = self.db.user.encrypt(task['userid'], new_env['variables'])
             session = self.db.user.encrypt(task['userid'],
