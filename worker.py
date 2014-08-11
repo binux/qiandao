@@ -28,6 +28,7 @@ class MainWorker(object):
             task = db.TaskDB()
             tasklog = db.TaskLogDB()
         self.db = DB
+        self.fetcher = Fetcher()
 
     def __call__(self):
         if self.running:
@@ -107,9 +108,8 @@ class MainWorker(object):
         local_now = now - datetime.timedelta(minutes=gmt_offset)
         local_tomorrow = local_now + datetime.timedelta(hours=24)
 
-        if local_date.day == local_tomorrow.day:
+        if local_date.day == local_tomorrow.day and not now.hour > 22:
             return True
-        # FIXME: when now is (22, 24) and next is tomorrow, should not send mail again
         elif local_date.hour > 22:
             return True
         else:
@@ -149,7 +149,7 @@ class MainWorker(object):
                     session = [],
                     )
 
-            new_env = yield self.fetch(fetch_tpl, env)
+            new_env = yield fetcher.do_fetch(fetch_tpl, env)
 
             variables = self.db.user.encrypt(task['userid'], new_env['variables'])
             session = self.db.user.encrypt(task['userid'],
@@ -227,26 +227,6 @@ class MainWorker(object):
                     #text=u"""
                     #您在 签到.today ( http://qiandao.today )
                     #""")
-
-    @staticmethod
-    @gen.coroutine
-    def fetch(tpl, env):
-        fetcher = Fetcher()
-        for i, entry in enumerate(tpl):
-            try:
-                result = yield fetcher.fetch(dict(
-                    request = entry['request'],
-                    rule = entry['rule'],
-                    env = env,
-                    ))
-                env = result['env']
-            except Exception as e:
-                raise Exception('failed at %d request, error:%s, %s' % (
-                    i, e.message, entry['request']['url']))
-            if not result['success']:
-                raise Exception('failed at %d request, code:%s, %s' % (
-                    i, result['response'].code, entry['request']['url']))
-        raise gen.Return(env)
 
 if __name__ == '__main__':
     worker = MainWorker()

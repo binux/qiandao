@@ -7,7 +7,10 @@
 
 import json
 import time
+from tornado import gen
+
 from base import *
+from libs.fetcher import Fetcher
 
 class TaskNewHandler(BaseHandler):
     @tornado.web.authenticated
@@ -57,6 +60,49 @@ class TaskNewHandler(BaseHandler):
         referer = self.request.headers.get('referer', '/my/')
         self.redirect(referer)
 
+class TaskRunHandler(BaseHandler):
+    @tornado.web.authenticated
+    @gen.coroutine
+    def get(self, taskid):
+        user = self.current_user
+        task = self.db.task.get(taskid, fields=('id', 'tplid', 'userid', 'init_env',
+            'env', 'session', 'last_success', 'last_failed', 'success_count',
+            'failed_count', 'last_failed_count', 'next', 'disabled'))
+        if task['userid'] != user['id']:
+            raise HTTPError(401)
+        if not task:
+            raise HTTPError(404)
+
+        tpl = self.db.tpl.get(task['tplid'], fields=('id', 'userid', 'sitename',
+            'siteurl', 'tpl', 'interval', 'last_success'))
+        if not tpl:
+            raise HTTPError(403)
+        if tpl['userid'] and tpl['userid'] != user['id']:
+            raise HTTPError(401)
+
+        fetch_tpl = self.db.user.decrypt(
+                0 if not tpl['userid'] else task['userid'], tpl['tpl'])
+        env = dict(
+                variables = self.db.user.decrypt(task['userid'], task['init_env']),
+                session = [],
+                )
+
+        try:
+            fetcher = Fetcher()
+            new_env = yield fetcher.do_fetch(fetch_tpl, env)
+        except Exception as e:
+            self.finish('<h1 class="alert alert-danger text-center">签到失败</h1><div class="well">%s</div>' % e)
+            return
+
+        self.db.task.mod(task['id'],
+                last_success = time.time(),
+                last_failed_count = 0,
+                success_count = task['success_count'] + 1,
+                mtime = time.time(),
+                next = time.time() + (tpl['interval'] if tpl['interval'] else 24 * 60 * 60))
+        self.finish('<h1 class="alert alert-success text-center">签到成功</h1>')
+        return
+
 class TaskLogHandler(BaseHandler):
     @tornado.web.authenticated
     def get(self, taskid):
@@ -86,4 +132,5 @@ handlers = [
         ('/task/new/?(\d+)?', TaskNewHandler),
         ('/task/(\d+)/del', TaskDelHandler),
         ('/task/(\d+)/log', TaskLogHandler),
+        ('/task/(\d+)/run', TaskRunHandler),
         ]

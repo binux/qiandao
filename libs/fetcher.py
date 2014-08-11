@@ -254,3 +254,24 @@ class Fetcher(object):
             'response': response,
             'env': env,
             })
+
+    @gen.coroutine
+    def do_fetch(self, tpl, env):
+        """
+        do a fetch of hole tpl
+        """
+        for i, entry in enumerate(tpl):
+            try:
+                result = yield self.fetch(dict(
+                    request = entry['request'],
+                    rule = entry['rule'],
+                    env = env,
+                    ))
+                env = result['env']
+            except Exception as e:
+                raise Exception('failed at %d request, error:%s, %s' % (
+                    i, e.message, entry['request']['url']))
+            if not result['success']:
+                raise Exception('failed at %d request, code:%s, %s' % (
+                    i, result['response'].code, entry['request']['url']))
+        raise gen.Return(env)
