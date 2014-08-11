@@ -22,7 +22,8 @@ class BaseDB(object):
 
     @property
     def dbcur(self):
-        raise NotImplementedError
+        self.conn.ping(reconnect=True)
+        return self.conn.cursor()
 
     def _execute(self, sql_query, values=[]):
         dbcur = self.dbcur

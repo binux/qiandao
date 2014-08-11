@@ -109,6 +109,7 @@ class MainWorker(object):
 
         if local_date.day == local_tomorrow.day:
             return True
+        # FIXME: when now is (22, 24) and next is tomorrow, should not send mail again
         elif local_date.hour > 22:
             return True
         else:
