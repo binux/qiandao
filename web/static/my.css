@@ -16,17 +16,15 @@ header .container {
   position: relative;
   border-bottom: 1px solid #eee;
 }
-header a.logout {
+header .buttons {
   position: absolute;
   margin-bottom: 10px;
-  right: 0;
+  left: -10px;
+  right: -10px;
   bottom: 0;
 }
-header a.index {
-  position: absolute;
-  margin-bottom: 10px;
-  left: 0;
-  bottom: 0;
+header .buttons a {
+  margin: 0 10px;
 }
 section h2 a.btn {
   margin-top: -0.2em;

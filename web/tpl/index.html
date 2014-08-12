@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 
-{% block addheader %}
+{% block head %}
+{{ super() }}
 <link href="{{ static_url('index.css') }}" rel="stylesheet" type="text/css">
 {% endblock %}
 

@@ -1,0 +1,84 @@
+{% macro header() %}
+<header>
+  <div class="container">
+    <h1 class="text-center">签到<sup>alpha</sup></h1>
+    <div class="buttons">
+      <a href="/" class="btn btn-default pull-left">首页</a>
+      <a href="/logout" class="btn btn-default pull-right">登出</a>
+    </div>
+  </div>
+</header>
+{% endmacro %}
+
+{% macro modal_load() %}
+<div class="modal fade" id="modal_load" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+    </div>
+  </div>
+</div>
+
+<script>
+  $(function() {
+    var lock = false;
+    $('#modal_load').on('hide.bs.modal', function() {
+      return !lock;
+    });
+    $(".modal_load").on('click', function() {
+      var $this = $(this);
+      var text = $this.text();
+      //$this.text('loading...');
+      lock = true;
+      $('#modal_load .modal-content').html('<h1 class="text-center alert alert-info">loading...</h1>');
+      $('#modal_load').modal('show');
+
+      $.ajax($this.attr('href'))
+      .done(function(data) {
+        $('#modal_load .modal-content').html(data);
+      })
+      .fail(function(jxhr, data) {
+        $('#modal_load .modal-content')
+        .html('<h1 class="text-center alert alert-danger">FAIL</h1><div class="well"></div>')
+        .find('.well').text(data);
+      })
+      .always(function() {
+        lock = false;
+      })
+      return false;
+    })
+  })
+</script>
+{% endmacro %}
+
+{% macro apost() %}
+<script>
+  $(function() {
+    $("a[data-method]").on("click", function() {
+      var $this = $(this);
+      if ($this.data('confirm') && !!!window.confirm($this.data('confirm'))) {
+        return false;
+      }
+      $('<form></form>').attr('method', $this.data('method')).attr('action', $this.attr('href')).submit();
+      return false;
+    })
+  })
+</script>
+{% endmacro %}
+
+{% macro submit_loading() %}
+<script>
+  $('button[type=submit]').on('click', function() {
+    $(this).button('loading');
+  })
+</script>
+{% endmacro %}
+
+{% macro input(name, label=None, type="text", value=None, placeholder=None) %}
+<div class="form-group">
+  <label class="control-label" for="input-{{ name }}">{{ label }}</label>
+  <input type="{{ type }}" class="form-control" name="{{ name }}" id="input-{{ name }}"
+  placeholder="{% if placeholder %}{{ placeholder }}{% else %}请输入 {{ label }}{% endif %}"
+  {% if value is not none %}value="{{ value }}"{% endif %}>
+  {% if p %}<p class="help-block">{{ p }}</p>{% endif %}
+</div>
+{% endmacro %}

@@ -1,21 +1,12 @@
 {% extends "base.html" %}
 
-{% block addheader %}
+{% block header %}
+{{ super() }}
 <link href="{{ static_url('my.css') }}" rel="stylesheet" type="text/css">
 {% endblock %}
 
 {% block body %}
-<header>
-  <div class="container">
-    <a href="/" class="btn btn-default pull-left index">首页</a>
-    <h1 class="text-center">
-      <a href="/">签到</a>
-      <sup>alpha</sup>
-    </h1>
-    <a href="/logout" class="btn btn-default pull-right logout">登出</a>
-    <div class="clearfix"></div>
-  </div>
-</header>
+{{ utils.header() }}
 
 <section>
   <div class="container">

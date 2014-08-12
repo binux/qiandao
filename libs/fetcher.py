@@ -179,9 +179,12 @@ class Fetcher(object):
     def run_rule(response, rule, env):
         success = True
 
+        content = -1
         def getdata(_from):
             if _from == 'content':
-                return response.body
+                if content == -1:
+                    content = utils.decode(response.body)
+                return content
             elif _from == 'status':
                 return '%s' % response.code
             elif _from.startswith('header-'):

@@ -1,21 +1,12 @@
 {% extends "base.html" %}
 
-{% block addheader %}
+{% block head %}
+{{ super() }}
 <link href="{{ static_url('my.css') }}" rel="stylesheet" type="text/css">
 {% endblock %}
 
 {% block body %}
-<header>
-  <div class="container">
-    <a href="/" class="btn btn-default pull-left index">首页</a>
-    <h1 class="text-center">
-      <a href="/">签到</a>
-      <sup>alpha</sup>
-    </h1>
-    <a href="/logout" class="btn btn-default pull-right logout">登出</a>
-    <div class="clearfix"></div>
-  </div>
-</header>
+{{ utils.header() }}
 
 <section>
   <div class="container">
@@ -43,28 +34,34 @@
         {% for each in pushs %}
         <tr>
           <td>
+            {% if each.from_user_email %}
+            <a href="javascript:void(0)" data-container="body" data-toggle="popover" data-content="{{ each.from_user_email }} {{ '✔︎' if each.from_user_email_verified }}">{{ each.from_user_name or '无名氏' }}</a>
+            {% else %}
             {{ each.from_user_name or '无名氏' }}
-            {% if each.from_user_email %}<a href="mailto:{{ each.from_user_email }}">email</a>{% endif %}
+            {% endif %}
             的
-            {{ each.from_tpl.sitename or "未命名" }}
-            {% if each.from_tpl.siteurl %}<a href="{{ each.from_tpl.siteurl if each.from_tpl.siteurl.startswith('http:') else 'http://'+each.from_tpl.siteurl }}" target="_blank" class="glyphicon glyphicon-share"></a>{% endif %}
+            <a href="javascript:void(0)" data-toggle="popover" title="{{ each.from_tpl.siteurl }}" data-content="{{ each.from_tpl.note }}">{{ each.from_tpl.sitename or "未命名" }}</a>
           </td>
           <td>{{ format_date(each.from_tpl.ctime) }}</td>
           <td>{{ format_date(each.from_tpl.mtime ) }}</td>
           <td>{{ format_date(each.from_tpl.last_success) }}</td>
 
           <td>
+            {% if each.to_user_email %}
+            <a href="javascript:void(0)" data-container="body" data-toggle="popover" data-content="{{ each.to_user_email }} {{ '✔︎' if each.to_user_email_verified }}">{{ each.to_user_name or '无名氏' }}</a>
+            {% else %}
             {{ each.to_user_name or '无名氏' }}
-            {% if each.to_user_email %}<a href="mailto:{{ each.to_user_email }}">email</a>{% endif %}
+            {% endif %}
             的
-            {{ each.to_tpl.sitename or "未命名" if each.to_tpl else '新模板' }}
-            {% if each.to_tpl.siteurl %}<a href="{{ each.to_tpl.siteurl if each.to_tpl.siteurl.startswith('http:') else 'http://'+each.to_tpl.siteurl }}" target="_blank" class="glyphicon glyphicon-share"></a>{% endif %}
+            <a href="javascript:void(0)" data-toggle="popover" title="{{ each.to_tpl.siteurl }}" data-content="{{ each.to_tpl.note }}">{{ each.to_tpl.sitename or "新模版" }}</a>
           </td>
           <td>{{ format_date(each.to_tpl.mtime ) }}</td>
           <td>{{ format_date(each.to_tpl.last_success) }}</td>
 
           <td>{{ {0:'待处理', 1:'取消', 2:'拒绝', 3:'成功'}[each.status] }}</td>
-          <td>{{ each.msg }}</td>
+          <td>
+            <a href="javascript:void(0)" data-placement="left" data-container="body" data-toggle="popover" data-content="{{ each.msg }}">{{ each.msg | truncate(3, True) }}</a>
+          </td>
           <td>
             {% if each.status == 0 %}
             <a data-method="post" href="/push/{{ each.id }}/cancel">取消</a>
@@ -104,28 +101,34 @@
         {% for each in pulls %}
         <tr>
           <td>
+            {% if each.from_user_email %}
+            <a href="javascript:void(0)" data-container="body" data-toggle="popover" data-content="{{ each.from_user_email }} {{ '✔︎' if each.from_user_email_verified }}">{{ each.from_user_name or '无名氏' }}</a>
+            {% else %}
             {{ each.from_user_name or '无名氏' }}
-            {% if each.from_user_email %}<a href="mailto:{{ each.from_user_email }}">email</a>{% endif %}
+            {% endif %}
             的
-            {{ each.from_tpl.sitename or "未命名" }}
-            {% if each.from_tpl.siteurl %}<a href="{{ each.from_tpl.siteurl if each.from_tpl.siteurl.startswith('http:') else 'http://'+each.from_tpl.siteurl }}" target="_blank" class="glyphicon glyphicon-share"></a>{% endif %}
+            <a href="javascript:void(0)" data-toggle="popover" title="{{ each.from_tpl.siteurl }}" data-content="{{ each.from_tpl.note }}">{{ each.from_tpl.sitename or "未命名" }}</a>
           </td>
           <td>{{ format_date(each.from_tpl.ctime) }}</td>
           <td>{{ format_date(each.from_tpl.mtime ) }}</td>
           <td>{{ format_date(each.from_tpl.last_success) }}</td>
 
           <td>
+            {% if each.to_user_email %}
+            <a href="javascript:void(0)" data-container="body" data-toggle="popover" data-content="{{ each.to_user_email }} {{ '✔︎' if each.to_user_email_verified }}">{{ each.to_user_name or '无名氏' }}</a>
+            {% else %}
             {{ each.to_user_name or '无名氏' }}
-            {% if each.to_user_email %}<a href="mailto:{{ each.to_user_email }}">email</a>{% endif %}
+            {% endif %}
             的
-            {{ each.to_tpl.sitename or "未命名" if each.to_tpl else '新模板' }}
-            {% if each.to_tpl.siteurl %}<a href="{{ each.to_tpl.siteurl if each.to_tpl.siteurl.startswith('http:') else 'http://'+each.to_tpl.siteurl }}" target="_blank" class="glyphicon glyphicon-share"></a>{% endif %}
+            <a href="javascript:void(0)" data-toggle="popover" title="{{ each.to_tpl.siteurl }}" data-content="{{ each.to_tpl.note }}">{{ each.to_tpl.sitename or "新模版" }}</a>
           </td>
           <td>{{ format_date(each.to_tpl.mtime ) }}</td>
           <td>{{ format_date(each.to_tpl.last_success) }}</td>
 
           <td>{{ {0:'待处理', 1:'取消', 2:'拒绝', 3:'成功'}[each.status] }}</td>
-          <td>{{ each.msg }}</td>
+          <td>
+            <a href="javascript:void(0)" data-placement="left" data-container="body" data-toggle="popover" data-content="{{ each.msg }}">{{ each.msg | truncate(3, True) }}</a>
+          </td>
           <td>
             {% if each.status == 0 %}
             <a href="/push/{{ each.id }}/view">查看</a>
@@ -143,11 +146,10 @@
 
 <script>
   $(function() {
-    $("a[data-method]").on("click", function() {
-      var $this = $(this);
-      $('<form></form>').attr('method', $this.data('method')).attr('action', $this.attr('href')).submit();
-      return false;
-    })
+    $('[data-toggle=popover]').popover({
+      trigger: 'hover'
+    });
   })
 </script>
+{{ utils.apost() }}
 {% endblock %}

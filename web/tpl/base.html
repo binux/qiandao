@@ -19,9 +19,10 @@
     <link href="{{ static_url('components/bootstrap/dist/css/bootstrap.min.css') }}" rel="stylesheet" type="text/css">
     <script src="{{ static_url('components/jquery/dist/jquery.min.js') }}"></script>
     <script src="{{ static_url('components/bootstrap/dist/js/bootstrap.min.js') }}"></script>
-    {% endblock %}
     <link href="{{ static_url('base.css') }}" rel="stylesheet" type="text/css">
-    {% block addheader %}{% endblock %}
+    {% endblock %}
+
+    {% import "utils.html" as utils %}
   </head>
 
   <body>
@@ -36,4 +37,3 @@
   </body>
 </html>
 <!-- vim: set et sw=2 ts=2 sts=2 ff=unix fenc=utf8: -->
-

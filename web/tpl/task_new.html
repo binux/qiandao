@@ -1,3 +1,4 @@
+{% import "utils.html" as utils %}
 <form method="POST" action="/task/new">
   <h1 class="text-center">签到<sup>alpha</sup></h1>
   <div class="form-group">
@@ -24,9 +25,7 @@
       $('select[name=_binux_tplid]').on('change', function() {
         $('#variables').load("/tpl/"+$(this).val()+"/var");
       })
-      $('form').on('submit', function() {
-        $('button[type=submit]').button('loading');
-      })
     })
   </script>
+  {{ utils.submit_loading() }}
 </form>

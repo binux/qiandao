@@ -93,7 +93,7 @@ class PushListHandler(BaseHandler):
         def get_tpl(tplid):
             if not tplid:
                 return {}
-            tpl = self.db.tpl.get(tplid, fields=('sitename', 'siteurl', 'ctime', 'mtime', 'last_success'))
+            tpl = self.db.tpl.get(tplid, fields=('sitename', 'siteurl', 'note', 'ctime', 'mtime', 'last_success'))
             return tpl or {}
 
         def join(pr):
@@ -164,7 +164,7 @@ class PushActionHandler(BaseHandler):
         self.redirect('/pushs')
 
     def accept(self, pr):
-        tplobj = self.db.tpl.get(pr['from_tplid'], fields=('id', 'userid', 'tpl', 'variables', 'sitename', 'siteurl', 'banner', 'interval'))
+        tplobj = self.db.tpl.get(pr['from_tplid'], fields=('id', 'userid', 'tpl', 'variables', 'sitename', 'siteurl', 'note', 'banner', 'interval'))
         if not tplobj:
             self.cancel(pr)
             raise HTTPError(404)
@@ -186,6 +186,7 @@ class PushActionHandler(BaseHandler):
                     sitename = tplobj['sitename'],
                     siteurl = tplobj['siteurl'],
                     banner = tplobj['banner'],
+                    note = tplobj['note'],
                     fork = pr['from_tplid'],
                     )
         else:
@@ -198,6 +199,7 @@ class PushActionHandler(BaseHandler):
                     sitename = tplobj['sitename'],
                     siteurl = tplobj['siteurl'],
                     banner = tplobj['banner'],
+                    note = tplobj['note'],
                     fork = pr['from_tplid'],
                     )
         self.db.push_request.mod(pr['id'], status=self.db.push_request.ACCEPT)

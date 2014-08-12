@@ -33,7 +33,7 @@ class TaskNewHandler(BaseHandler):
         if tpl['userid'] and tpl['userid'] != user['id']:
             raise HTTPError(401)
         variables = json.loads(self.db.tpl.get(tplid, fields='variables')['variables'])
-
+        
         self.render('task_new.html', tpls=tpls, tplid=tplid, variables=variables)
 
     @tornado.web.authenticated

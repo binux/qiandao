@@ -1,24 +1,18 @@
 {% extends "base.html" %}
 
-{% block addheader %}
+{% block head %}
+{{ super() }}
 <link href="{{ static_url('my.css') }}" rel="stylesheet" type="text/css">
 {% endblock %}
 
 {% block body %}
-<header>
-  <div class="container">
-    <a href="/" class="btn btn-default pull-left index">首页</a>
-    <h1 class="text-center">签到<sup>alpha</sup></h1>
-    <a href="/logout" class="btn btn-default pull-right logout">登出</a>
-    <div class="clearfix"></div>
-  </div>
-</header>
+{{ utils.header() }}
 
 <section class="task">
   <div class="container">
     <h2>
       我的签到
-      <a href="/task/new" class="btn btn-default btn-xs task-new glyphicon glyphicon-plus"></a>
+      <a href="/task/new" class="btn btn-default btn-xs modal_load glyphicon glyphicon-plus"></a>
     </h2>
     <table class="table">
       <thead>
@@ -43,7 +37,7 @@
           <td>{{ format_date(task.next) if task.next else '从不' }}</td>
           <td>
             <!--<a href="#">修改</a>-->
-            <a class="task-new" href="/task/{{ task.id }}/run">立即执行</a>
+            <a class="modal_load" href="/task/{{ task.id }}/run">立即执行</a>
             <a href="/tpl/{{ task.tplid }}/edit" target="_blank">查看模板</a>
             <a href="/task/{{ task.id }}/log" target="_blank">执行日志</a>
             <a data-method="POST" href="/task/{{ task.id }}/del" data-confirm="是否要删除任务?">删除</a>
@@ -102,8 +96,8 @@
             <a href="/tpl/{{ tpl.id }}/edit" target="_blank">编辑</a>
             <a data-method="POST" href="/tpl/{{ tpl.id }}/del" data-confirm="是否要删除模板?">删除</a>
             {% endif %}
-            <a class="task-new" href="/task/new/{{ tpl.id }}">新建签到</a>
-            <a class="task-new" href="/tpl/{{ tpl.id }}/push">发布</a>
+            <a class="modal_load" href="/task/new/{{ tpl.id }}">新建签到</a>
+            <a class="modal_load" href="/tpl/{{ tpl.id }}/push">发布</a>
           </td>
         </tr>
         {% endfor %}
@@ -115,34 +109,6 @@
   </div>
 </section>
 
-<div class="modal fade" id="task-new" tabindex="-1" role="dialog" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-    </div>
-  </div>
-</div>
-
-<script>
-  $(function() {
-    $(".task-new").on('click', function() {
-      var $this = $(this);
-      var text = $this.text();
-      $this.text('loading...');
-      $('#task-new .modal-content').load($this.attr('href'), function() {
-        $this.text(text);
-        $('#task-new').modal('show');
-      })
-      return false;
-    })
-
-    $("a[data-method]").on("click", function() {
-      var $this = $(this);
-      if ($this.data('confirm') && !!!window.confirm($this.data('confirm'))) {
-        return false;
-      }
-      $('<form></form>').attr('method', $this.data('method')).attr('action', $this.attr('href')).submit();
-      return false;
-    })
-  })
-</script>
+{{ utils.modal_load() }}
+{{ utils.apost() }}
 {% endblock %}
