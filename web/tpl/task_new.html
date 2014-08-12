@@ -21,7 +21,7 @@
 
   <div class="form-group">
     <label class="control-label" for="note">备注</label>
-    <input type="text" class="form-control" name="_binux_note" value="{{ task.note }}" id="note">
+    <input type="text" class="form-control" name="_binux_note" value="{{ task.note or '' }}" id="note">
   </div>
 
   {% if not task %}
