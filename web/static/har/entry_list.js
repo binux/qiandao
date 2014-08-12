@@ -13,8 +13,7 @@
         $scope.har = data.har;
         $scope.env = utils.dict2list(data.env);
         $scope.session = [];
-        $scope.sitename = data.sitename;
-        $scope.siteurl = data.siteurl;
+        $scope.setting = data.setting;
         $scope.readonly = data.readonly;
         $scope.recommend();
         if (((function() {
@@ -86,7 +85,9 @@
         return analysis.recommend($scope.har);
       };
       $scope.pre_save = function() {
-        var error, first_entry;
+        var alert_elem, alert_info_elem, error, first_entry;
+        alert_elem = angular.element('#save-har .alert-danger').hide();
+        alert_info_elem = angular.element('#save-har .alert-info').hide();
         first_entry = (function() {
           var entry, _i, _len, _ref;
           _ref = $scope.har.log.entries;
@@ -108,7 +109,7 @@
         }
       };
       return $scope.save = function() {
-        var alert_elem, c, data, entry, h, save_btn;
+        var alert_elem, alert_info_elem, c, data, entry, h, save_btn;
         data = {
           id: $scope.id,
           har: $scope.har,
@@ -166,11 +167,11 @@
             }
             return _results;
           })(),
-          sitename: $scope.sitename,
-          siteurl: $scope.siteurl
+          setting: $scope.setting
         };
         save_btn = angular.element('#save-har .btn').button('loading');
-        alert_elem = angular.element('#save-har .alert').hide();
+        alert_elem = angular.element('#save-har .alert-danger').hide();
+        alert_info_elem = angular.element('#save-har .alert-info').hide();
         return $http.post(location.pathname.replace('edit', 'save'), data).success(function(data, status, headers, config) {
           var pathname;
           utils.storage.del('har_filename');
@@ -179,8 +180,9 @@
           save_btn.button('reset');
           pathname = "/tpl/" + data.id + "/edit";
           if (pathname !== location.pathname) {
-            return location.pathname = pathname;
+            location.pathname = pathname;
           }
+          return alert_info_elem.text('保存成功').show();
         }).error(function(data, status, headers, config) {
           alert_elem.text(data).show();
           return save_btn.button('reset');

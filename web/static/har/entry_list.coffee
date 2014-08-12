@@ -14,13 +14,12 @@ define (require, exports, module) ->
       # on uploaded event
       $rootScope.$on('har-loaded', (ev, data) ->
         console.log data
+
         $scope.filename = data.filename
         $scope.har = data.har
         $scope.env = utils.dict2list(data.env)
         $scope.session = []
-
-        $scope.sitename = data.sitename
-        $scope.siteurl = data.siteurl
+        $scope.setting = data.setting
         $scope.readonly = data.readonly
 
         $scope.recommend()
@@ -76,6 +75,9 @@ define (require, exports, module) ->
         analysis.recommend($scope.har)
 
       $scope.pre_save = () ->
+        alert_elem = angular.element('#save-har .alert-danger').hide()
+        alert_info_elem = angular.element('#save-har .alert-info').hide()
+
         first_entry = (() ->
           for entry in $scope.har.log.entries when entry.checked
             return entry)()
@@ -103,12 +105,12 @@ define (require, exports, module) ->
               failed_asserts: entry.failed_asserts
               extract_variables: entry.extract_variables
           } for entry in $scope.har.log.entries when entry.checked)
-          sitename: $scope.sitename
-          siteurl: $scope.siteurl
+          setting: $scope.setting
         }
 
         save_btn = angular.element('#save-har .btn').button('loading')
-        alert_elem = angular.element('#save-har .alert').hide()
+        alert_elem = angular.element('#save-har .alert-danger').hide()
+        alert_info_elem = angular.element('#save-har .alert-info').hide()
         $http.post(location.pathname.replace('edit', 'save'), data)
         .success((data, status, headers, config) ->
           utils.storage.del('har_filename')
@@ -118,6 +120,7 @@ define (require, exports, module) ->
           pathname = "/tpl/#{data.id}/edit"
           if pathname != location.pathname
             location.pathname = pathname
+          alert_info_elem.text('保存成功').show()
         )
         .error((data, status, headers, config) ->
           alert_elem.text(data).show()

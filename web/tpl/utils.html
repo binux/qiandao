@@ -24,7 +24,7 @@
     $('#modal_load').on('hide.bs.modal', function() {
       return !lock;
     });
-    $(".modal_load").on('click', function() {
+    $(document).on('click', ".modal_load", function() {
       var $this = $(this);
       var text = $this.text();
       //$this.text('loading...');
@@ -53,7 +53,7 @@
 {% macro apost() %}
 <script>
   $(function() {
-    $("a[data-method]").on("click", function() {
+    $(document).on('click', 'a[data-method]', function() {
       var $this = $(this);
       if ($this.data('confirm') && !!!window.confirm($this.data('confirm'))) {
         return false;
@@ -67,13 +67,14 @@
 
 {% macro submit_loading() %}
 <script>
-  $('button[type=submit]').on('click', function() {
+  $(document).on('click', 'button[type=submit]', function() {
     $(this).button('loading');
   })
 </script>
 {% endmacro %}
 
 {% macro input(name, label=None, type="text", value=None, placeholder=None) %}
+{% set label = label if label else name %}
 <div class="form-group">
   <label class="control-label" for="input-{{ name }}">{{ label }}</label>
   <input type="{{ type }}" class="form-control" name="{{ name }}" id="input-{{ name }}"
@@ -81,4 +82,20 @@
   {% if value is not none %}value="{{ value }}"{% endif %}>
   {% if p %}<p class="help-block">{{ p }}</p>{% endif %}
 </div>
+{% endmacro %}
+
+{% macro tplname(tpl) %}
+{% if tpl.note %}
+<span data-toggle="popover" title="{{ tpl.siteurl }}" data-content="{{ tpl.note }}">{{ tpl.sitename or "未命名" }}</span>
+{% else %}
+<span data-toggle="popover" data-content="{{ tpl.siteurl }}">{{ tpl.sitename or "未命名" }}</span>
+{% endif %}
+{% endmacro %}
+
+{% macro username(user) %}
+{% if user.email %}
+<span data-toggle="popover" data-content="{{ user.email }}">{{ user.nickname or '无名氏' }}</span> {{ '\u2714\ufe0e' if user.email_verified }}
+{% else %}
+<span>{{ user.nickname or '无名氏' }}</span> {{ '\u2714\ufe0e' if user.email_varified }}
+{% endif %}
 {% endmacro %}

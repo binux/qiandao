@@ -16,7 +16,9 @@
 <div class="container">
   <div class="row" ng-controller="EntryList">
     <div class="col-md-3" id="editor-switch">
-      <h1 class="text-center">签到<sup>alpha</sup></h1>
+      <a class="h1-index" href="/">
+        <h1 class="text-center">签到<sup>alpha</sup></h1>
+      </a>
       
       <!--checked switch-->
       <div class="list-group">
@@ -134,19 +136,32 @@
               <div class="alert alert-danger" role="alert" style="display: none;">
                 <strong>Oh snap!</strong> Change a few things up and try submitting again.
               </div>
+              <div class="alert alert-info" role="alert" style="display: none;">
+                <strong>Oh snap!</strong> Change a few things up and try submitting again.
+              </div>
               <div class="form-horizontal" role="form">
+
                 <div class="form-group">
                   <label class="col-sm-3 control-label">网站名</label>
                   <div class="col-sm-9">
-                    <input ng-model="sitename">
+                    <input ng-model="setting.sitename">
                   </div>
                 </div>
+
                 <div class="form-group">
                   <label class="col-sm-3 control-label">网站网址</label>
                   <div class="col-sm-9">
-                    <input ng-model="siteurl">
+                    <input ng-model="setting.siteurl">
                   </div>
                 </div>
+
+                <div class="form-group">
+                  <label class="col-sm-3 control-label">备注</label>
+                  <div class="col-sm-9">
+                    <input ng-model="setting.note">
+                  </div>
+                </div>
+
               </div>
             </div>
             <div class="modal-footer">

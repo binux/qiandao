@@ -27,9 +27,7 @@
         {% for tpl in tpls %}
         <tr>
           <td>
-            <span class="sitename">{{ tpl.sitename or "未命名" }}</span>
-            {% if tpl.siteurl %}<a href="{{ tpl.siteurl if tpl.siteurl.startswith('http:') else 'http://'+tpl.siteurl }}" target="_blank" class="glyphicon glyphicon-share"></a>{% endif %}
-            {% if tpl.fork %}[fork]{% endif %}
+            {{ utils.tplname(tpl) }} {% if tpl.siteurl %}- {{ tpl.siteurl }}{% endif %}
           </td>
           <td>
             {{ format_date(tpl.ctime) }}
@@ -46,7 +44,7 @@
           </td>
           <td>
             <a class="" href="/tpl/{{ tpl.id }}/edit" target="_blank">查看</a>
-            <a class="modal_load" href="/task/new/{{ tpl.id }}">新建签到</a>
+            <a class="modal_load" href="/task/new?tplid={{ tpl.id }}">新建签到</a>
           </td>
         </tr>
         {% endfor %}
@@ -55,5 +53,12 @@
   </div>
 </section>
 
+<script>
+  $(function() {
+    $('[data-toggle=popover]').popover({
+      trigger: 'hover'
+    });
+  })
+</script>
 {{ utils.modal_load() }}
 {% endblock %}

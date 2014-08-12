@@ -27,20 +27,29 @@
         </tr>
       </thead>
       <tbody>
-        {% for task in tasks %}
+        {% for task in tasks | sort(reverse=True, attribute="ctime") %}
         <tr>
-          <td>{{ task.sitename }}</td>
+          <td>
+            {% if task.disabled %}[禁用]{% endif %}
+            {{ utils.tplname(task.tpl) }}
+
+            {% if task.note %}
+            -
+              {% if task.note | length > 15 %}
+                <span data-toggle="popover" data-content="{{ task.note }}">{{ task.note or '' | truncate(10, True) }}</span>
+              {% else %} {{ task.note }} {% endif %}
+            {% endif %}
+          </td>
           <td>{{ task.success_count }}</td>
           <td>{{ task.failed_count }}</td>
           <td>{{ format_date(task.last_success) if task.last_success else '从未' }}</td>
           <td>{{ my_status(task) }}</td>
           <td>{{ format_date(task.next) if task.next else '从不' }}</td>
           <td>
-            <!--<a href="#">修改</a>-->
+            <a class="modal_load" href="/task/{{ task.id }}/edit">修改</a>
             <a class="modal_load" href="/task/{{ task.id }}/run">立即执行</a>
             <a href="/tpl/{{ task.tplid }}/edit" target="_blank">查看模板</a>
             <a href="/task/{{ task.id }}/log" target="_blank">执行日志</a>
-            <a data-method="POST" href="/task/{{ task.id }}/del" data-confirm="是否要删除任务?">删除</a>
           </td>
         </tr>
         {% endfor %}
@@ -69,12 +78,11 @@
         </tr>
       </thead>
       <tbody>
-        {% for tpl in tpls %}
+        {% for tpl in tpls | sort(reverse=True, attribute="mtime") %}
         <tr>
           <td>
-            <span class="sitename">{{ tpl.sitename or "未命名" }}</span>
-            {% if tpl.siteurl %}<a href="{{ tpl.siteurl if tpl.siteurl.startswith('http:') else 'http://'+tpl.siteurl }}" target="_blank" class="glyphicon glyphicon-share"></a>{% endif %}
-            {% if tpl.fork %}[fork]{% endif %}
+            {{ utils.tplname(tpl) }}
+            {% if tpl.fork %}<span>[fork]</span>{% endif %}
           </td>
           <td>
             {{ format_date(tpl.ctime) }}
@@ -96,7 +104,7 @@
             <a href="/tpl/{{ tpl.id }}/edit" target="_blank">编辑</a>
             <a data-method="POST" href="/tpl/{{ tpl.id }}/del" data-confirm="是否要删除模板?">删除</a>
             {% endif %}
-            <a class="modal_load" href="/task/new/{{ tpl.id }}">新建签到</a>
+            <a class="modal_load" href="/task/new?tplid={{ tpl.id }}">新建签到</a>
             <a class="modal_load" href="/tpl/{{ tpl.id }}/push">发布</a>
           </td>
         </tr>
@@ -108,6 +116,14 @@
     </div>
   </div>
 </section>
+
+<script>
+  $(function() {
+    $('[data-toggle=popover]').popover({
+      trigger: 'hover'
+    });
+  })
+</script>
 
 {{ utils.modal_load() }}
 {{ utils.apost() }}

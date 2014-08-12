@@ -18,7 +18,7 @@ class TPLDB(BaseDB):
     '''
     tpl db
 
-    id, userid, siteurl, sitename, banner, disabled, public, fork, har, tpl, variables, interval, ctime, mtime, atime, last_success
+    id, userid, siteurl, sitename, banner, disabled, public, fork, har, tpl, variables, interval, note, ctime, mtime, atime, last_success
     '''
     __tablename__ = 'tpl'
 

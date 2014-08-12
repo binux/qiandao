@@ -29,3 +29,6 @@ header .buttons a {
 section h2 a.btn {
   margin-top: -0.2em;
 }
+[data-toggle=popover] {
+  cursor: pointer;
+}

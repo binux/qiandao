@@ -78,36 +78,38 @@ class PushListHandler(BaseHandler):
     @tornado.web.authenticated
     def get(self, status=None):
         user = self.current_user
-        admin = 'admin' in (user.get('role', '') or '')
+        isadmin = user['isadmin']
 
         @utils.func_cache
         def get_user(userid):
             if not userid:
-                return { 'nickname': u'公开' }
-            user = self.db.user.get(userid, fields='nickname, email, email_verified')
+                return dict(
+                        nickname = u'公开',
+                        email = None,
+                        email_verified = True,
+                        )
+            if isadmin:
+                user = self.db.user.get(userid, fields=('id', 'nickname', 'email', 'email_verified'))
+            else:
+                user = self.db.user.get(userid, fields=('id', 'nickname'))
             if not user:
-                return { 'nickname': u'查无此人' }
+                return dict(
+                        nickname = u'公开',
+                        email = None,
+                        email_verified = False,
+                        )
             return user
 
         @utils.func_cache
         def get_tpl(tplid):
             if not tplid:
                 return {}
-            tpl = self.db.tpl.get(tplid, fields=('sitename', 'siteurl', 'note', 'ctime', 'mtime', 'last_success'))
+            tpl = self.db.tpl.get(tplid, fields=('id', 'sitename', 'siteurl', 'banner', 'note', 'ctime', 'mtime', 'last_success'))
             return tpl or {}
 
         def join(pr):
-            from_user = get_user(pr['from_userid'])
-            pr['from_user_name'] = from_user['nickname']
-            if admin:
-                pr['from_user_email'] = from_user.get('email')
-                pr['from_user_email_verified'] = from_user.get('email_verified')
-            to_user = get_user(pr['to_userid'])
-            pr['to_user_name'] = to_user['nickname']
-            if admin:
-                pr['to_user_email'] = to_user.get('email')
-                pr['to_user_email_verified'] = to_user.get('email_verified')
-
+            pr['from_user'] = get_user(pr['from_userid'])
+            pr['to_user'] = get_user(pr['to_userid'])
             pr['from_tpl'] = get_tpl(pr['from_tplid'])
             pr['to_tpl'] = get_tpl(pr['to_tplid'])
             return pr
@@ -118,7 +120,7 @@ class PushListHandler(BaseHandler):
             _f['status'] = status
         for each in self.db.push_request.list(from_userid = user['id'], **_f):
             pushs.append(join(each))
-        if admin:
+        if isadmin:
             for each in self.db.push_request.list(from_userid = None, **_f):
                 pushs.append(join(each))
         pushs.reverse()
@@ -126,7 +128,7 @@ class PushListHandler(BaseHandler):
         pulls = []
         for each in self.db.push_request.list(to_userid = user['id'], **_f):
             pulls.append(join(each))
-        if admin:
+        if isadmin:
             for each in self.db.push_request.list(to_userid = None, **_f):
                 pulls.append(join(each))
         pulls.reverse()
@@ -230,7 +232,7 @@ class PushViewHandler(BaseHandler):
         elif not user['isadmin']:
             raise HTTPError(401)
 
-        tpl = self.db.tpl.get(pr['from_tplid'], fields=('id', 'userid', 'sitename', 'siteurl', 'tpl', 'variables', ))
+        tpl = self.db.tpl.get(pr['from_tplid'], fields=('id', 'userid', 'sitename', 'siteurl', 'banner', 'note', 'tpl', 'variables'))
         if not tpl:
             self.set_status(404)
             self.finish('模板不存在')
@@ -242,8 +244,12 @@ class PushViewHandler(BaseHandler):
             filename = tpl['sitename'] or '未命名模板',
             har = tpl['har'],
             env = dict((x, '') for x in tpl['variables']),
-            sitename = tpl['sitename'],
-            siteurl = tpl['siteurl'],
+            setting = dict(
+                sitename = tpl['sitename'],
+                siteurl = tpl['siteurl'],
+                banner = tpl['banner'],
+                note = tpl['note'],
+                ),
             readonly = True,
             ))
 

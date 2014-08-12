@@ -1,30 +1,54 @@
 {% import "utils.html" as utils %}
-<form method="POST" action="/task/new">
+<form method="POST" action="/task/{{ '%s/edit' % task.id if task else 'new' }}">
   <h1 class="text-center">签到<sup>alpha</sup></h1>
+
+  {% if task.disabled %}
+  <p class="alert alert-danger">任务处于禁用状态，使用 <a class="modal_load alert-link" href="/task/{{ task.id }}/run">立即执行</a> 成功签到一次，即可解除。</p>
+  {% endif %}
+
   <div class="form-group">
     <label class="control-label" for="site-select">网站</label>
     <select class="form-control" name="_binux_tplid">
       {% for tpl in tpls %}
-      {% if tpl.id %}
-      <option value="{{ tpl.id }}" {% if tpl['id'] == tplid %}selected{% endif %}>{{ tpl.sitename or '未命名' }}</option>
-      {% else %}
-      <option disabled>以下为公共模板</option>
-      {% endif %}
+      <option value="{{ tpl.id }}" {% if tpl.id == tplid %}selected{% endif %} {% if not tpl.id %}disabled{% endif %}>{{ tpl.sitename or '未命名' }}</option>
       {% endfor %}
     </select>
   </div>
+
   <div id="variables">
     {% include "task_new_var.html" %}
   </div>
-  <input type="hidden" name="_binux_tested" value="0">
-  <button type="submit" data-loading-text="loading..." class="btn btn-default pull-right">提交</button>
-  <!--<button class="btn btn-default pull-right">测试</button>-->
-  <div class="clearfix"></div>
+
+  <div class="form-group">
+    <label class="control-label" for="note">备注</label>
+    <input type="text" class="form-control" name="_binux_note" value="{{ task.note }}" id="note">
+  </div>
+
+  {% if not task %}
+  <div class="checkbox">
+    <label>
+      <input type="checkbox" name="_binux_tested" id="tested" value="1"> 我今天已经签过到了
+    </label>
+  </div>
+  {% endif %}
+
+  <div class="text-right">
+    {% if task %}
+    <a class="btn btn-default" data-method="POST" href="/task/{{ task.id }}/del" data-confirm="是否要删除任务?">删除</a>
+    {% endif %}
+    <button type="submit" data-loading-text="loading..." class="btn btn-primary">提交</button>
+    <!--<button class="btn btn-default pull-right">测试</button>-->
+  </div>
   <script>
     $(function() {
       $('select[name=_binux_tplid]').on('change', function() {
         $('#variables').load("/tpl/"+$(this).val()+"/var");
-      })
+      });
+      $('#variables').on('change', '[name=username]', function() {
+        if ($('#note').val() == '') {
+          $('#note').val($(this).val());
+        }
+      });
     })
   </script>
   {{ utils.submit_loading() }}

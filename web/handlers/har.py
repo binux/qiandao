@@ -22,7 +22,7 @@ class HAREditor(BaseHandler):
     def post(self, id):
         user = self.current_user
 
-        tpl = self.db.tpl.get(id, fields=['id', 'userid', 'sitename', 'siteurl', 'har', 'variables', 'lock'])
+        tpl = self.db.tpl.get(id, fields=['id', 'userid', 'sitename', 'siteurl', 'banner', 'note', 'har', 'variables', 'lock'])
         if not tpl:
             self.set_status(404)
             self.finish('模板不存在')
@@ -41,8 +41,12 @@ class HAREditor(BaseHandler):
             filename = tpl['sitename'] or '未命名模板',
             har = tpl['har'],
             env = dict((x, '') for x in tpl['variables']),
-            sitename = tpl['sitename'],
-            siteurl = tpl['siteurl'],
+            setting = dict(
+                sitename = tpl['sitename'],
+                siteurl = tpl['siteurl'],
+                note = tpl['note'],
+                banner = tpl['banner'],
+                ),
             readonly = (tpl['userid'] != user['id']) or tpl['lock'],
             ))
 
@@ -118,7 +122,14 @@ class HARSave(BaseHandler):
             id = self.db.tpl.add(userid, har, tpl, variables)
             if not id:
                 raise Exception('create tpl error')
-        self.db.tpl.mod(id, sitename=data.get('sitename'), siteurl=data.get('siteurl'), mtime=time.time())
+
+        setting = data.get('setting', {})
+        self.db.tpl.mod(id,
+                sitename=setting.get('sitename'),
+                siteurl=setting.get('siteurl'),
+                note=setting.get('note'),
+                interval=setting.get('interval'),
+                mtime=time.time())
         self.finish({
             'id': id
             })

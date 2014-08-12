@@ -14,13 +14,15 @@ from libs.fetcher import Fetcher
 
 class TaskNewHandler(BaseHandler):
     @tornado.web.authenticated
-    def get(self, tplid):
+    def get(self):
         user = self.current_user
+        tplid = self.get_argument('tplid', None)
         fields = ('id', 'sitename', )
 
         tpls = sorted(self.db.tpl.list(userid=user['id'], fields=fields), key=lambda t: -t['id'])
-        tpls.append({})
-        tpls += list(self.db.tpl.list(userid=None, fields=fields))
+        if tpls:
+            tpls.append({'id': 0, 'sitename': u'以下为公共模板'})
+        tpls += sorted(self.db.tpl.list(userid=None, fields=fields), key=lambda t: t['sitename'])
 
         if not tplid:
             for tpl in tpls:
@@ -29,18 +31,19 @@ class TaskNewHandler(BaseHandler):
                     break
         tplid = int(tplid)
 
-        tpl = self.db.tpl.get(tplid, fields=('userid', 'variables'))
+        tpl = self.db.tpl.get(tplid, fields=('id', 'userid', 'note', 'variables'))
         if tpl['userid'] and tpl['userid'] != user['id']:
             raise HTTPError(401)
         variables = json.loads(self.db.tpl.get(tplid, fields='variables')['variables'])
         
-        self.render('task_new.html', tpls=tpls, tplid=tplid, variables=variables)
+        self.render('task_new.html', tpls=tpls, tplid=tplid, note=tpl['note'], variables=variables, task={})
 
     @tornado.web.authenticated
-    def post(self, tplid):
+    def post(self, taskid=None):
         user = self.current_user
         tplid = int(self.get_body_argument('_binux_tplid'))
-        tested = int(self.get_body_argument('_binux_tested'))
+        tested = self.get_body_argument('_binux_tested', False)
+        note = self.get_body_argument('_binux_note')
 
         env = {}
         for key, value in self.request.body_arguments.iteritems():
@@ -51,14 +54,35 @@ class TaskNewHandler(BaseHandler):
             env[key] = value[0]
         env = self.db.user.encrypt(user['id'], env)
 
-        taskid = self.db.task.add(tplid, user['id'], env)
-        if tested:
-            self.db.task.mod(taskid, next=time.time() + 24*60*60)
+        if not taskid:
+            task = None
+            taskid = self.db.task.add(tplid, user['id'], env)
         else:
-            self.db.task.mod(taskid, next=time.time() + 15)
+            task = self.db.task.get(taskid, fields=('id', 'userid', ))
+            if task['userid'] != user['id']:
+                raise HTTPError(401)
+            self.db.task.mod(taskid, init_env=env, env=None, session=None, note=note)
+
+        if not task:
+            if tested:
+                self.db.task.mod(taskid, note=note, next=time.time() + 24*60*60)
+            else:
+                self.db.task.mod(taskid, note=note, next=time.time() + 15)
 
         referer = self.request.headers.get('referer', '/my/')
         self.redirect(referer)
+
+class TaskEditHandler(TaskNewHandler):
+    @tornado.web.authenticated
+    def get(self, taskid):
+        user = self.current_user
+        task = self.db.task.get(taskid, fields=('id', 'userid', 'tplid', 'disabled', 'note', ))
+        if task['userid'] != user['id']:
+            raise HTTPError(401)
+
+        tpl = self.db.tpl.get(task['tplid'], fields=('id', 'note', 'sitename', 'variables'))
+        variables = json.loads(tpl['variables'])
+        self.render('task_new.html', tpls=[tpl, ], tplid=tpl['id'], note=tpl['note'], variables=variables, task=task)
 
 class TaskRunHandler(BaseHandler):
     @tornado.web.authenticated
@@ -97,11 +121,14 @@ class TaskRunHandler(BaseHandler):
 
         self.db.tasklog.add(task['id'], success=True)
         self.db.task.mod(task['id'],
+                disabled = False,
                 last_success = time.time(),
                 last_failed_count = 0,
                 success_count = task['success_count'] + 1,
                 mtime = time.time(),
                 next = time.time() + (tpl['interval'] if tpl['interval'] else 24 * 60 * 60))
+        if time.time() - tpl['last_success'] > 60 * 60:
+            self.db.tpl.mod(tpl['id'], last_success = time.time())
         self.finish('<h1 class="alert alert-success text-center">签到成功</h1>')
         return
 
@@ -131,7 +158,8 @@ class TaskDelHandler(BaseHandler):
         self.redirect(referer)
 
 handlers = [
-        ('/task/new/?(\d+)?', TaskNewHandler),
+        ('/task/new', TaskNewHandler),
+        ('/task/(\d+)/edit', TaskEditHandler),
         ('/task/(\d+)/del', TaskDelHandler),
         ('/task/(\d+)/log', TaskLogHandler),
         ('/task/(\d+)/run', TaskRunHandler),
