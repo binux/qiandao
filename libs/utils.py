@@ -152,6 +152,8 @@ def find_encoding(content, headers=None):
     if isinstance(content, unicode):
         return 'unicode'
 
+    encoding = None
+
     # Try charset from content-type
     if headers:
         encoding = get_encoding_from_headers(headers)
@@ -170,7 +172,7 @@ def find_encoding(content, headers=None):
     if encoding and encoding.lower() == 'gb2312':
         encoding = 'gb18030'
 
-    return encoding
+    return encoding or 'latin_1'
 
 def decode(content, headers=None):
     encoding = find_encoding(content, headers)
