@@ -179,12 +179,12 @@ class Fetcher(object):
     def run_rule(response, rule, env):
         success = True
 
-        content = -1
+        content = [-1, ]
         def getdata(_from):
             if _from == 'content':
-                if content == -1:
-                    content = utils.decode(response.body)
-                return content
+                if content[0] == -1:
+                    content[0] = utils.decode(response.body)
+                return content[0]
             elif _from == 'status':
                 return '%s' % response.code
             elif _from.startswith('header-'):
@@ -274,7 +274,7 @@ class Fetcher(object):
                 env = result['env']
             except Exception as e:
                 raise Exception('failed at %d request, error:%s, %s' % (
-                    i, e.message, entry['request']['url']))
+                    i, e, entry['request']['url']))
             if not result['success']:
                 raise Exception('failed at %d request, code:%s, %s' % (
                     i, result['response'].code, entry['request']['url']))
