@@ -51,7 +51,6 @@ class RegisterHandler(BaseHandler):
     def get(self):
         return self.render('register.html')
 
-    @gen.coroutine
     def post(self):
         email = self.get_argument('email')
         password = self.get_argument('password')
@@ -73,28 +72,37 @@ class RegisterHandler(BaseHandler):
             return
         user = self.db.user.get(email=email, fields=('id', 'email', 'nickname', 'role'))
 
-        try:
-            verified_code = [user['email'], time.time()]
-            verified_code = self.db.user.encrypt(user['id'], verified_code)
-            verified_code = self.db.user.encrypt(0, [user['id'], verified_code])
-            verified_code = base64.b64encode(verified_code)
-            _ = yield utils.send_mail(to=email, subject=u"欢迎注册 签到", html=u"""
-
-            <h1 style="margin-left: 30px;">签到<sup>alpha</sup></h1>
-
-            <p>点击以下链接验证邮箱，当您的签到失败的时候，会自动给您发送通知邮件。</p>
-
-            <p><a href="http://qiandao.today/verify/%s">http://qiandao.today/verify/%s</a></p>
-
-            <p>点击或复制到浏览器中打开</p>
-
-            <p>您也可以不验证邮箱继续使用签到的服务，我们不会继续给您发送任何邮件。</p>
-            """ % (verified_code, verified_code), async=True)
-        except Exception as e:
-            logger.exception(e)
-
         self.set_secure_cookie('user', umsgpack.packb(user))
         self.redirect('/my')
+
+        self.send_mail(user)
+
+    def send_mail(self, user):
+        verified_code = [user['email'], time.time()]
+        verified_code = self.db.user.encrypt(user['id'], verified_code)
+        verified_code = self.db.user.encrypt(0, [user['id'], verified_code])
+        verified_code = base64.b64encode(verified_code)
+        future = utils.send_mail(to=email, subject=u"欢迎注册 签到", html=u"""
+
+        <h1 style="margin-left: 30px;">签到<sup>alpha</sup></h1>
+
+        <p>点击以下链接验证邮箱，当您的签到失败的时候，会自动给您发送通知邮件。</p>
+
+        <p><a href="http://qiandao.today/verify/%s">http://qiandao.today/verify/%s</a></p>
+
+        <p>点击或复制到浏览器中打开</p>
+
+        <p>您也可以不验证邮箱继续使用签到的服务，我们不会继续给您发送任何邮件。</p>
+        """ % (verified_code, verified_code), async=True)
+
+        def get_result(future):
+            try:
+                return future.result()
+            except Exception as e:
+                logging.error(e)
+
+        future.add_done_callback(get_result)
+        return future
 
 class VerifyHandler(BaseHandler):
     def get(self, code):
