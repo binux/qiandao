@@ -13,7 +13,7 @@ define (require, exports, module) ->
 
       # on uploaded event
       $rootScope.$on('har-loaded', (ev, data) ->
-        console.log data
+        console.info(data)
 
         $scope.filename = data.filename
         $scope.har = data.har
@@ -39,7 +39,7 @@ define (require, exports, module) ->
       )
       $scope.save_change = utils.debounce((() ->
         if ($scope.filename and not $scope.readonly)
-          console.log 'local saved'
+          console.debug('local saved')
           utils.storage.set('har_har', $scope.har)
       ), 1000)
 

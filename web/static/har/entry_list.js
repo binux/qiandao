@@ -8,7 +8,7 @@
       $scope.filter = {};
       $rootScope.$on('har-loaded', function(ev, data) {
         var x;
-        console.log(data);
+        console.info(data);
         $scope.filename = data.filename;
         $scope.har = data.har;
         $scope.env = utils.dict2list(data.env);
@@ -45,7 +45,7 @@
       });
       $scope.save_change = utils.debounce((function() {
         if ($scope.filename && !$scope.readonly) {
-          console.log('local saved');
+          console.debug('local saved');
           return utils.storage.set('har_har', $scope.har);
         }
       }), 1000);

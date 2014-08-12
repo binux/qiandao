@@ -55,7 +55,7 @@
       return har;
     };
     analyze_cookies = function(har) {
-      var cookie, cookie_jar, cookies, entry, h, header, _i, _j, _k, _l, _len, _len1, _len2, _len3, _ref, _ref1, _ref2, _ref3;
+      var cookie, cookie_jar, cookies, entry, error, h, header, _i, _j, _k, _l, _len, _len1, _len2, _len3, _ref, _ref1, _ref2, _ref3;
       cookie_jar = new utils.CookieJar();
       _ref = har.log.entries;
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
@@ -100,9 +100,14 @@
         for (_l = 0, _len3 = _ref3.length; _l < _len3; _l++) {
           header = _ref3[_l];
           entry.filter_set_cookie = true;
-          cookie_jar.setCookieSync(header.value, entry.request.url, {
-            now: new Date(entry.startedDateTime)
-          });
+          try {
+            cookie_jar.setCookieSync(header.value, entry.request.url, {
+              now: new Date(entry.startedDateTime)
+            });
+          } catch (_error) {
+            error = _error;
+            console.error(error);
+          }
         }
       }
       return har;
@@ -166,7 +171,7 @@
           entry.request.postData.params = result;
         } catch (_error) {
           error = _error;
-          console.log(error);
+          console.error(error);
           entry.request.postData.params = void 0;
           continue;
         }

@@ -17,7 +17,7 @@ define (require, exports, module) ->
 
     # on edit event
     $scope.$on('edit-entry', (ev, entry) ->
-      console.log entry
+      console.info(entry)
 
       $scope.entry = entry
       $scope.entry.success_asserts ?= [{re: ''+$scope.entry.response.status, from: 'status'}, ]
@@ -43,7 +43,7 @@ define (require, exports, module) ->
 
       $scope.$apply ->
         $scope.preview = undefined
-      console.log 'har-change'
+      console.debug('har-change')
       $rootScope.$broadcast('har-change')
     )
 
@@ -139,7 +139,7 @@ define (require, exports, module) ->
       ).
       error((data, status, headers, config) ->
         angular.element('.do-test').button('reset')
-        console.log 'error', data, status, headers, config
+        console.error('error', data, status, headers, config)
         $scope.alert(data)
       )
 
@@ -168,7 +168,7 @@ define (require, exports, module) ->
         try
           re = new RegExp(re)
         catch error
-          console.log(error)
+          console.error(error)
           return null
 
         if m = data.match(re)

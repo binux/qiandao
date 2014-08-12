@@ -9,7 +9,7 @@
       $scope.panel = 'request';
       $scope.$on('edit-entry', function(ev, entry) {
         var _base, _base1, _base2;
-        console.log(entry);
+        console.info(entry);
         $scope.entry = entry;
         if ((_base = $scope.entry).success_asserts == null) {
           _base.success_asserts = [
@@ -48,7 +48,7 @@
         $scope.$apply(function() {
           return $scope.preview = void 0;
         });
-        console.log('har-change');
+        console.debug('har-change');
         return $rootScope.$broadcast('har-change');
       });
       $scope.alert = function(message) {
@@ -195,7 +195,7 @@
           }
         }).error(function(data, status, headers, config) {
           angular.element('.do-test').button('reset');
-          console.log('error', data, status, headers, config);
+          console.error('error', data, status, headers, config);
           return $scope.alert(data);
         });
         return $scope.preview_match = function(re, from) {
@@ -231,7 +231,7 @@
             re = new RegExp(re);
           } catch (_error) {
             error = _error;
-            console.log(error);
+            console.error(error);
             return null;
           }
           if (m = data.match(re)) {

@@ -59,7 +59,10 @@ define (require, exports, module) ->
       # update cookie from response
       for header in (h for h in entry.response.headers when h.name.toLowerCase() == 'set-cookie')
         entry.filter_set_cookie = true
-        cookie_jar.setCookieSync(header.value, entry.request.url, {now: new Date(entry.startedDateTime)})
+        try
+          cookie_jar.setCookieSync(header.value, entry.request.url, {now: new Date(entry.startedDateTime)})
+        catch error
+          console.error(error)
 
     return har
 
@@ -101,7 +104,7 @@ define (require, exports, module) ->
           result.push({name: key, value: value})
         entry.request.postData.params = result
       catch error
-        console.log(error)
+        console.error(error)
         entry.request.postData.params = undefined
         continue
     return har
