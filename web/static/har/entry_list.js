@@ -87,7 +87,7 @@
         return analysis.recommend($scope.har);
       };
       $scope.pre_save = function() {
-        var alert_elem, alert_info_elem, error, first_entry;
+        var alert_elem, alert_info_elem, error, first_entry, _base, _base1;
         alert_elem = angular.element('#save-har .alert-danger').hide();
         alert_info_elem = angular.element('#save-har .alert-info').hide();
         first_entry = (function() {
@@ -101,13 +101,16 @@
           }
         })();
         try {
-          if ($scope.sitename == null) {
-            $scope.sitename = first_entry && utils.get_domain(first_entry.request.url).split('.')[0];
+          if ($scope.setting == null) {
+            $scope.setting = {};
           }
-          return $scope.siteurl != null ? $scope.siteurl : $scope.siteurl = first_entry && utils.url_parse(first_entry.request.url).host;
+          if ((_base = $scope.setting).sitename == null) {
+            _base.sitename = first_entry && utils.get_domain(first_entry.request.url).split('.')[0];
+          }
+          return (_base1 = $scope.setting).siteurl != null ? _base1.siteurl : _base1.siteurl = first_entry && utils.url_parse(first_entry.request.url).host;
         } catch (_error) {
           error = _error;
-          return null;
+          return console.error(error);
         }
       };
       har2tpl = function(har) {
