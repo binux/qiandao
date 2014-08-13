@@ -22,7 +22,7 @@
         </tr>
       </thead>
       <tbody>
-        {% for log in tasklog %}
+        {% for log in tasklog | sort(reverse=True, attribute="ctime") %}
         <tr>
           <td>{{ format_date(log.ctime) }}</td>
           <td>

@@ -58,7 +58,7 @@ class TPLVarHandler(BaseHandler):
             return
         self.render('task_new_var.html', note=tpl['note'], variables=json.loads(tpl['variables']))
 
-def TPLDelHandler(BaseHandler):
+class TPLDelHandler(BaseHandler):
     @tornado.web.authenticated
     def post(self, tplid):
         user = self.current_user

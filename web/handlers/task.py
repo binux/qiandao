@@ -52,15 +52,18 @@ class TaskNewHandler(BaseHandler):
             if not value:
                 continue
             env[key] = value[0]
-        env = self.db.user.encrypt(user['id'], env)
 
         if not taskid:
             task = None
+            env = self.db.user.encrypt(user['id'], env)
             taskid = self.db.task.add(tplid, user['id'], env)
         else:
-            task = self.db.task.get(taskid, fields=('id', 'userid', ))
+            task = self.db.task.get(taskid, fields=('id', 'userid', 'init_env'))
             if task['userid'] != user['id']:
                 raise HTTPError(401)
+            init_env = self.db.user.decrypt(user['id'], task['init_env'])
+            env.update(init_env)
+            env = self.db.user.encrypt(user['id'], env)
             self.db.task.mod(taskid, init_env=env, env=None, session=None, note=note)
 
         if not task:
@@ -87,7 +90,7 @@ class TaskEditHandler(TaskNewHandler):
 class TaskRunHandler(BaseHandler):
     @tornado.web.authenticated
     @gen.coroutine
-    def get(self, taskid):
+    def post(self, taskid):
         user = self.current_user
         task = self.db.task.get(taskid, fields=('id', 'tplid', 'userid', 'init_env',
             'env', 'session', 'last_success', 'last_failed', 'success_count',

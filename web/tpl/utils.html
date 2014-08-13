@@ -25,6 +25,8 @@
       return !lock;
     });
     $(document).on('click', ".modal_load", function() {
+      if (lock) return false;
+
       var $this = $(this);
       var text = $this.text();
       //$this.text('loading...');
@@ -32,7 +34,9 @@
       $('#modal_load .modal-content').html('<h1 class="text-center alert alert-info">loading...</h1>');
       $('#modal_load').modal('show');
 
-      $.ajax($this.attr('href'))
+      $.ajax($this.attr('href'), {
+        type: $this.data('load-method') || 'GET',
+      })
       .done(function(data) {
         $('#modal_load .modal-content').html(data);
       })

@@ -31,7 +31,7 @@
         <tr>
           <td>
             {% if task.disabled %}[禁用]{% endif %}
-            {{ utils.tplname(task.tpl) }}
+            {{ utils.tplname(task.tpl) if task.tpl else "[已删除]" }}
 
             {% if task.note %}
             -
@@ -47,7 +47,7 @@
           <td>{{ format_date(task.next) if task.next else '从不' }}</td>
           <td>
             <a class="modal_load" href="/task/{{ task.id }}/edit">修改</a>
-            <a class="modal_load" href="/task/{{ task.id }}/run">立即执行</a>
+            <a data-load-method="POST" class="modal_load" href="/task/{{ task.id }}/run">立即执行</a>
             <a href="/tpl/{{ task.tplid }}/edit" target="_blank">查看模板</a>
             <a href="/task/{{ task.id }}/log" target="_blank">执行日志</a>
           </td>
