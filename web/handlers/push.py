@@ -42,7 +42,7 @@ class PushListHandler(BaseHandler):
         def get_tpl(tplid):
             if not tplid:
                 return {}
-            tpl = self.db.tpl.get(tplid, fields=('id', 'sitename', 'siteurl', 'banner', 'note', 'ctime', 'mtime', 'last_success'))
+            tpl = self.db.tpl.get(tplid, fields=('id', 'userid', 'sitename', 'siteurl', 'banner', 'note', 'ctime', 'mtime', 'last_success'))
             return tpl or {}
 
         def join(pr):
@@ -61,7 +61,6 @@ class PushListHandler(BaseHandler):
         if isadmin:
             for each in self.db.push_request.list(from_userid = None, **_f):
                 pushs.append(join(each))
-        pushs.reverse()
 
         pulls = []
         for each in self.db.push_request.list(to_userid = user['id'], **_f):
@@ -69,7 +68,6 @@ class PushListHandler(BaseHandler):
         if isadmin:
             for each in self.db.push_request.list(to_userid = None, **_f):
                 pulls.append(join(each))
-        pulls.reverse()
 
         self.render('push_list.html', pushs=pushs, pulls=pulls)
 
@@ -85,13 +83,18 @@ class PushActionHandler(BaseHandler):
             raise HTTPError(400)
 
         if action in ('accept', 'refuse'):
-            if pr['to_userid']:
-                if user['id'] != pr['to_userid']:
-                    raise HTTPError(401)
-            elif not user['isadmin']:
+            while True:
+                if pr['to_userid'] == user['id']:
+                    break
+                if not pr['to_userid'] and user['isadmin']:
+                    break
                 raise HTTPError(401)
         elif action in ('cancel', ):
-            if not user['isadmin'] and user['id'] != pr['from_userid']:
+            while True:
+                if pr['from_userid'] == user['id']:
+                    break
+                if not pr['from_userid'] and user['isadmin']:
+                    break
                 raise HTTPError(401)
 
         getattr(self, action)(pr)
@@ -164,17 +167,20 @@ class PushViewHandler(BaseHandler):
         if pr['status'] != self.db.push_request.PENDING:
             raise HTTPError(401)
 
-        if pr['to_userid']:
-            if user['id'] != pr['to_userid']:
-                raise HTTPError(401)
-        elif not user['isadmin']:
+        while True:
+            if pr['to_userid'] == user['id']:
+                break
+            if pr['from_userid'] == user['id']:
+                break
+            if not pr['to_userid'] and user['isadmin']:
+                break
+            if not pr['from_userid'] and user['isadmin']:
+                break
             raise HTTPError(401)
 
         tpl = self.db.tpl.get(pr['from_tplid'], fields=('id', 'userid', 'sitename', 'siteurl', 'banner', 'note', 'tpl', 'variables'))
         if not tpl:
-            self.set_status(404)
-            self.finish('模板不存在')
-            return
+            raise HTTPError(404)
 
         tpl['har'] = self.fetcher.tpl2har(
                 self.db.user.decrypt(pr['from_userid'], tpl['tpl']))

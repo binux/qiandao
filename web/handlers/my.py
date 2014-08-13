@@ -28,7 +28,7 @@ class MyHandler(BaseHandler):
 
         tasks = []
         for task in self.db.task.list(user['id'], fields=('id', 'tplid', 'note', 'disabled', 'last_success', 'success_count', 'failed_count', 'last_failed', 'next', 'last_failed_count', 'ctime'), limit=None):
-            tpl = self.db.tpl.get(task['tplid'], fields=('sitename', 'siteurl', 'banner', 'note') )
+            tpl = self.db.tpl.get(task['tplid'], fields=('id', 'userid', 'sitename', 'siteurl', 'banner', 'note') )
             task['tpl'] = tpl
             tasks.append(task)
         self.render('my.html', tpls=tpls, tasks=tasks, my_status=my_status)

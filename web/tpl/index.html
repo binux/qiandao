@@ -10,8 +10,11 @@
   <form>
     <h1>签到<sup>alpha</sup></h1>
 
-    <div class="form-group">
-      <label class="control-label" for="site-select">网站</label>
+    <div class="form-group" id="site-select-div">
+      <label class="control-label" for="site-select">
+        <span>网站</span>
+        <a href="/tpls/public">查看所有公开模板</a>
+      </label>
       <select class="form-control" name="_binux_tplid">
         {% for tpl in tpls %}
         <option value="{{ tpl.id }}" {% if tpl.id == tplid %}selected{% endif %} {% if not tpl.id %}disabled{% endif %}>{{ tpl.sitename or '未命名' }}</option>

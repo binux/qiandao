@@ -26,10 +26,8 @@ class IndexHandlers(BaseHandler):
                     tplid = tpl['id']
                     break
         tplid = int(tplid)
-        tpl = self.db.tpl.get(tplid, fields=('id', 'userid', 'note', 'variables'))
-        if tpl['userid']:
-            raise HTTPError(401)
-        variables = json.loads(self.db.tpl.get(tplid, fields='variables')['variables'])
+        tpl = self.check_permission(self.db.tpl.get(tplid, fields=('id', 'userid', 'note', 'variables')))
+        variables = json.loads(tpl['variables'])
         
         return self.render('index.html', tpls=tpls, tplid=tplid, note=tpl['note'], variables=variables)
 

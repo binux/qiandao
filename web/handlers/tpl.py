@@ -15,7 +15,7 @@ class TPLPushHandler(BaseHandler):
     def get(self, tplid):
         user = self.current_user
         tpl = self.db.tpl.get(tplid, fields=('id', 'userid', 'sitename'))
-        if tpl['userid'] != user['id']:
+        if not self.permission(tpl, 'w'):
             self.finish(u'<span class="alert alert-danger">没有权限</span>')
             return
         tpls = self.db.tpl.list(userid=None, fields=('id', 'sitename'))
@@ -25,8 +25,8 @@ class TPLPushHandler(BaseHandler):
     def post(self, tplid):
         user = self.current_user
         tplid = int(tplid)
-        tpl = self.db.tpl.get(tplid, fields=('userid', ))
-        if tpl['userid'] != user['id']:
+        tpl = self.db.tpl.get(tplid, fields=('id', 'userid', ))
+        if not self.permission(tpl, 'w'):
             self.finish(u'<span class="alert alert-danger">没有权限</span>')
             return
 
@@ -36,15 +36,15 @@ class TPLPushHandler(BaseHandler):
             to_tplid = None
             to_userid = None
         else:
-            totpl = self.db.tpl.get(to_tplid, fields=('userid', ))
+            totpl = self.db.tpl.get(to_tplid, fields=('id', 'userid', ))
             if not totpl:
                 self.finish(u'<span class="alert alert-danger">模板不存在</span>')
                 return
             to_userid = totpl['userid']
 
-        self.db.push_request.add(from_tplid=tplid, from_userid=user['id'],
+        self.db.push_request.add(from_tplid=tpl['id'], from_userid=user['id'],
                 to_tplid=to_tplid, to_userid=to_userid, msg=msg)
-        self.db.tpl.mod(tplid, lock=True)
+        self.db.tpl.mod(tpl['id'], lock=True)
 
         #referer = self.request.headers.get('referer', '/my/')
         self.redirect('/pushs')
@@ -53,7 +53,7 @@ class TPLVarHandler(BaseHandler):
     def get(self, tplid):
         user = self.current_user
         tpl = self.db.tpl.get(tplid, fields=('id', 'note', 'userid', 'variables'))
-        if tpl['userid'] and (not user or tpl['userid'] != user['id']):
+        if not self.permission(tpl):
             self.finish('<span class="alert alert-danger">没有权限</span>')
             return
         self.render('task_new_var.html', note=tpl['note'], variables=json.loads(tpl['variables']))
@@ -62,13 +62,7 @@ class TPLDelHandler(BaseHandler):
     @tornado.web.authenticated
     def post(self, tplid):
         user = self.current_user
-        tpl = self.db.tpl.get(tplid, fields=('id', 'userid'))
-        if tpl['userid']:
-            if user['id'] != tpl['userid']:
-                raise HTTPError(401)
-        else:
-            if not user['isadmin']:
-                raise HTTPError(401)
+        tpl = self.check_permission(self.db.tpl.get(tplid, fields=('id', 'userid')), 'w')
 
         self.db.tpl.delete(tplid)
         referer = self.request.headers.get('referer', '/my/')
@@ -85,10 +79,8 @@ class TPLRunHandler(BaseHandler):
         tplid = tplid or data.get('tplid') or self.get_argument('_binux_tplid', None)
         fetch_tpl = None
         if tplid:
-            tpl = self.db.tpl.get(tplid, fields=('id', 'userid', 'sitename',
-                'siteurl', 'tpl', 'interval', 'last_success'))
-            if tpl['userid'] and (not user or tpl['userid'] != user['id']):
-                raise HTTPError(401)
+            tpl = self.check_permission(self.db.tpl.get(tplid, fields=('id', 'userid', 'sitename',
+                'siteurl', 'tpl', 'interval', 'last_success')))
             fetch_tpl = self.db.user.decrypt(tpl['userid'], tpl['tpl'])
 
         if not fetch_tpl:

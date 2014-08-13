@@ -6,7 +6,7 @@
 {% endblock %}
 
 {% block body %}
-{{ utils.header() }}
+{{ utils.header(current_user) }}
 
 <section>
   <div class="container">
@@ -31,7 +31,7 @@
         </tr>
       </thead>
       <tbody>
-        {% for each in pushs %}
+        {% for each in pushs | sort(reverse=True, attribute="ctime") %}
         <tr>
           <td>
             {{ utils.username(each.from_user) }}
@@ -60,6 +60,7 @@
           </td>
           <td>
             {% if each.status == 0 %}
+            <a href="/push/{{ each.id }}/view" target="_blank">查看</a>
             <a data-method="post" href="/push/{{ each.id }}/cancel">取消</a>
             {% endif %}
           </td>
@@ -94,7 +95,7 @@
         </tr>
       </thead>
       <tbody>
-        {% for each in pulls %}
+        {% for each in pulls | sort(reverse=True, attribute="ctime") %}
         <tr>
           <td>
             {{ utils.username(each.from_user) }}
@@ -123,7 +124,7 @@
           </td>
           <td>
             {% if each.status == 0 %}
-            <a href="/push/{{ each.id }}/view">查看</a>
+            <a href="/push/{{ each.id }}/view" target="_blank">查看</a>
             <a data-method="post" href="/push/{{ each.id }}/accept">接受</a>
             <a data-method="post" href="/push/{{ each.id }}/refuse">拒绝</a>
             {% endif %}

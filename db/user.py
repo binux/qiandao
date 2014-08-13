@@ -98,14 +98,21 @@ class UserDB(BaseDB):
             userkey = self.__getuserkey(id)
         else:
             userkey = config.aes_key
-        return crypto.aes_encrypt(data, userkey)
+
+        try:
+            return crypto.aes_encrypt(data, userkey)
+        except Exception as e:
+            raise self.UserDBException('encrypt error')
 
     def decrypt(self, id, data):
         if id:
             userkey = self.__getuserkey(id)
         else:
             userkey = config.aes_key
-        return crypto.aes_decrypt(data, userkey)
+        try:
+            return crypto.aes_decrypt(data, userkey)
+        except Exception as e:
+            raise self.UserDBException('decrypt error')
 
     def get(self, id=None, email=None, fields=None):
         assert 'userkey' not in fields, 'userkey not allow to get'

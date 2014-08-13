@@ -12,13 +12,14 @@ from tornado import gen
 from base import *
 
 class TaskNewHandler(BaseHandler):
-    @tornado.web.authenticated
     def get(self):
         user = self.current_user
         tplid = self.get_argument('tplid', None)
         fields = ('id', 'sitename', )
 
-        tpls = sorted(self.db.tpl.list(userid=user['id'], fields=fields), key=lambda t: -t['id'])
+        tpls = []
+        if user:
+            tpls += sorted(self.db.tpl.list(userid=user['id'], fields=fields), key=lambda t: -t['id'])
         if tpls:
             tpls.append({'id': 0, 'sitename': u'以下为公共模板'})
         tpls += sorted(self.db.tpl.list(userid=None, fields=fields), key=lambda t: t['sitename'])
@@ -30,10 +31,8 @@ class TaskNewHandler(BaseHandler):
                     break
         tplid = int(tplid)
 
-        tpl = self.db.tpl.get(tplid, fields=('id', 'userid', 'note', 'variables'))
-        if tpl['userid'] and tpl['userid'] != user['id']:
-            raise HTTPError(401)
-        variables = json.loads(self.db.tpl.get(tplid, fields='variables')['variables'])
+        tpl = self.check_permission(self.db.tpl.get(tplid, fields=('id', 'userid', 'note', 'variables')))
+        variables = json.loads(tpl['variables'])
         
         self.render('task_new.html', tpls=tpls, tplid=tplid, note=tpl['note'], variables=variables, task={})
 
@@ -57,9 +56,8 @@ class TaskNewHandler(BaseHandler):
             env = self.db.user.encrypt(user['id'], env)
             taskid = self.db.task.add(tplid, user['id'], env)
         else:
-            task = self.db.task.get(taskid, fields=('id', 'userid', 'init_env'))
-            if task['userid'] != user['id']:
-                raise HTTPError(401)
+            task = self.check_permission(self.db.task.get(taskid, fields=('id', 'userid', 'init_env')), 'w')
+
             init_env = self.db.user.decrypt(user['id'], task['init_env'])
             env.update(init_env)
             env = self.db.user.encrypt(user['id'], env)
@@ -71,20 +69,18 @@ class TaskNewHandler(BaseHandler):
             else:
                 self.db.task.mod(taskid, note=note, next=time.time() + 15)
 
-        referer = self.request.headers.get('referer', '/my/')
-        self.redirect(referer)
+        #referer = self.request.headers.get('referer', '/my/')
+        self.redirect('/my/')
 
 class TaskEditHandler(TaskNewHandler):
     @tornado.web.authenticated
     def get(self, taskid):
         user = self.current_user
-        task = self.db.task.get(taskid, fields=('id', 'userid', 'tplid', 'disabled', 'note', ))
-        if task['userid'] != user['id']:
-            raise HTTPError(401)
+        task = self.check_permission(self.db.task.get(taskid, fields=('id', 'userid',
+            'tplid', 'disabled', 'note')), 'w')
 
-        tpl = self.db.tpl.get(task['tplid'], fields=('id', 'note', 'sitename', 'variables'))
-        if not tpl:
-            raise HTTPError(404)
+        tpl = self.check_permission(self.db.tpl.get(task['tplid'], fields=('id', 'userid', 'note',
+            'sitename', 'variables')))
 
         variables = json.loads(tpl['variables'])
         self.render('task_new.html', tpls=[tpl, ], tplid=tpl['id'], note=tpl['note'], variables=variables, task=task)
@@ -94,20 +90,12 @@ class TaskRunHandler(BaseHandler):
     @gen.coroutine
     def post(self, taskid):
         user = self.current_user
-        task = self.db.task.get(taskid, fields=('id', 'tplid', 'userid', 'init_env',
+        task = self.check_permission(self.db.task.get(taskid, fields=('id', 'tplid', 'userid', 'init_env',
             'env', 'session', 'last_success', 'last_failed', 'success_count',
-            'failed_count', 'last_failed_count', 'next', 'disabled'))
-        if task['userid'] != user['id']:
-            raise HTTPError(401)
-        if not task:
-            raise HTTPError(404)
+            'failed_count', 'last_failed_count', 'next', 'disabled')), 'w')
 
-        tpl = self.db.tpl.get(task['tplid'], fields=('id', 'userid', 'sitename',
-            'siteurl', 'tpl', 'interval', 'last_success'))
-        if not tpl:
-            raise HTTPError(403)
-        if tpl['userid'] and tpl['userid'] != user['id']:
-            raise HTTPError(401)
+        tpl = self.check_permission(self.db.tpl.get(task['tplid'], fields=('id', 'userid', 'sitename',
+            'siteurl', 'tpl', 'interval', 'last_success')))
 
         fetch_tpl = self.db.user.decrypt(
                 0 if not tpl['userid'] else task['userid'], tpl['tpl'])
@@ -131,7 +119,7 @@ class TaskRunHandler(BaseHandler):
                 success_count = task['success_count'] + 1,
                 mtime = time.time(),
                 next = time.time() + (tpl['interval'] if tpl['interval'] else 24 * 60 * 60))
-        if time.time() - tpl['last_success'] > 60 * 60:
+        if time.time() - (tpl['last_success'] or 0) > 60 * 60:
             self.db.tpl.mod(tpl['id'], last_success = time.time())
         self.finish('<h1 class="alert alert-success text-center">签到成功</h1>')
         return
@@ -140,9 +128,7 @@ class TaskLogHandler(BaseHandler):
     @tornado.web.authenticated
     def get(self, taskid):
         user = self.current_user
-        task = self.db.task.get(taskid, fields=('id', 'tplid', 'userid', 'disabled'))
-        if task['userid'] != user['id']:
-            raise HTTPError(401)
+        task = self.check_permission(self.db.task.get(taskid, fields=('id', 'tplid', 'userid', 'disabled')))
 
         tasklog = self.db.tasklog.list(taskid = taskid, fields=('success', 'ctime', 'msg'))
 
@@ -152,12 +138,9 @@ class TaskDelHandler(BaseHandler):
     @tornado.web.authenticated
     def post(self, taskid):
         user = self.current_user
-        task = self.db.task.get(taskid, fields=('userid', ))
-        if task['userid'] == user['id']:
-            self.db.task.delete(taskid)
-        else:
-            raise HTTPError(401)
+        task = self.check_permission(self.db.task.get(taskid, fields=('id', 'userid', )), 'w')
 
+        self.db.task.delete(task['id'])
         referer = self.request.headers.get('referer', '/my/')
         self.redirect(referer)
 

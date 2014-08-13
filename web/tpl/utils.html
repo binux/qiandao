@@ -1,10 +1,12 @@
-{% macro header() %}
+{% macro header(current_user=True) %}
 <header>
   <div class="container">
     <h1 class="text-center">签到<sup>alpha</sup></h1>
     <div class="buttons">
       <a href="/" class="btn btn-default pull-left">首页</a>
+      {% if current_user %}
       <a href="/logout" class="btn btn-default pull-right">登出</a>
+      {% endif %}
     </div>
   </div>
 </header>

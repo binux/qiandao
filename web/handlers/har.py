@@ -17,20 +17,12 @@ class HAREditor(BaseHandler):
     def get(self, id=None):
         return self.render('har/editor.html', tplid=id)
 
-    @tornado.web.authenticated
     def post(self, id):
         user = self.current_user
 
-        tpl = self.db.tpl.get(id, fields=['id', 'userid', 'sitename', 'siteurl', 'banner', 'note', 'har', 'variables', 'lock'])
-        if not tpl:
-            self.set_status(404)
-            self.finish('模板不存在')
-            return
-
-        if tpl['userid'] and tpl['userid'] != user['id']:
-            self.set_status(401)
-            self.finish('没有访问此模板的权限')
-            return
+        tpl = self.check_permission(
+                self.db.tpl.get(id, fields=('id', 'userid', 'sitename', 'siteurl', 'banner', 'note',
+                    'har', 'variables', 'lock')))
 
         tpl['har'] = self.db.user.decrypt(tpl['userid'], tpl['har'])
         tpl['variables'] = json.loads(tpl['variables'])
@@ -46,7 +38,7 @@ class HAREditor(BaseHandler):
                 note = tpl['note'],
                 banner = tpl['banner'],
                 ),
-            readonly = (tpl['userid'] != user['id']) or tpl['lock'],
+            readonly = not self.permission(tpl, 'w') or tpl['lock'],
             ))
 
 class HARTest(BaseHandler):
@@ -107,15 +99,12 @@ class HARSave(BaseHandler):
         variables = json.dumps(list(self.get_variables(data['tpl'])))
 
         if id:
-            _tmp = self.db.tpl.get(id, fields=('userid', 'lock'))
-            if _tmp['userid'] != userid:
-                self.set_status(401)
-                self.finish(u'没有权限')
-                return
+            _tmp = self.check_permission(self.db.tpl.get(id, fields=('id', 'userid', 'lock')), 'w')
             if _tmp['lock']:
                 self.set_status(403)
                 self.finish(u'模板已锁定')
                 return
+
             self.db.tpl.mod(id, har=har, tpl=tpl, variables=variables)
         else:
             id = self.db.tpl.add(userid, har, tpl, variables)

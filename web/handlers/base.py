@@ -63,6 +63,28 @@ class BaseHandler(tornado.web.RequestHandler):
         user['isadmin'] = 'admin' in user['role'] if user['role'] else False
         return user
 
+    def permission(self, obj, mode='r'):
+        user = self.current_user
+        if not obj:
+            return False
+        if 'userid' not in obj:
+            return False
+        if not obj['userid']:
+            if mode == 'r':
+                return True
+            if user and user['isadmin']:
+                return True
+        if user and obj['userid'] == user['id']:
+            return True
+        return False
+
+    def check_permission(self, obj, mode='r'):
+        if not obj:
+            raise HTTPError(404)
+        if not self.permission(obj, mode):
+            raise HTTPError(401)
+        return obj
+
 class BaseWebSocket(tornado.websocket.WebSocketHandler):
     pass
 
