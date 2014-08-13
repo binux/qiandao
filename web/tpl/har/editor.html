@@ -122,10 +122,39 @@
       </div>
       <!-- ./entries list -->
 
-      <!-- save modal -->
-      <div ng-if="!readonly">
-        <button class="btn btn-primary pull-right" data-toggle="modal" data-target="#save-har" ng-click="pre_save()">保存</button>
+      <div class="text-right">
+        <button class="btn btn-default" data-toggle="modal" data-target="#test-har" ng-click="pre_save()">测试</button>
+        <button ng-if="!readonly" class="btn btn-primary" data-toggle="modal" data-target="#save-har" ng-click="pre_save()">保存</button>
       </div>
+
+      <!-- test har -->
+      <div class="modal fade" id="test-har">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h4 class="modal-title">测试HAR</h4>
+            </div>
+            <div class="modal-body">
+              <div class="result"></div>
+              <div class="form-horizontal" role="form">
+
+                <div class="form-group" ng-repeat="var in env">
+                  <label class="col-sm-3 control-label">{{ var.name }}</label>
+                  <div class="col-sm-9">
+                    <input ng-model="var.value">
+                  </div>
+                </div>
+
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-primary" data-loading-text="loading..." ng-click="test()">测试</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!--save modal -->
       <div class="modal fade" id="save-har">
         <div class="modal-dialog">
           <div class="modal-content">

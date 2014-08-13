@@ -5,12 +5,14 @@
     analysis = require('/static/har/analysis');
     utils = require('/static/utils');
     return angular.module('entry_list', []).controller('EntryList', function($scope, $rootScope, $http) {
+      var har2tpl;
       $scope.filter = {};
       $rootScope.$on('har-loaded', function(ev, data) {
         var x;
         console.info(data);
         $scope.filename = data.filename;
         $scope.har = data.har;
+        $scope.init_env = data.env;
         $scope.env = utils.dict2list(data.env);
         $scope.session = [];
         $scope.setting = data.setting;
@@ -108,65 +110,69 @@
           return null;
         }
       };
-      return $scope.save = function() {
-        var alert_elem, alert_info_elem, c, data, entry, h, save_btn;
+      har2tpl = function(har) {
+        var c, entry, h;
+        return (function() {
+          var _i, _len, _ref, _ref1, _ref2, _results;
+          _ref = har.log.entries;
+          _results = [];
+          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+            entry = _ref[_i];
+            if (entry.checked) {
+              _results.push({
+                request: {
+                  method: entry.request.method,
+                  url: entry.request.url,
+                  headers: (function() {
+                    var _j, _len1, _ref1, _results1;
+                    _ref1 = entry.request.headers;
+                    _results1 = [];
+                    for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
+                      h = _ref1[_j];
+                      if (h.checked) {
+                        _results1.push({
+                          name: h.name,
+                          value: h.value
+                        });
+                      }
+                    }
+                    return _results1;
+                  })(),
+                  cookies: (function() {
+                    var _j, _len1, _ref1, _results1;
+                    _ref1 = entry.request.cookies;
+                    _results1 = [];
+                    for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
+                      c = _ref1[_j];
+                      if (c.checked) {
+                        _results1.push({
+                          name: c.name,
+                          value: c.value
+                        });
+                      }
+                    }
+                    return _results1;
+                  })(),
+                  data: (_ref1 = entry.request.postData) != null ? _ref1.text : void 0,
+                  mimeType: (_ref2 = entry.request.postData) != null ? _ref2.mimeType : void 0
+                },
+                rule: {
+                  success_asserts: entry.success_asserts,
+                  failed_asserts: entry.failed_asserts,
+                  extract_variables: entry.extract_variables
+                }
+              });
+            }
+          }
+          return _results;
+        })();
+      };
+      $scope.save = function() {
+        var alert_elem, alert_info_elem, data, save_btn;
         data = {
           id: $scope.id,
           har: $scope.har,
-          tpl: (function() {
-            var _i, _len, _ref, _ref1, _ref2, _results;
-            _ref = $scope.har.log.entries;
-            _results = [];
-            for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-              entry = _ref[_i];
-              if (entry.checked) {
-                _results.push({
-                  request: {
-                    method: entry.request.method,
-                    url: entry.request.url,
-                    headers: (function() {
-                      var _j, _len1, _ref1, _results1;
-                      _ref1 = entry.request.headers;
-                      _results1 = [];
-                      for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
-                        h = _ref1[_j];
-                        if (h.checked) {
-                          _results1.push({
-                            name: h.name,
-                            value: h.value
-                          });
-                        }
-                      }
-                      return _results1;
-                    })(),
-                    cookies: (function() {
-                      var _j, _len1, _ref1, _results1;
-                      _ref1 = entry.request.cookies;
-                      _results1 = [];
-                      for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
-                        c = _ref1[_j];
-                        if (c.checked) {
-                          _results1.push({
-                            name: c.name,
-                            value: c.value
-                          });
-                        }
-                      }
-                      return _results1;
-                    })(),
-                    data: (_ref1 = entry.request.postData) != null ? _ref1.text : void 0,
-                    mimeType: (_ref2 = entry.request.postData) != null ? _ref2.mimeType : void 0
-                  },
-                  rule: {
-                    success_asserts: entry.success_asserts,
-                    failed_asserts: entry.failed_asserts,
-                    extract_variables: entry.extract_variables
-                  }
-                });
-              }
-            }
-            return _results;
-          })(),
+          tpl: har2tpl($scope.har),
           setting: $scope.setting
         };
         save_btn = angular.element('#save-har .btn').button('loading');
@@ -186,6 +192,28 @@
         }).error(function(data, status, headers, config) {
           alert_elem.text(data).show();
           return save_btn.button('reset');
+        });
+      };
+      return $scope.test = function() {
+        var alert, btn, data;
+        data = {
+          env: {
+            variables: utils.list2dict($scope.env),
+            session: []
+          },
+          tpl: har2tpl($scope.har)
+        };
+        alert = angular.element('#test-har .result').hide();
+        btn = angular.element('#test-har .btn').button('loading');
+        return $http.post('/tpl/run', data).success(function(data) {
+          alert.removeClass('alert').removeClass('alert-danger');
+          alert.html(data).show();
+          return btn.button('reset');
+        }).error(function(data) {
+          alert.addClass('alert').addClass('alert-danger').show();
+          alert.find('strong').text('签到失败');
+          alert.find('span').text(data);
+          return btn.button('reset');
         });
       };
     });

@@ -17,6 +17,7 @@ define (require, exports, module) ->
 
         $scope.filename = data.filename
         $scope.har = data.har
+        $scope.init_env = data.env;
         $scope.env = utils.dict2list(data.env)
         $scope.session = []
         $scope.setting = data.setting
@@ -88,11 +89,8 @@ define (require, exports, module) ->
         catch error
           null
 
-      $scope.save = () ->
-        data = {
-          id: $scope.id,
-          har: $scope.har
-          tpl: ({
+      har2tpl = (har) ->
+        return ({
             request:
               method: entry.request.method
               url: entry.request.url
@@ -104,7 +102,13 @@ define (require, exports, module) ->
               success_asserts: entry.success_asserts
               failed_asserts: entry.failed_asserts
               extract_variables: entry.extract_variables
-          } for entry in $scope.har.log.entries when entry.checked)
+          } for entry in har.log.entries when entry.checked)
+
+      $scope.save = () ->
+        data = {
+          id: $scope.id,
+          har: $scope.har
+          tpl: har2tpl($scope.har)
           setting: $scope.setting
         }
 
@@ -125,5 +129,27 @@ define (require, exports, module) ->
         .error((data, status, headers, config) ->
           alert_elem.text(data).show()
           save_btn.button('reset')
+        )
+
+      $scope.test = () ->
+        data =
+          env:
+            variables: utils.list2dict($scope.env)
+            session: []
+          tpl: har2tpl($scope.har)
+
+        alert = angular.element('#test-har .result').hide()
+        btn = angular.element('#test-har .btn').button('loading')
+        $http.post('/tpl/run', data)
+        .success((data) ->
+          alert.removeClass('alert').removeClass('alert-danger')
+          alert.html(data).show()
+          btn.button('reset')
+        )
+        .error((data) ->
+          alert.addClass('alert').addClass('alert-danger').show()
+          alert.find('strong').text('签到失败')
+          alert.find('span').text(data)
+          btn.button('reset')
         )
     )

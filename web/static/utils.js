@@ -58,6 +58,10 @@
         }
         return query;
       },
+      querystring_parse_with_variables: function(query) {
+        var obj;
+        return obj = {};
+      },
       CookieJar: node_tough.CookieJar,
       Cookie: node_tough.Cookie,
       dict2list: function(dict) {

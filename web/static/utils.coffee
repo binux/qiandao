@@ -43,6 +43,8 @@ define (require) ->
       for key, value of replace_list
         query = query.replace(key, value, 'g')
       return query
+    querystring_parse_with_variables: (query) ->
+      obj = {}
 
     CookieJar: node_tough.CookieJar
     Cookie: node_tough.Cookie

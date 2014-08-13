@@ -78,25 +78,37 @@ class TPLRunHandler(BaseHandler):
     @gen.coroutine
     def post(self, tplid):
         user = self.current_user
-        tplid = tplid or self.get_argument('_binux_tplid', None)
+        data = {}
+        if 'json' in self.request.headers['Content-Type']:
+            data = json.loads(self.request.body)
+
+        tplid = tplid or data.get('tplid') or self.get_argument('_binux_tplid', None)
+        fetch_tpl = None
         if tplid:
             tpl = self.db.tpl.get(tplid, fields=('id', 'userid', 'sitename',
                 'siteurl', 'tpl', 'interval', 'last_success'))
             if tpl['userid'] and (not user or tpl['userid'] != user['id']):
                 raise HTTPError(401)
             fetch_tpl = self.db.user.decrypt(tpl['userid'], tpl['tpl'])
-        else:
+
+        if not fetch_tpl:
+            fetch_tpl = data.get('tpl')
+
+        if not fetch_tpl:
             try:
                 fetch_tpl = json.loads(self.get_argument('tpl'))
             except:
                 raise HTTPError(400)
-        try:
-            env = dict(
+
+        env = data.get('env')
+        if not env:
+            try:
+                env = dict(
                     variables = json.loads(self.get_argument('env')),
                     session = []
                     )
-        except:
-            raise HTTPError(400)
+            except:
+                raise HTTPError(400)
 
         try:
             result = yield self.fetcher.do_fetch(fetch_tpl, env)
