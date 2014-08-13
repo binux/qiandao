@@ -45,11 +45,11 @@
           value = obj[key];
           re = /{{\s*([\w]+)[^}]*?\s*}}/g;
           while (m = re.exec(key)) {
-            replace_list[encodeURIComponent(m[0])] = m[0];
+            replace_list[encodeURIComponent(m[0])] = m[0].slice(0, -2) + '|urlencode}}';
           }
           re = /{{\s*([\w]+)[^}]*?\s*}}/g;
           while (m = re.exec(value)) {
-            replace_list[encodeURIComponent(m[0])] = m[0];
+            replace_list[encodeURIComponent(m[0])] = m[0].slice(0, -2) + '|urlencode}}';
           }
         }
         for (key in replace_list) {
@@ -59,8 +59,18 @@
         return query;
       },
       querystring_parse_with_variables: function(query) {
-        var obj;
-        return obj = {};
+        var key, m, re, replace_list, value, _query;
+        replace_list = {};
+        re = /{{\s*([\w]+)[^}]*?\s*\|urlencode}}/g;
+        _query = decodeURIComponent(query);
+        while (m = re.exec(_query)) {
+          replace_list[encodeURIComponent(m[0])] = m[0].slice(0, -12) + '}}';
+        }
+        for (key in replace_list) {
+          value = replace_list[key];
+          query = query.replace(key, value, 'g');
+        }
+        return exports.querystring_parse(query);
       },
       CookieJar: node_tough.CookieJar,
       Cookie: node_tough.Cookie,

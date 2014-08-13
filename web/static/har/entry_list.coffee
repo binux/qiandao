@@ -17,11 +17,11 @@ define (require, exports, module) ->
 
         $scope.filename = data.filename
         $scope.har = data.har
-        $scope.init_env = data.env;
+        $scope.init_env = data.env
         $scope.env = utils.dict2list(data.env)
         $scope.session = []
         $scope.setting = data.setting
-        $scope.readonly = data.readonly
+        $scope.readonly = data.readonly or not HASUSER
 
         $scope.recommend()
         if (x for x in $scope.har.log.entries when x.recommend).length > 0

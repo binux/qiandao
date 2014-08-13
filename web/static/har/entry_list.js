@@ -16,7 +16,7 @@
         $scope.env = utils.dict2list(data.env);
         $scope.session = [];
         $scope.setting = data.setting;
-        $scope.readonly = data.readonly;
+        $scope.readonly = data.readonly || !HASUSER;
         $scope.recommend();
         if (((function() {
           var _i, _len, _ref, _results;

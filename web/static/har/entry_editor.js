@@ -6,6 +6,7 @@
     require('/static/har/editablelist');
     utils = require('/static/utils');
     return angular.module('entry_editor', ['contenteditable']).controller('EntryCtrl', function($scope, $rootScope, $sce, $http) {
+      var changing;
       $scope.panel = 'request';
       $scope.$on('edit-entry', function(ev, entry) {
         var _base, _base1, _base2;
@@ -57,35 +58,33 @@
       $scope.alert_hide = function() {
         return angular.element('.panel-test .alert').hide();
       };
+      changing = '';
       $scope.$watch('entry.request.url', function() {
-        var error, key, queryString, value;
+        var error, queryString;
+        if (changing && changing !== 'url') {
+          changing = '';
+          return;
+        }
         if ($scope.entry == null) {
           return;
         }
         try {
-          queryString = (function() {
-            var _ref, _results;
-            _ref = utils.url_parse($scope.entry.request.url, true).query;
-            _results = [];
-            for (key in _ref) {
-              value = _ref[key];
-              _results.push({
-                name: key,
-                value: value
-              });
-            }
-            return _results;
-          })();
+          queryString = utils.dict2list(utils.querystring_parse_with_variables(utils.url_parse($scope.entry.request.url).query));
         } catch (_error) {
           error = _error;
           queryString = [];
         }
-        if (!angular.equals(queryString, $scope.entry.request.queryString)) {
-          return $scope.entry.request.queryString = queryString;
+        if (!changing && !angular.equals(queryString, $scope.entry.request.queryString)) {
+          $scope.entry.request.queryString = queryString;
+          return changing = 'url';
         }
       });
       $scope.$watch('entry.request.queryString', (function() {
         var query, url;
+        if (changing && changing !== 'qs') {
+          changing = '';
+          return;
+        }
         if ($scope.entry == null) {
           return;
         }
@@ -96,8 +95,9 @@
           url.search = "?" + query;
         }
         url = utils.url_unparse(url);
-        if (url !== $scope.entry.request.url) {
-          return $scope.entry.request.url = url;
+        if (!changing && url !== $scope.entry.request.url) {
+          $scope.entry.request.url = url;
+          return changing = 'qs';
         }
       }), true);
       $scope.$watch('entry.request.postData.params', (function() {

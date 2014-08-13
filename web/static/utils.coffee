@@ -36,15 +36,23 @@ define (require) ->
       for key, value of obj
         re = /{{\s*([\w]+)[^}]*?\s*}}/g
         while m = re.exec(key)
-          replace_list[encodeURIComponent(m[0])] = m[0]
+          replace_list[encodeURIComponent(m[0])] = m[0][..-3] + '|urlencode}}'
         re = /{{\s*([\w]+)[^}]*?\s*}}/g
         while m = re.exec(value)
-          replace_list[encodeURIComponent(m[0])] = m[0]
+          replace_list[encodeURIComponent(m[0])] = m[0][..-3] + '|urlencode}}'
       for key, value of replace_list
         query = query.replace(key, value, 'g')
       return query
     querystring_parse_with_variables: (query) ->
-      obj = {}
+      replace_list = {}
+      re = /{{\s*([\w]+)[^}]*?\s*\|urlencode}}/g
+      _query = decodeURIComponent(query)
+      while m = re.exec(_query)
+        replace_list[encodeURIComponent(m[0])] = m[0][..-13]+'}}'
+      for key, value of replace_list
+        query = query.replace(key, value, 'g')
+
+      return exports.querystring_parse(query)
 
     CookieJar: node_tough.CookieJar
     Cookie: node_tough.Cookie

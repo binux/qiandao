@@ -54,19 +54,27 @@ define (require, exports, module) ->
       angular.element('.panel-test .alert').hide()
 
     # sync url with query string
+    changing = ''
     $scope.$watch('entry.request.url', () ->
+      if changing and changing != 'url'
+        changing = ''
+        return
       if not $scope.entry?
         return
       try
-        queryString = ({name: key, value: value} for key, value of utils.url_parse($scope.entry.request.url, true).query)
+        queryString = utils.dict2list(utils.querystring_parse_with_variables(utils.url_parse($scope.entry.request.url).query))
       catch error
         queryString = []
 
-      if not angular.equals(queryString, $scope.entry.request.queryString)
+      if not changing and not angular.equals(queryString, $scope.entry.request.queryString)
         $scope.entry.request.queryString = queryString
+        changing = 'url'
     )
     # sync query string with url
     $scope.$watch('entry.request.queryString', (() ->
+      if changing and changing != 'qs'
+        changing = ''
+        return
       if not $scope.entry?
         return
       url = utils.url_parse($scope.entry.request.url)
@@ -75,8 +83,9 @@ define (require, exports, module) ->
       url.search = "?#{query}" if query
       url = utils.url_unparse(url)
 
-      if url != $scope.entry.request.url
+      if not changing and url != $scope.entry.request.url
         $scope.entry.request.url = url
+        changing = 'qs'
     ), true)
 
     # sync params with text
