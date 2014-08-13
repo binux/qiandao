@@ -29,16 +29,10 @@ class Fetcher(object):
 
     @staticmethod
     def render(request, env):
-        env_encoded = dict((k, urllib.quote_plus(v.encode('utf8') if isinstance(v, unicode) else v)) for k, v in env.iteritems())
         def _render(obj, key):
             if not obj.get(key):
                 return
-            if key == 'url':
-                obj[key] = Template(obj[key]).render(**env_encoded)
-            elif key == 'data' and obj.get('mimeType', '').lower() == 'application/x-www-form-urlencoded':
-                obj[key] = Template(obj[key]).render(**env_encoded)
-            else:
-                obj[key] = Template(obj[key]).render(**env)
+            obj[key] = Template(obj[key]).render(**env)
 
         _render(request, 'method')
         _render(request, 'url')
