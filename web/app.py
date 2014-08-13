@@ -13,6 +13,7 @@ import tornado.web
 import db
 import config
 from libs import utils
+from libs.fetcher import Fetcher
 from web.handlers import handlers, ui_modules, ui_methods
 
 class Application(tornado.web.Application):
@@ -42,6 +43,8 @@ class Application(tornado.web.Application):
             push_request = db.PRDB()
             redis = db.RedisDB()
         self.db = DB
+
+        self.fetcher = Fetcher()
 
         self.jinja_env.globals.update({
             'config': config,

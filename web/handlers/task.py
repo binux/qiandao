@@ -10,7 +10,6 @@ import time
 from tornado import gen
 
 from base import *
-from libs.fetcher import Fetcher
 
 class TaskNewHandler(BaseHandler):
     @tornado.web.authenticated
@@ -84,6 +83,9 @@ class TaskEditHandler(TaskNewHandler):
             raise HTTPError(401)
 
         tpl = self.db.tpl.get(task['tplid'], fields=('id', 'note', 'sitename', 'variables'))
+        if not tpl:
+            raise HTTPError(404)
+
         variables = json.loads(tpl['variables'])
         self.render('task_new.html', tpls=[tpl, ], tplid=tpl['id'], note=tpl['note'], variables=variables, task=task)
 
@@ -115,8 +117,7 @@ class TaskRunHandler(BaseHandler):
                 )
 
         try:
-            fetcher = Fetcher()
-            new_env = yield fetcher.do_fetch(fetch_tpl, env)
+            new_env = yield self.fetcher.do_fetch(fetch_tpl, env)
         except Exception as e:
             self.db.tasklog.add(task['id'], success=False, msg=unicode(e))
             self.finish('<h1 class="alert alert-danger text-center">签到失败</h1><div class="well">%s</div>' % e)

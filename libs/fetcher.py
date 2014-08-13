@@ -215,6 +215,70 @@ class Fetcher(object):
 
         return success
 
+    @staticmethod
+    def tpl2har(tpl):
+        def build_request(en):
+            url = urlparse.urlparse(en['request']['url'])
+            request = dict(
+                    method = en['request']['method'],
+                    url = en['request']['url'],
+                    httpVersion = 'HTTP/1.1',
+                    headers = [
+                        {'name': x['name'], 'value': x['value'], 'checked': True} for x in\
+                                en['request'].get('headers', [])],
+                    queryString = [
+                        {'name': n, 'value': v} for n, v in\
+                                urlparse.parse_qsl(url.query)],
+                    cookies = [
+                        {'name': x['name'], 'value': x['value'], 'checked': True} for x in\
+                                en['request'].get('cookies', [])],
+                    headersSize = -1,
+                    bodySize = len(en['request'].get('data')) if en['request'].get('data') else 0,
+
+
+                    )
+            if en['request'].get('data'):
+                request['postData'] = dict(
+                        mimeType = en['request'].get('mimeType'),
+                        text = en['request'].get('data'),
+                        )
+                if en['request'].get('mimeType') == 'application/x-www-form-urlencoded':
+                    params = [{'name': x[0], 'value': x[1]} \
+                        for x in urlparse.parse_qsl(en['request']['data'], True)]
+                    request['postData']['params'] = params
+            return request
+
+        entries = []
+        for en in tpl:
+            entry = dict(
+                    checked = True,
+                    startedDateTime = datetime.now().isoformat(),
+                    time = 1,
+                    request = build_request(en),
+                    response = {},
+                    cache = {},
+                    timings = {},
+                    connections = "0",
+                    pageref = "page_0",
+
+                    success_asserts = en.get('rule', {}).get('success_asserts', []),
+                    failed_asserts = en.get('rule', {}).get('failed_asserts', []),
+                    extract_variables = en.get('rule', {}).get('extract_variables', []),
+                    )
+            entries.append(entry)
+        return dict(
+                log = dict(
+                    creator = dict(
+                        name = 'binux',
+                        version = 'qiandao'
+                        ),
+                    entries = entries,
+                    pages = [],
+                    version = '1.2'
+                    )
+                )
+
+
     @gen.coroutine
     def fetch(self, obj):
         """
@@ -273,7 +337,9 @@ class Fetcher(object):
                     ))
                 env = result['env']
             except Exception as e:
-                raise Exception('failed at %d request, error:%s, %s' % (
+                if config.debug:
+                    logging.exception(e)
+                raise Exception('failed at %d request, error:%r, %s' % (
                     i, e, entry['request']['url']))
             if not result['success']:
                 raise Exception('failed at %d request, code:%s, %s' % (

@@ -11,6 +11,7 @@ import base64
 import umsgpack
 from tornado import gen
 
+import config
 from base import *
 from libs import utils
 
@@ -32,7 +33,13 @@ class LoginHandler(BaseHandler):
                 self.render('login.html', password_error=u'不存在此邮箱或密码错误', email=email)
                 return
 
-            self.set_secure_cookie('user', umsgpack.packb(user))
+            setcookie = dict(
+                    expires_days=config.cookie_days,
+                    httponly=True,
+                    )
+            if config.https:
+                setcookie['secure'] = True
+            self.set_secure_cookie('user', umsgpack.packb(user), **setcookie)
             self.db.user.mod(user['id'], atime=time.time(), aip=self.ip2int)
             if not next:
                 self.redirect('/my')
@@ -72,7 +79,13 @@ class RegisterHandler(BaseHandler):
             return
         user = self.db.user.get(email=email, fields=('id', 'email', 'nickname', 'role'))
 
-        self.set_secure_cookie('user', umsgpack.packb(user))
+        setcookie = dict(
+                expires_days=config.cookie_days,
+                httponly=True,
+                )
+        if config.https:
+            setcookie['secure'] = True
+        self.set_secure_cookie('user', umsgpack.packb(user), **setcookie)
         self.redirect('/my')
 
         self.send_mail(user)

@@ -12,7 +12,6 @@ from tornado import gen
 from jinja2 import Environment, meta
 
 from base import *
-from libs.fetcher import Fetcher
 
 class HAREditor(BaseHandler):
     def get(self, id=None):
@@ -54,11 +53,11 @@ class HARTest(BaseHandler):
     @gen.coroutine
     def post(self):
         data = json.loads(self.request.body)
-        ret = yield Fetcher().fetch(data)
+        ret = yield self.fetcher.fetch(data)
 
         result = {
                 'success': ret['success'],
-                'har': Fetcher.response2har(ret['response']),
+                'har': self.fetcher.response2har(ret['response']),
                 'env': {
                     'variables': ret['env']['variables'],
                     'session': ret['env']['session'].to_json(),

@@ -20,7 +20,7 @@ logger = logging.getLogger('qiandao.handler')
 __ALL__ = ['HTTPError', 'BaseHandler', 'BaseWebSocket', 'BaseUIModule', 'logger', ]
 
 class BaseHandler(tornado.web.RequestHandler):
-    application_export = set(('db', ))
+    application_export = set(('db', 'fetcher'))
     def __getattr__(self, key):
         if key in self.application_export:
             return getattr(self.application, key)
@@ -56,7 +56,7 @@ class BaseHandler(tornado.web.RequestHandler):
         return utils.ip2int(self.request.remote_ip)
 
     def get_current_user(self):
-        ret = self.get_secure_cookie('user')
+        ret = self.get_secure_cookie('user', max_age_days=config.cookie_days)
         if not ret:
             return ret
         user = umsgpack.unpackb(ret)

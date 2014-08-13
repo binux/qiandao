@@ -2,20 +2,20 @@
 /* Author: Binux<i@binux.me> */
 /*         http://binux.me */
 /* Created on 2014-08-09 23:10:58 */
-.container {
-  margin-top: 60px;
+form {
+  width: 300px;
+  padding-top: 40px;
+  margin: 0 auto;
 }
-@media (min-height: 700px) {
-  .container {
-    padding-top: 100px;
-  }
-}
-.container h1 {
+form h1 {
   text-align: center;
   font-size: 52px;
+  margin-bottom: 30px;
 }
-.container p {
-  margin: 50px auto;
-  text-align: center;
-  font-size: 36px;
+form h1 sup {
+  font-size: 50%;
+  top: -1em;
+}
+form div.text-right {
+  margin-top: 40px;
 }

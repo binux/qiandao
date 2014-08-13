@@ -36,6 +36,7 @@
 
       $.ajax($this.attr('href'), {
         type: $this.data('load-method') || 'GET',
+        data: $this.data('data-callback') && $this.data('data-callback')($this) || '',
       })
       .done(function(data) {
         $('#modal_load .modal-content').html(data);
@@ -43,7 +44,7 @@
       .fail(function(jxhr, data) {
         $('#modal_load .modal-content')
         .html('<h1 class="text-center alert alert-danger">FAIL</h1><div class="well"></div>')
-        .find('.well').text(data);
+        .find('.well').text(jxhr.responseText);
       })
       .always(function() {
         lock = false;

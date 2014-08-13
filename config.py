@@ -11,6 +11,8 @@ debug = True
 gzip = True
 bind = '0.0.0.0'
 port = 8923
+https = False
+cookie_days = 5
 
 class mysql(object):
     host = 'localhost'

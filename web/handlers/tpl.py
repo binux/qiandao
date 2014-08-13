@@ -6,6 +6,7 @@
 # Created on 2014-08-09 17:52:49
 
 import json
+from tornado import gen
 from base import *
 from libs import utils
 
@@ -49,11 +50,10 @@ class TPLPushHandler(BaseHandler):
         self.redirect('/pushs')
 
 class TPLVarHandler(BaseHandler):
-    @tornado.web.authenticated
     def get(self, tplid):
         user = self.current_user
         tpl = self.db.tpl.get(tplid, fields=('id', 'note', 'userid', 'variables'))
-        if tpl['userid'] and tpl['userid'] != user['id']:
+        if tpl['userid'] and (not user or tpl['userid'] != user['id']):
             self.finish('<span class="alert alert-danger">没有权限</span>')
             return
         self.render('task_new_var.html', note=tpl['note'], variables=json.loads(tpl['variables']))
@@ -74,6 +74,39 @@ class TPLDelHandler(BaseHandler):
         referer = self.request.headers.get('referer', '/my/')
         self.redirect(referer)
 
+class TPLRunHandler(BaseHandler):
+    @gen.coroutine
+    def post(self, tplid):
+        user = self.current_user
+        tplid = tplid or self.get_argument('_binux_tplid', None)
+        if tplid:
+            tpl = self.db.tpl.get(tplid, fields=('id', 'userid', 'sitename',
+                'siteurl', 'tpl', 'interval', 'last_success'))
+            if tpl['userid'] and (not user or tpl['userid'] != user['id']):
+                raise HTTPError(401)
+            fetch_tpl = self.db.user.decrypt(tpl['userid'], tpl['tpl'])
+        else:
+            try:
+                fetch_tpl = json.loads(self.get_argument('tpl'))
+            except:
+                raise HTTPError(400)
+        try:
+            env = dict(
+                    variables = json.loads(self.get_argument('env')),
+                    session = []
+                    )
+        except:
+            raise HTTPError(400)
+
+        try:
+            result = yield self.fetcher.do_fetch(fetch_tpl, env)
+        except Exception as e:
+            self.finish('<h1 class="alert alert-danger text-center">签到失败</h1><div class="well">%s</div>' % e)
+            return
+
+        self.finish('<h1 class="alert alert-success text-center">签到成功</h1>')
+        return
+
 class PublicTPLHandler(BaseHandler):
     def get(self):
         tpls = self.db.tpl.list(userid=None, limit=None, fields=('id', 'siteurl', 'sitename', 'banner', 'note', 'disabled', 'lock', 'last_success', 'ctime', 'mtime', 'fork'))
@@ -84,5 +117,6 @@ handlers = [
         ('/tpl/(\d+)/push', TPLPushHandler),
         ('/tpl/(\d+)/var', TPLVarHandler),
         ('/tpl/(\d+)/del', TPLDelHandler),
+        ('/tpl/?(\d+)?/run', TPLRunHandler),
         ('/tpls/public', PublicTPLHandler),
         ]
