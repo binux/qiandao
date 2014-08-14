@@ -33,10 +33,6 @@ class UserDB(BaseDB):
         self.conn = mysql.connector.connect(user=user, password=passwd, host=host, port=port,
                 database=database, autocommit=True, pool_size=5)
 
-    @property
-    def dbcur(self):
-        return self.conn.cursor()
-
     @staticmethod
     def check_nickname(nickname):
         if isinstance(nickname, unicode):

@@ -26,10 +26,6 @@ class TaskLogDB(BaseDB):
         self.conn = mysql.connector.connect(user=user, password=passwd, host=host, port=port,
                 database=database, autocommit=True, pool_size=5)
 
-    @property
-    def dbcur(self):
-        return self.conn.cursor()
-
     def add(self, taskid, success, msg=''):
         now = time.time()
 
