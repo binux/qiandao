@@ -44,6 +44,8 @@ class HAREditor(BaseHandler):
 class HARTest(BaseHandler):
     @gen.coroutine
     def post(self):
+        self.evil(+1)
+
         data = json.loads(self.request.body)
         ret = yield self.fetcher.fetch(data)
 
@@ -91,6 +93,8 @@ class HARSave(BaseHandler):
 
     @tornado.web.authenticated
     def post(self, id):
+        self.evil(+1)
+
         userid = self.current_user['id']
         data = json.loads(self.request.body)
 

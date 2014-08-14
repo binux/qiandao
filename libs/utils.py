@@ -30,6 +30,18 @@ def func_cache(f):
 
     return wrapper
 
+def method_cache(fn):
+    @functools.wraps(fn)
+    def wrapper(self, *args, **kwargs):
+        if not hasattr(self, '_cache'):
+            self._cache = dict()
+        key = umsgpack.packb((args, kwargs))
+        if key not in self._cache:
+            self._cache[key] = fn(self, *args, **kwargs)
+        return self._cache[key]
+
+    return wrapper
+
 import datetime
 
 def format_date(date, gmt_offset=-8*60, relative=True, shorter=False, full_format=False):

@@ -47,6 +47,21 @@ class BaseHandler(tornado.web.RequestHandler):
 
         return template.render(namespace)
 
+    def prepare(self):
+        user = self.current_user
+        userid = None
+        if user:
+            userid = user['id']
+        if self.db.redis.is_evil(self.ip, userid):
+            raise HTTPError(403)
+
+    def evil(self, incr=1):
+        user = self.current_user
+        userid = None
+        if user:
+            userid = user['id']
+        self.db.redis.evil(self.ip, userid, incr)
+
     @property
     def ip(self):
         return self.request.remote_ip
@@ -80,8 +95,10 @@ class BaseHandler(tornado.web.RequestHandler):
 
     def check_permission(self, obj, mode='r'):
         if not obj:
+            self.evil(+1)
             raise HTTPError(404)
         if not self.permission(obj, mode):
+            self.evil(+5)
             raise HTTPError(401)
         return obj
 

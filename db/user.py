@@ -84,6 +84,7 @@ class UserDB(BaseDB):
 
         return self._update(where="id=%s", where_values=(id, ), **kwargs)
 
+    @utils.method_cache
     def __getuserkey(self, id):
         for (userkey, ) in self._select(what='userkey',
                 where='id=%s', where_values=(id, )):

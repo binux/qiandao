@@ -16,6 +16,7 @@ class TPLPushHandler(BaseHandler):
         user = self.current_user
         tpl = self.db.tpl.get(tplid, fields=('id', 'userid', 'sitename'))
         if not self.permission(tpl, 'w'):
+            self.evil(+5)
             self.finish(u'<span class="alert alert-danger">没有权限</span>')
             return
         tpls = self.db.tpl.list(userid=None, fields=('id', 'sitename'))
@@ -27,6 +28,7 @@ class TPLPushHandler(BaseHandler):
         tplid = int(tplid)
         tpl = self.db.tpl.get(tplid, fields=('id', 'userid', ))
         if not self.permission(tpl, 'w'):
+            self.evil(+5)
             self.finish(u'<span class="alert alert-danger">没有权限</span>')
             return
 
@@ -38,6 +40,7 @@ class TPLPushHandler(BaseHandler):
         else:
             totpl = self.db.tpl.get(to_tplid, fields=('id', 'userid', ))
             if not totpl:
+                self.evil(+1)
                 self.finish(u'<span class="alert alert-danger">模板不存在</span>')
                 return
             to_userid = totpl['userid']
@@ -54,6 +57,7 @@ class TPLVarHandler(BaseHandler):
         user = self.current_user
         tpl = self.db.tpl.get(tplid, fields=('id', 'note', 'userid', 'variables'))
         if not self.permission(tpl):
+            self.evil(+5)
             self.finish('<span class="alert alert-danger">没有权限</span>')
             return
         self.render('task_new_var.html', note=tpl['note'], variables=json.loads(tpl['variables']))
@@ -71,6 +75,7 @@ class TPLDelHandler(BaseHandler):
 class TPLRunHandler(BaseHandler):
     @gen.coroutine
     def post(self, tplid):
+        self.evil(+5)
         user = self.current_user
         data = {}
         if 'json' in self.request.headers['Content-Type']:

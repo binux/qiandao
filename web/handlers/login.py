@@ -17,6 +17,9 @@ from libs import utils
 
 class LoginHandler(BaseHandler):
     def get(self):
+        if self.current_user:
+            self.redirect('/my/')
+            return
         return self.render('login.html')
 
     def post(self):
@@ -45,7 +48,7 @@ class LoginHandler(BaseHandler):
                 self.redirect('/my')
                 return
         else:
-            self.db.redis.evil(self.ip, +5)
+            self.evil(+5)
             self.render('login.html', password_error=u'不存在此邮箱或密码错误', email=email)
             return
 
@@ -56,9 +59,14 @@ class LogoutHandler(BaseHandler):
 
 class RegisterHandler(BaseHandler):
     def get(self):
+        if self.current_user:
+            self.redirect('/my/')
+            return
         return self.render('register.html')
 
     def post(self):
+        self.evil(+5)
+
         email = self.get_argument('email')
         password = self.get_argument('password')
 
@@ -75,6 +83,7 @@ class RegisterHandler(BaseHandler):
         try:
             self.db.user.add(email=email, password=password, ip=self.ip2int)
         except self.db.user.DeplicateUser as e:
+            self.evil(+3)
             self.render('register.html', email_error=u'email地址已注册')
             return
         user = self.db.user.get(email=email, fields=('id', 'email', 'nickname', 'role'))
@@ -135,6 +144,7 @@ class VerifyHandler(BaseHandler):
                     )
             self.finish('验证成功')
         except Exception as e:
+            self.evil(+5)
             logger.error(e)
             self.set_status(400)
             self.finish('验证失败')

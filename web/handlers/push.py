@@ -88,6 +88,7 @@ class PushActionHandler(BaseHandler):
                     break
                 if not pr['to_userid'] and user['isadmin']:
                     break
+                self.evil(+5)
                 raise HTTPError(401)
         elif action in ('cancel', ):
             while True:
@@ -95,6 +96,7 @@ class PushActionHandler(BaseHandler):
                     break
                 if not pr['from_userid'] and user['isadmin']:
                     break
+                self.evil(+5)
                 raise HTTPError(401)
 
         getattr(self, action)(pr)
@@ -163,8 +165,10 @@ class PushViewHandler(BaseHandler):
         user = self.current_user
         pr = self.db.push_request.get(prid, fields=('id', 'from_tplid', 'from_userid', 'to_tplid', 'to_userid', 'status'))
         if not pr:
+            self.evil(+1)
             raise HTTPError(404)
         if pr['status'] != self.db.push_request.PENDING:
+            self.evil(+5)
             raise HTTPError(401)
 
         while True:
@@ -176,10 +180,12 @@ class PushViewHandler(BaseHandler):
                 break
             if not pr['from_userid'] and user['isadmin']:
                 break
+            self.evil(+5)
             raise HTTPError(401)
 
         tpl = self.db.tpl.get(pr['from_tplid'], fields=('id', 'userid', 'sitename', 'siteurl', 'banner', 'note', 'tpl', 'variables'))
         if not tpl:
+            self.evil(+1)
             raise HTTPError(404)
 
         tpl['har'] = self.fetcher.tpl2har(

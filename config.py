@@ -21,6 +21,12 @@ class mysql(object):
     user = 'root'
     passwd = None
 
+class redis(object):
+    host = 'localhost'
+    port = 6379
+    db = 1
+evil = 100
+
 pbkdf2_iterations = 400
 aes_key = SHA256.new('binux').digest()
 cookie_secret = SHA256.new('binux').digest()

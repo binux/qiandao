@@ -89,6 +89,8 @@ class TaskRunHandler(BaseHandler):
     @tornado.web.authenticated
     @gen.coroutine
     def post(self, taskid):
+        self.evil(+2)
+
         user = self.current_user
         task = self.check_permission(self.db.task.get(taskid, fields=('id', 'tplid', 'userid', 'init_env',
             'env', 'session', 'last_success', 'last_failed', 'success_count',
