@@ -1,11 +1,10 @@
 <dl class="dl-horizontal">
   <!-- name -->
   <dt ng-repeat-start="each in $list | filter: $filter">
-  <div class="btn-group pull-left select" data-toggle="buttons"
+  <div class="pull-left select"
     ng-if="each.checked !== undefined">
     <label class="btn btn-default btn-xxs"
-      ng-class="{active: each.checked}">
-      <input type="checkbox" ng-model="each.checked">
+      ng-class="{active: each.checked}" ng-click="each.checked = !each.checked">
     </label>
   </div>
   <div class="contentedit-wrapper">
