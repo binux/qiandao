@@ -75,6 +75,12 @@ define (require, exports, module) ->
       $scope.recommend = () ->
         analysis.recommend($scope.har)
 
+      $scope.download = () ->
+        $scope.pre_save()
+        tpl = btoa(angular.toJson(har2tpl($scope.har)))
+        angular.element('#download-har').attr('download', $scope.setting.sitename+'.har').attr('href', 'data:application/json;base64,'+tpl)
+        return true
+
       $scope.pre_save = () ->
         alert_elem = angular.element('#save-har .alert-danger').hide()
         alert_info_elem = angular.element('#save-har .alert-info').hide()

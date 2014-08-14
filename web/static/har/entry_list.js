@@ -86,6 +86,13 @@
       $scope.recommend = function() {
         return analysis.recommend($scope.har);
       };
+      $scope.download = function() {
+        var tpl;
+        $scope.pre_save();
+        tpl = btoa(angular.toJson(har2tpl($scope.har)));
+        angular.element('#download-har').attr('download', $scope.setting.sitename + '.har').attr('href', 'data:application/json;base64,' + tpl);
+        return true;
+      };
       $scope.pre_save = function() {
         var alert_elem, alert_info_elem, error, first_entry, _base, _base1;
         alert_elem = angular.element('#save-har .alert-danger').hide();
