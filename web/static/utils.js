@@ -3,6 +3,9 @@
   define(function(require) {
     var exports, querystring, tough, url;
     require('/static/node_components');
+    RegExp.escape = function(s) {
+      return s.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+    };
     url = node_url;
     tough = node_tough;
     querystring = node_querystring;
@@ -52,9 +55,10 @@
             replace_list[encodeURIComponent(m[0])] = m[0].slice(0, -2) + '|urlencode}}';
           }
         }
+        console.log(replace_list);
         for (key in replace_list) {
           value = replace_list[key];
-          query = query.replace(key, value, 'g');
+          query = query.replace(new RegExp(RegExp.escape(key), 'g'), value);
         }
         return query;
       },
@@ -68,7 +72,7 @@
         }
         for (key in replace_list) {
           value = replace_list[key];
-          query = query.replace(key, value, 'g');
+          query = query.replace(new RegExp(RegExp.escape(key), 'g'), value);
         }
         return exports.querystring_parse(query);
       },
