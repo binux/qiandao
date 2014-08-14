@@ -87,7 +87,7 @@ class Fetcher(object):
 
         session = cookie_utils.CookieSession()
         if req.headers.get('Cookie'):
-            session.update(urlparse.parse_qs(req.headers.get('Cookie')))
+            session.update(dict(urlparse.parse_qsl(req.headers['Cookie'])))
         if isinstance(env['session'], cookie_utils.CookieSession):
             session.from_json(env['session'].to_json())
         else:
