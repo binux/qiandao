@@ -85,10 +85,12 @@ class Fetcher(object):
                 prepare_curl_callback = set_size_limit_callback,
                 )
 
+        session = cookie_utils.CookieSession()
+        if req.headers.get('Cookie'):
+            session.update(urlparse.parse_qs(req.headers.get('Cookie')))
         if isinstance(env['session'], cookie_utils.CookieSession):
-            session = env['session']
+            session.from_json(env['session'].to_json())
         else:
-            session = cookie_utils.CookieSession()
             session.from_json(env['session'])
         session.update(cookies)
         cookie_header = session.get_cookie_header(req)
