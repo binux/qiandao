@@ -95,7 +95,9 @@ class RegisterHandler(BaseHandler):
         if config.https:
             setcookie['secure'] = True
         self.set_secure_cookie('user', umsgpack.packb(user), **setcookie)
-        self.redirect('/my')
+        next = self.get_argument('next', None)
+        if not next:
+            self.redirect('/my')
 
         self.send_mail(user)
 

@@ -6,6 +6,8 @@
       <a href="/" class="btn btn-default pull-left">首页</a>
       {% if current_user %}
       <a href="/logout" class="btn btn-default pull-right">登出</a>
+      {% else %}
+      <a href="/register" class="btn btn-default pull-right">注册</a>
       {% endif %}
     </div>
   </div>
@@ -62,10 +64,10 @@
   $(function() {
     $(document).on('click', 'a[data-method]', function() {
       var $this = $(this);
-      if ($this.data('confirm') && !!!window.confirm($this.data('confirm'))) {
+      if ($this.data('confirm') && !window.confirm($this.data('confirm'))) {
         return false;
       }
-      $('<form></form>').attr('method', $this.data('method')).attr('action', $this.attr('href')).submit();
+      $('<form></form>').attr('method', $this.data('method')).attr('action', $this.attr('href')).appendTo(document.body).submit();
       return false;
     })
   })

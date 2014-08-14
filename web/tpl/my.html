@@ -48,7 +48,11 @@
           <td>{{ my_status(task) }}</td>
           <td>{{ format_date(task.next) if task.next else '从不' }}</td>
           <td>
+            {% if task.tpl %}
             <a class="modal_load" href="/task/{{ task.id }}/edit">修改</a>
+            {% else %}
+            <a data-method="POST" href="/task/{{ task.id }}/del" data-confirm="是否要删除任务?">删除</a>
+            {% endif %}
             <a data-load-method="POST" class="modal_load" href="/task/{{ task.id }}/run">立即执行</a>
             <a href="/tpl/{{ task.tplid }}/edit" target="_blank">查看模板</a>
             <a href="/task/{{ task.id }}/log" target="_blank">执行日志</a>
