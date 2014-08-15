@@ -263,12 +263,12 @@
           if (!domain) {
             domain = utils.get_domain(entry.request.url);
           }
-          if (domain !== utils.get_domain(entry.request.url)) {
+          if (exports.variables_in_entry(entry).length > 0) {
+            entry.recommend = true;
+          } else if (domain !== utils.get_domain(entry.request.url)) {
             entry.recommend = false;
           } else if ((_ref1 = entry.response.status) === 304 || _ref1 === 0) {
             entry.recommend = false;
-          } else if (exports.variables_in_entry(entry).length > 0) {
-            entry.recommend = true;
           } else if (Math.floor(entry.response.status / 100) === 3) {
             entry.recommend = true;
           } else if (((_ref2 = entry.response.cookies) != null ? _ref2.length : void 0) > 0) {

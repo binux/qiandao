@@ -41,6 +41,12 @@ h1 {
   margin-top: 10px;
   margin-bottom: 20px;
 }
+#upload-har #har-guide {
+  position: absolute;
+  margin: 10px 10px;
+  top: 0;
+  right: 0;
+}
 #edit-entry .entry-method {
   display: inline-block;
 }

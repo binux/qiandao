@@ -164,12 +164,12 @@ define (require, exports, module) ->
         if not domain
           domain = utils.get_domain(entry.request.url)
 
-        if domain != utils.get_domain(entry.request.url)
+        if exports.variables_in_entry(entry).length > 0
+          entry.recommend = true
+        else if domain != utils.get_domain(entry.request.url)
           entry.recommend = false
         else if entry.response.status in [304, 0]
           entry.recommend = false
-        else if exports.variables_in_entry(entry).length > 0
-          entry.recommend = true
         else if entry.response.status // 100 == 3
           entry.recommend = true
         else if entry.response.cookies?.length > 0
