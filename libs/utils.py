@@ -61,15 +61,15 @@ def format_date(date, gmt_offset=-8*60, relative=True, shorter=False, full_forma
     if isinstance(date, float) or isinstance(date, int):
         date = datetime.datetime.utcfromtimestamp(date)
     now = datetime.datetime.utcnow()
+    local_date = date - datetime.timedelta(minutes=gmt_offset)
+    local_now = now - datetime.timedelta(minutes=gmt_offset)
+    local_yesterday = local_now - datetime.timedelta(hours=24)
+    local_tomorrow = local_now + datetime.timedelta(hours=24)
     if date > now:
         later = u"后"
         date, now = now, date
     else:
         later = u"前"
-    local_date = date - datetime.timedelta(minutes=gmt_offset)
-    local_now = now - datetime.timedelta(minutes=gmt_offset)
-    local_yesterday = local_now - datetime.timedelta(hours=24)
-    local_tomorrow = local_now + datetime.timedelta(hours=24)
     difference = now - date
     seconds = difference.seconds
     days = difference.days
@@ -90,10 +90,10 @@ def format_date(date, gmt_offset=-8*60, relative=True, shorter=False, full_forma
         if days == 0:
             format = "%(time)s"
         elif days == 1 and local_date.day == local_yesterday.day and \
-                relative:
+                relative and later == u'前':
             format = u"昨天" if shorter else u"昨天 %(time)s"
         elif days == 1 and local_date.day == local_tomorrow.day and \
-                relative:
+                relative and later == u'后':
             format = u"明天" if shorter else u"明天 %(time)s"
         #elif days < 5:
             #format = "%(weekday)s" if shorter else "%(weekday)s %(time)s"

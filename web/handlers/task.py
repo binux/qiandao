@@ -44,6 +44,8 @@ class TaskNewHandler(BaseHandler):
         tested = self.get_body_argument('_binux_tested', False)
         note = self.get_body_argument('_binux_note')
 
+        tpl = self.check_permission(self.db.tpl.get(tplid, fields=('id', 'userid', 'interval')))
+
         env = {}
         for key, value in self.request.body_arguments.iteritems():
             if key.startswith('_binux_'):
@@ -53,9 +55,13 @@ class TaskNewHandler(BaseHandler):
             env[key] = value[0]
 
         if not taskid:
-            task = None
             env = self.db.user.encrypt(user['id'], env)
             taskid = self.db.task.add(tplid, user['id'], env)
+
+            if tested:
+                self.db.task.mod(taskid, note=note, next=time.time() + (tpl['interval'] or 24*60*60))
+            else:
+                self.db.task.mod(taskid, note=note, next=time.time() + 15)
         else:
             task = self.check_permission(self.db.task.get(taskid, fields=('id', 'userid', 'init_env')), 'w')
 
@@ -63,12 +69,6 @@ class TaskNewHandler(BaseHandler):
             env.update(init_env)
             env = self.db.user.encrypt(user['id'], env)
             self.db.task.mod(taskid, init_env=env, env=None, session=None, note=note)
-
-        if not task:
-            if tested:
-                self.db.task.mod(taskid, note=note, next=time.time() + 24*60*60)
-            else:
-                self.db.task.mod(taskid, note=note, next=time.time() + 15)
 
         #referer = self.request.headers.get('referer', '/my/')
         self.redirect('/my/')
