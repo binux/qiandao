@@ -208,11 +208,10 @@ class Fetcher(object):
         for r in rule.get('extract_variables') or '':
             m = re.search(r['re'], getdata(r['from']))
             if m:
-                m = m.groups()
-                if len(m) > 1:
-                    m = m[1]
+                if m.groups():
+                    m = m.groups()[0]
                 else:
-                    m = m[0]
+                    m = m.group(0)
                 env['variables'][r['name']] = m
 
         return success
