@@ -34,6 +34,7 @@ check_task_loop = 10000
 download_size_limit = 1*1024*1024
 
 mailgun_key = ""
+ga_key = ""
 
 try:
     from local_config import *
