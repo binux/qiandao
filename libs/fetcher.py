@@ -6,6 +6,7 @@
 # Created on 2014-08-06 11:55:41
 
 import re
+import json
 import urllib
 import base64
 import logging
@@ -136,6 +137,11 @@ class Fetcher(object):
                     ret['postData']['params'] = [
                             {'name': n, 'value': v} for n, v in \
                                 urlparse.parse_qsl(request.body)]
+                    try:
+                        _ = json.dumps(ret['postData']['params'])
+                    except UnicodeDecodeError:
+                        logger.error('params encoding error')
+                        del ret['postData']['params']
 
             return ret
 

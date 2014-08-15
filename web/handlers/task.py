@@ -15,14 +15,15 @@ class TaskNewHandler(BaseHandler):
     def get(self):
         user = self.current_user
         tplid = self.get_argument('tplid', None)
-        fields = ('id', 'sitename', )
+        fields = ('id', 'sitename', 'success_count')
 
         tpls = []
         if user:
             tpls += sorted(self.db.tpl.list(userid=user['id'], fields=fields), key=lambda t: -t['id'])
         if tpls:
             tpls.append({'id': 0, 'sitename': u'以下为公共模板'})
-        tpls += sorted(self.db.tpl.list(userid=None, fields=fields), key=lambda t: t['sitename'])
+        tpls += sorted(self.db.tpl.list(userid=None, fields=fields), key=lambda t: -t['success_count'])
+        print tpls
 
         if not tplid:
             for tpl in tpls:
@@ -121,8 +122,7 @@ class TaskRunHandler(BaseHandler):
                 success_count = task['success_count'] + 1,
                 mtime = time.time(),
                 next = time.time() + (tpl['interval'] if tpl['interval'] else 24 * 60 * 60))
-        if time.time() - (tpl['last_success'] or 0) > 60 * 60:
-            self.db.tpl.mod(tpl['id'], last_success = time.time())
+        self.db.tpl.incr_success(tpl['id'])
         self.finish('<h1 class="alert alert-success text-center">签到成功</h1>')
         return
 

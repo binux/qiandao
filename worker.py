@@ -75,7 +75,7 @@ class MainWorker(object):
         return self.db.task.scan(fields=self.scan_fields)
 
     @staticmethod
-    def failed_count_to_time(last_failed_count):
+    def failed_count_to_time(last_failed_count, interval=None):
         if last_failed_count == 0:
             next = 10 * 60
         elif last_failed_count == 1:
@@ -88,6 +88,11 @@ class MainWorker(object):
             next = 11 * 60 * 60
         else:
             next = None
+
+        if interval is None:
+            interval = 24 * 60 * 60
+        if next and next > interval / 2:
+            next = interval / 2
         return next
 
     @staticmethod
@@ -172,13 +177,12 @@ class MainWorker(object):
                     session=session,
                     mtime = time.time(),
                     next=next)
-            if time.time() - (tpl['last_success'] or 0) > 60 * 60:
-                self.db.tpl.mod(tpl['id'], last_success=time.time())
+            self.db.tpl.incr_success(tpl['id'])
 
             logger.info('taskid:%d tplid:%d successed! %.4fs', task['id'], task['tplid'], time.time()-start)
         except Exception as e:
             # failed feedback
-            next_time_delta = self.failed_count_to_time(task['last_failed_count'])
+            next_time_delta = self.failed_count_to_time(task['last_failed_count'], tpl['interval'])
             if next_time_delta:
                 disabled = False
                 next = time.time() + next_time_delta
@@ -194,11 +198,13 @@ class MainWorker(object):
                     disabled = disabled,
                     mtime = time.time(),
                     next=next)
+            self.db.tpl.incr_failed(tpl['id'])
 
             if task['success_count'] and task['last_failed_count'] and user['email_verified'] and user['email']\
                     and self.is_tommorrow(next):
                 try:
-                    _ = yield utils.send_mail(to=user['email'], subject=u"%s - 签到失败" % tpl['sitename'],
+                    _ = yield utils.send_mail(to=user['email'], subject=u"%s - 签到失败%s" % (
+                        tpl['sitename'], u' 已停止' if disable else u""),
                     text=u"""
 您的 %(sitename)s [ %(siteurl)s ] 签到任务，执行 %(cnt)d次 失败。%(disable)s
 

@@ -113,6 +113,7 @@ class TPLRunHandler(BaseHandler):
             self.finish('<h1 class="alert alert-danger text-center">签到失败</h1><div class="well">%s</div>' % e)
             return
 
+        self.db.tpl.incr_success(tpl['id'])
         self.finish('<h1 class="alert alert-success text-center">签到成功</h1>')
         return
 

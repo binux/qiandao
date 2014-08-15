@@ -59,6 +59,14 @@ class TPLDB(BaseDB):
     def delete(self, id):
         self._delete(where="id=%s", where_values=(id, ))
 
+    def incr_success(self, id):
+        self._execute('UPDATE %s SET success_count=success_count+1, last_success=%d WHERE `id`=%d' % (
+            self.escape(self.__tablename__), time.time(), int(id)))
+
+    def incr_failed(self, id):
+        self._execute('UPDATE %s SET failed_count=failed_count+1 WHERE `id`=%d' % (
+            self.escape(self.__tablename__), int(id)))
+
     def list(self, fields=None, limit=100, **kwargs):
         where = '1=1'
         where_values = []
