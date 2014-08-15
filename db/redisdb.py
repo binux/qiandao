@@ -24,9 +24,9 @@ class RedisDB(object):
         if not self.client:
             return
         if cnt == self.client.incrby('ip_%s' % ip, cnt):
-            self.client.expire(ip, 3600)
+            self.client.expire('ip_%s' % ip, 3600)
         if userid and cnt == self.client.incrby('user_%s' % userid, cnt):
-            self.client.expire(ip, 3600)
+            self.client.expire('user_%s' % userid, 3600)
 
     def is_evil(self, ip, userid=None):
         if not self.client:
