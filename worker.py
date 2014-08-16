@@ -168,7 +168,7 @@ class MainWorker(object):
                     time.time() + (tpl['interval'] if tpl['interval'] else 24 * 60 * 60) - failed_time_delta)
 
             # success feedback
-            self.db.tasklog.add(task['id'], success=True)
+            self.db.tasklog.add(task['id'], success=True, msg=new_env['variables'].get('__log__'))
             self.db.task.mod(task['id'],
                     last_success=time.time(),
                     last_failed_count=0,
@@ -190,7 +190,7 @@ class MainWorker(object):
                 disabled = True
                 next = None
 
-            self.db.tasklog.add(task['id'], success=False, msg=e.message)
+            self.db.tasklog.add(task['id'], success=False, msg=unicode(e))
             self.db.task.mod(task['id'],
                     last_failed=time.time(),
                     failed_count=task['failed_count']+1,

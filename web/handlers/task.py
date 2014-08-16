@@ -114,7 +114,7 @@ class TaskRunHandler(BaseHandler):
             self.finish('<h1 class="alert alert-danger text-center">签到失败</h1><div class="well">%s</div>' % e)
             return
 
-        self.db.tasklog.add(task['id'], success=True)
+        self.db.tasklog.add(task['id'], success=True, msg=new_env['variables'].get('__log__'))
         self.db.task.mod(task['id'],
                 disabled = False,
                 last_success = time.time(),
