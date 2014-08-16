@@ -6,7 +6,6 @@
 # Created on 2014-08-06 11:55:41
 
 import re
-import copy
 import json
 import urllib
 import base64
@@ -31,6 +30,8 @@ class Fetcher(object):
 
     @staticmethod
     def render(request, env):
+        request = dict(request)
+
         def _render(obj, key):
             if not obj.get(key):
                 return
@@ -306,7 +307,6 @@ class Fetcher(object):
           }
         }
         """
-        obj = copy.deepcopy(obj)
         req, rule, env = self.build_request(obj, self.download_size_limit)
 
         try:
