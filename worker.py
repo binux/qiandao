@@ -205,7 +205,7 @@ class MainWorker(object):
                     and self.is_tommorrow(next):
                 try:
                     _ = yield utils.send_mail(to=user['email'], subject=u"%s - 签到失败%s" % (
-                        tpl['sitename'], u' 已停止' if disable else u""),
+                        tpl['sitename'], u' 已停止' if disabled else u""),
                     text=u"""
 您的 %(sitename)s [ %(siteurl)s ] 签到任务，执行 %(cnt)d次 失败。%(disable)s
 
