@@ -164,8 +164,9 @@ class MainWorker(object):
             failed_time_delta = 0
             for i in range(task['last_failed_count']):
                 failed_time_delta += self.failed_count_to_time(task['last_failed_count'])
-            next = self.fix_next_time(
-                    time.time() + (tpl['interval'] if tpl['interval'] else 24 * 60 * 60) - failed_time_delta)
+            next = time.time() + (tpl['interval'] if tpl['interval'] else 24 * 60 * 60) - failed_time_delta
+            if tpl['interval'] is None:
+                next = self.fix_next_time(next)
 
             # success feedback
             self.db.tasklog.add(task['id'], success=True, msg=new_env['variables'].get('__log__'))
