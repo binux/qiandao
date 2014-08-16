@@ -6,6 +6,7 @@
 # Created on 2014-08-06 11:55:41
 
 import re
+import copy
 import json
 import urllib
 import base64
@@ -305,7 +306,7 @@ class Fetcher(object):
           }
         }
         """
-        obj = dict(obj)
+        obj = copy.deepcopy(obj)
         req, rule, env = self.build_request(obj, self.download_size_limit)
 
         try:
