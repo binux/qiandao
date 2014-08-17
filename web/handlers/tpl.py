@@ -82,6 +82,7 @@ class TPLRunHandler(BaseHandler):
             data = json.loads(self.request.body)
 
         tplid = tplid or data.get('tplid') or self.get_argument('_binux_tplid', None)
+        tpl = dict()
         fetch_tpl = None
         if tplid:
             tpl = self.check_permission(self.db.tpl.get(tplid, fields=('id', 'userid', 'sitename',
@@ -113,7 +114,8 @@ class TPLRunHandler(BaseHandler):
             self.finish('<h1 class="alert alert-danger text-center">签到失败</h1><div class="well">%s</div>' % e)
             return
 
-        self.db.tpl.incr_success(tpl['id'])
+        if tpl:
+            self.db.tpl.incr_success(tpl['id'])
         self.finish('<h1 class="alert alert-success text-center">签到成功</h1>')
         return
 

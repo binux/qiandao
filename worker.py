@@ -220,9 +220,9 @@ class MainWorker(object):
                         taskid = task['id'],
                         ), async=True)
                 except Exception as e:
-                    logging.error('send mail error: %s', e)
+                    logging.error('send mail error: %r', e)
 
-            logger.error('taskid:%d tplid:%d failed! %s %.4fs', task['id'], task['tplid'], e, time.time()-start)
+            logger.error('taskid:%d tplid:%d failed! %r %.4fs', task['id'], task['tplid'], e, time.time()-start)
             raise gen.Return(False)
         raise gen.Return(True)
 
