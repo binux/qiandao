@@ -35,7 +35,7 @@ class Fetcher(object):
         def _render(obj, key):
             if not obj.get(key):
                 return
-            obj[key] = Template(obj[key]).render(_cookie=session, **env)
+            obj[key] = Template(obj[key]).render(_cookies=session, **env)
 
         _render(request, 'method')
         _render(request, 'url')
