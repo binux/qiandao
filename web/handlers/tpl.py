@@ -111,12 +111,12 @@ class TPLRunHandler(BaseHandler):
         try:
             result = yield self.fetcher.do_fetch(fetch_tpl, env)
         except Exception as e:
-            self.finish('<h1 class="alert alert-danger text-center">签到失败</h1><div class="well">%s</div>' % e)
+            self.render('tpl_run_failed.html', log=e)
             return
 
         if tpl:
             self.db.tpl.incr_success(tpl['id'])
-        self.finish('<h1 class="alert alert-success text-center">签到成功</h1>')
+        self.render('tpl_run_success.html', log = result.get('variables', {}).get('__log__'))
         return
 
 class PublicTPLHandler(BaseHandler):

@@ -341,9 +341,9 @@ class Fetcher(object):
             except Exception as e:
                 if config.debug:
                     logging.exception(e)
-                raise Exception('failed at %d request, error:%r, %s' % (
-                    i, e, entry['request']['url']))
+                raise Exception('failed at %d/%d request, error:%r, %s' % (
+                    i, len(tpl), e, entry['request']['url']))
             if not result['success']:
-                raise Exception('failed at %d request, code:%s, %s' % (
-                    i, result['response'].code, entry['request']['url']))
+                raise Exception('failed at %d/%d request, code:%s, %s' % (
+                    i, len(tpl), result['response'].code, entry['request']['url']))
         raise gen.Return(env)

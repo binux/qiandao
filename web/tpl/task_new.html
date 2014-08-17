@@ -6,6 +6,8 @@
   <p class="alert alert-danger">任务处于禁用状态，使用 <a class="modal_load alert-link" href="/task/{{ task.id }}/run">立即执行</a> 成功签到一次，即可解除。</p>
   {% endif %}
 
+  <div id="run-result"></div>
+
   <div class="form-group">
     <label class="control-label" for="site-select">网站</label>
     <select class="form-control" name="_binux_tplid">
@@ -38,7 +40,6 @@
     {% if task %}
     <a class="btn btn-default" data-method="POST" href="/task/{{ task.id }}/del" data-confirm="是否要删除任务?">删除</a>
     {% else %}
-    <span id="run-result"></span>
     <button id="run" data-loading-text="loading..." class="btn btn-default">测试</button>
     {% endif %}
     {% if current_user %}
@@ -65,15 +66,10 @@
           data: data,
         })
         .done(function(data) {
-          if (data.indexOf('alert-danger') != -1) {
-            $('#run-result').text('签到失败').attr('class', 'text-danger');
-          } else {
-            $('#tested').attr('checked', 'checked');
-            $('#run-result').text('签到成功').attr('class', 'text-success');
-          }
+          $('#run-result').html(data).show()
         })
         .fail(function(jxhr) {
-          $('#run-result').text('签到失败').attr('class', 'text-danger');
+          $('#run-result').html('<h1 class="alert alert-danger text-center">签到失败</h1><div class="well"></div>').show().find('div').text(jxhr.responseText);
         })
         .always(function() {
           $this.button('reset');

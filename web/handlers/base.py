@@ -48,6 +48,8 @@ class BaseHandler(tornado.web.RequestHandler):
         return template.render(namespace)
 
     def prepare(self):
+        if config.debug:
+            return
         user = self.current_user
         userid = None
         if user:

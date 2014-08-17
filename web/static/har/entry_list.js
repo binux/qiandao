@@ -89,7 +89,7 @@
       $scope.download = function() {
         var tpl;
         $scope.pre_save();
-        tpl = btoa(angular.toJson(har2tpl($scope.har)));
+        tpl = $scope.har;
         angular.element('#download-har').attr('download', $scope.setting.sitename + '.har').attr('href', 'data:application/json;base64,' + tpl);
         return true;
       };
@@ -205,7 +205,7 @@
         });
       };
       return $scope.test = function() {
-        var alert, btn, data;
+        var btn, data, result;
         data = {
           env: {
             variables: utils.list2dict($scope.env),
@@ -213,16 +213,13 @@
           },
           tpl: har2tpl($scope.har)
         };
-        alert = angular.element('#test-har .result').hide();
+        result = angular.element('#test-har .result').hide();
         btn = angular.element('#test-har .btn').button('loading');
         return $http.post('/tpl/run', data).success(function(data) {
-          alert.removeClass('alert').removeClass('alert-danger');
-          alert.html(data).show();
+          result.html(data).show();
           return btn.button('reset');
         }).error(function(data) {
-          alert.addClass('alert').addClass('alert-danger').show();
-          alert.find('strong').text('签到失败');
-          alert.find('span').text(data);
+          result.html('<h1 class="alert alert-danger text-center">签到失败</h1><div class="well"></div>').show().find('div').text(data);
           return btn.button('reset');
         });
       };
