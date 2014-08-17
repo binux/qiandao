@@ -92,10 +92,11 @@ define (require, exports, module) ->
         reader.onload = (ev) ->
           $scope.$apply ->
             $scope.uploaded = true
-            try
-              $scope.load_file(angular.fromJson(ev.target.result))
-            catch error
-              $scope.alert('错误的HAR文件')
+            #try
+            $scope.load_file(angular.fromJson(ev.target.result))
+            #catch error
+              #console.error(error)
+              #$scope.alert('错误的HAR文件')
               
             element.find('button').button('reset')
         reader.readAsText $scope.file

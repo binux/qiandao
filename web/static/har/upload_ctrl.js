@@ -98,14 +98,8 @@
         reader = new FileReader();
         reader.onload = function(ev) {
           return $scope.$apply(function() {
-            var error;
             $scope.uploaded = true;
-            try {
-              $scope.load_file(angular.fromJson(ev.target.result));
-            } catch (_error) {
-              error = _error;
-              $scope.alert('错误的HAR文件');
-            }
+            $scope.load_file(angular.fromJson(ev.target.result));
             return element.find('button').button('reset');
           });
         };

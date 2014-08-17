@@ -14,9 +14,10 @@ define (require, exports, module) ->
 
   mime_type = (har) ->
     for entry in har.log.entries
-      mt = entry.response.content?.mimeType
+      mt = entry.response?.content?.mimeType
 
       entry.filter_mimeType = switch
+        when not mt then 'other'
         when mt.indexOf('audio') == 0 then 'media'
         when mt.indexOf('image') == 0 then 'image'
         when mt.indexOf('javascript') != -1 then 'javascript'
@@ -57,7 +58,7 @@ define (require, exports, module) ->
           #})), entry.request.url)
 
       # update cookie from response
-      for header in (h for h in entry.response.headers when h.name.toLowerCase() == 'set-cookie')
+      for header in (h for h in entry.response?.headers? when h.name.toLowerCase() == 'set-cookie')
         entry.filter_set_cookie = true
         try
           cookie_jar.setCookieSync(header.value, entry.request.url, {now: new Date(entry.startedDateTime)})
@@ -150,8 +151,8 @@ define (require, exports, module) ->
 
   rm_content = (har) ->
     for entry in har.log.entries
-      if entry.response.content?.text?
-        entry.response.content.text = undefined
+      if entry.response?.content?.text?
+        entry.response?.content.text = undefined
     return har
 
   exports =
@@ -168,11 +169,11 @@ define (require, exports, module) ->
           entry.recommend = true
         else if domain != utils.get_domain(entry.request.url)
           entry.recommend = false
-        else if entry.response.status in [304, 0]
+        else if entry.response?.status in [304, 0]
           entry.recommend = false
-        else if entry.response.status // 100 == 3
+        else if entry.response?.status // 100 == 3
           entry.recommend = true
-        else if entry.response.cookies?.length > 0
+        else if entry.response?.cookies?.length > 0
           entry.recommend = true
         else if entry.request.method == 'POST'
           entry.recommend = true
@@ -198,11 +199,11 @@ define (require, exports, module) ->
         started = entry.checked if not started
         if not started
           continue
-        if not entry.response.cookies
+        if not entry.response?.cookies
           continue
 
         start_time = new Date(entry.startedDateTime)
-        set_cookie = (cookie.name for cookie in entry.response.cookies when (new Date(cookie.expires)) > start_time)
+        set_cookie = (cookie.name for cookie in entry.response?.cookies when (new Date(cookie.expires)) > start_time)
         _related_cookies = (c for c in related_cookies when c not in set_cookie)
         if related_cookies.length > _related_cookies.length
           entry.recommend = true

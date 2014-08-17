@@ -28,13 +28,15 @@
       return har;
     };
     mime_type = function(har) {
-      var entry, mt, _i, _len, _ref, _ref1;
+      var entry, mt, _i, _len, _ref, _ref1, _ref2;
       _ref = har.log.entries;
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         entry = _ref[_i];
-        mt = (_ref1 = entry.response.content) != null ? _ref1.mimeType : void 0;
+        mt = (_ref1 = entry.response) != null ? (_ref2 = _ref1.content) != null ? _ref2.mimeType : void 0 : void 0;
         entry.filter_mimeType = (function() {
           switch (false) {
+            case !!mt:
+              return 'other';
             case mt.indexOf('audio') !== 0:
               return 'media';
             case mt.indexOf('image') !== 0:
@@ -86,11 +88,11 @@
           }
         }
         _ref3 = (function() {
-          var _len3, _m, _ref3, _results;
-          _ref3 = entry.response.headers;
+          var _len3, _m, _ref3, _ref4, _results;
+          _ref4 = ((_ref3 = entry.response) != null ? _ref3.headers : void 0) != null;
           _results = [];
-          for (_m = 0, _len3 = _ref3.length; _m < _len3; _m++) {
-            h = _ref3[_m];
+          for (_m = 0, _len3 = _ref4.length; _m < _len3; _m++) {
+            h = _ref4[_m];
             if (h.name.toLowerCase() === 'set-cookie') {
               _results.push(h);
             }
@@ -237,12 +239,14 @@
       return har;
     };
     rm_content = function(har) {
-      var entry, _i, _len, _ref, _ref1;
+      var entry, _i, _len, _ref, _ref1, _ref2, _ref3;
       _ref = har.log.entries;
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         entry = _ref[_i];
-        if (((_ref1 = entry.response.content) != null ? _ref1.text : void 0) != null) {
-          entry.response.content.text = void 0;
+        if (((_ref1 = entry.response) != null ? (_ref2 = _ref1.content) != null ? _ref2.text : void 0 : void 0) != null) {
+          if ((_ref3 = entry.response) != null) {
+            _ref3.content.text = void 0;
+          }
         }
       }
       return har;
@@ -255,7 +259,7 @@
         return replace_variables(xhr(mime_type(analyze_cookies(headers(sort(post_data(rm_content(har))))))), variables);
       },
       recommend_default: function(har) {
-        var domain, entry, _i, _len, _ref, _ref1, _ref2;
+        var domain, entry, _i, _len, _ref, _ref1, _ref2, _ref3, _ref4, _ref5;
         domain = null;
         _ref = har.log.entries;
         for (_i = 0, _len = _ref.length; _i < _len; _i++) {
@@ -267,11 +271,11 @@
             entry.recommend = true;
           } else if (domain !== utils.get_domain(entry.request.url)) {
             entry.recommend = false;
-          } else if ((_ref1 = entry.response.status) === 304 || _ref1 === 0) {
+          } else if ((_ref1 = (_ref2 = entry.response) != null ? _ref2.status : void 0) === 304 || _ref1 === 0) {
             entry.recommend = false;
-          } else if (Math.floor(entry.response.status / 100) === 3) {
+          } else if (Math.floor(((_ref3 = entry.response) != null ? _ref3.status : void 0) / 100) === 3) {
             entry.recommend = true;
-          } else if (((_ref2 = entry.response.cookies) != null ? _ref2.length : void 0) > 0) {
+          } else if (((_ref4 = entry.response) != null ? (_ref5 = _ref4.cookies) != null ? _ref5.length : void 0 : void 0) > 0) {
             entry.recommend = true;
           } else if (entry.request.method === 'POST') {
             entry.recommend = true;
@@ -282,7 +286,7 @@
         return har;
       },
       recommend: function(har) {
-        var c, checked, cookie, e, entry, related_cookies, set_cookie, start_time, started, _i, _j, _k, _l, _len, _len1, _len2, _len3, _m, _ref, _ref1, _ref2, _ref3, _related_cookies;
+        var c, checked, cookie, e, entry, related_cookies, set_cookie, start_time, started, _i, _j, _k, _l, _len, _len1, _len2, _len3, _m, _ref, _ref1, _ref2, _ref3, _ref4, _related_cookies;
         _ref = har.log.entries;
         for (_i = 0, _len = _ref.length; _i < _len; _i++) {
           entry = _ref[_i];
@@ -322,16 +326,16 @@
           if (!started) {
             continue;
           }
-          if (!entry.response.cookies) {
+          if (!((_ref3 = entry.response) != null ? _ref3.cookies : void 0)) {
             continue;
           }
           start_time = new Date(entry.startedDateTime);
           set_cookie = (function() {
-            var _len3, _m, _ref3, _results;
-            _ref3 = entry.response.cookies;
+            var _len3, _m, _ref4, _ref5, _results;
+            _ref5 = (_ref4 = entry.response) != null ? _ref4.cookies : void 0;
             _results = [];
-            for (_m = 0, _len3 = _ref3.length; _m < _len3; _m++) {
-              cookie = _ref3[_m];
+            for (_m = 0, _len3 = _ref5.length; _m < _len3; _m++) {
+              cookie = _ref5[_m];
               if ((new Date(cookie.expires)) > start_time) {
                 _results.push(cookie.name);
               }
@@ -352,9 +356,9 @@
           if (related_cookies.length > _related_cookies.length) {
             entry.recommend = true;
             related_cookies = _related_cookies;
-            _ref3 = entry.request.cookies;
-            for (_m = 0, _len3 = _ref3.length; _m < _len3; _m++) {
-              cookie = _ref3[_m];
+            _ref4 = entry.request.cookies;
+            for (_m = 0, _len3 = _ref4.length; _m < _len3; _m++) {
+              cookie = _ref4[_m];
               related_cookies.push(cookie.name);
             }
           }
