@@ -77,7 +77,7 @@ define (require, exports, module) ->
 
       $scope.download = () ->
         $scope.pre_save()
-        tpl = $scope.har
+        tpl = btoa(angular.toJson($scope.har))
         angular.element('#download-har').attr('download', $scope.setting.sitename+'.har').attr('href', 'data:application/json;base64,'+tpl)
         return true
 
