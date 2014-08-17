@@ -29,13 +29,13 @@ class Fetcher(object):
         self.download_size_limit = download_size_limit
 
     @staticmethod
-    def render(request, env):
+    def render(request, env, session={}):
         request = dict(request)
 
         def _render(obj, key):
             if not obj.get(key):
                 return
-            obj[key] = Template(obj[key]).render(**env)
+            obj[key] = Template(obj[key]).render(_cookie=session, **env)
 
         _render(request, 'method')
         _render(request, 'url')
@@ -52,7 +52,7 @@ class Fetcher(object):
     def build_request(obj, download_size_limit=config.download_size_limit):
         env = obj['env']
         rule = obj['rule']
-        request = Fetcher.render(obj['request'], env['variables'])
+        request = Fetcher.render(obj['request'], env['variables'], env['session'])
 
         method = request['method']
         url = request['url']
