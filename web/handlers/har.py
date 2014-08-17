@@ -38,7 +38,7 @@ class HAREditor(BaseHandler):
                 note = tpl['note'],
                 banner = tpl['banner'],
                 ),
-            readonly = not self.permission(tpl, 'w') or tpl['lock'],
+            readonly = not tpl['userid'] or not self.permission(tpl, 'w') or tpl['lock'],
             ))
 
 class HARTest(BaseHandler):
@@ -104,6 +104,10 @@ class HARSave(BaseHandler):
 
         if id:
             _tmp = self.check_permission(self.db.tpl.get(id, fields=('id', 'userid', 'lock')), 'w')
+            if not _tmp['userid']:
+                self.set_status(403)
+                self.finish(u'公开模板不允许编辑')
+                return
             if _tmp['lock']:
                 self.set_status(403)
                 self.finish(u'模板已锁定')
