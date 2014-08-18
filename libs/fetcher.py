@@ -17,7 +17,13 @@ import pycurl
 from jinja2 import Template
 from tornado import gen, concurrent, httpclient
 
-import config
+try:
+    import config
+except ImportError:
+    class config:
+        debug = False
+        download_size_limit = 1*1024*1024
+
 from libs import cookie_utils, utils
 
 logger = logging.getLogger('qiandao.fetcher')
@@ -342,8 +348,9 @@ class Fetcher(object):
                 if config.debug:
                     logging.exception(e)
                 raise Exception('failed at %d/%d request, error:%r, %s' % (
-                    i, len(tpl), e, entry['request']['url']))
+                    i+1, len(tpl), e, entry['request']['url']))
             if not result['success']:
                 raise Exception('failed at %d/%d request, code:%s, %s' % (
-                    i, len(tpl), result['response'].code, entry['request']['url']))
+                    i+1, len(tpl), result['response'].code, entry['request']['url']))
         raise gen.Return(env)
+

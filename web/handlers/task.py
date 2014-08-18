@@ -23,7 +23,6 @@ class TaskNewHandler(BaseHandler):
         if tpls:
             tpls.append({'id': 0, 'sitename': u'以下为公共模板'})
         tpls += sorted(self.db.tpl.list(userid=None, fields=fields), key=lambda t: -t['success_count'])
-        print tpls
 
         if not tplid:
             for tpl in tpls:
