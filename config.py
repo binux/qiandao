@@ -5,7 +5,7 @@
 #         http://binux.me
 # Created on 2014-07-30 12:21:48
 
-from Crypto.Hash import SHA256
+import hashlib
 
 debug = True
 gzip = True
@@ -28,10 +28,11 @@ class redis(object):
 evil = 100
 
 pbkdf2_iterations = 400
-aes_key = SHA256.new('binux').digest()
-cookie_secret = SHA256.new('binux').digest()
+aes_key = hashlib.sha256('binux').digest()
+cookie_secret = hashlib.sha256('binux').digest()
 check_task_loop = 10000
 download_size_limit = 1*1024*1024
+proxies = []
 
 mailgun_key = ""
 ga_key = ""

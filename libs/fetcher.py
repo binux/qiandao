@@ -7,6 +7,7 @@
 
 import re
 import json
+import random
 import urllib
 import base64
 import logging
@@ -17,13 +18,7 @@ import pycurl
 from jinja2 import Template
 from tornado import gen, concurrent, httpclient
 
-try:
-    import config
-except ImportError:
-    class config:
-        debug = False
-        download_size_limit = 1*1024*1024
-
+import config
 from libs import cookie_utils, utils
 
 logger = logging.getLogger('qiandao.fetcher')
@@ -289,7 +284,7 @@ class Fetcher(object):
 
 
     @gen.coroutine
-    def fetch(self, obj):
+    def fetch(self, obj, proxy={}):
         """
         obj = {
           request: {
@@ -315,6 +310,10 @@ class Fetcher(object):
         """
         req, rule, env = self.build_request(obj, self.download_size_limit)
 
+        if proxy:
+            for key in proxy:
+                setattr(req, 'proxy_%s' % key, proxy[key])
+
         try:
             response = yield self.client.fetch(req)
         except httpclient.HTTPError as e:
@@ -332,17 +331,22 @@ class Fetcher(object):
             })
 
     @gen.coroutine
-    def do_fetch(self, tpl, env):
+    def do_fetch(self, tpl, env, proxies=config.proxies):
         """
         do a fetch of hole tpl
         """
+        if proxies:
+            proxy = random.choice(proxies)
+        else:
+            proxy = {}
+
         for i, entry in enumerate(tpl):
             try:
                 result = yield self.fetch(dict(
                     request = entry['request'],
                     rule = entry['rule'],
                     env = env,
-                    ))
+                    ), proxy=proxy)
                 env = result['env']
             except Exception as e:
                 if config.debug:

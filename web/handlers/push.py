@@ -146,6 +146,7 @@ class PushActionHandler(BaseHandler):
                     banner = tplobj['banner'],
                     note = tplobj['note'],
                     fork = pr['from_tplid'],
+                    mtime = time.time(),
                     )
         self.db.push_request.mod(pr['id'], status=self.db.push_request.ACCEPT)
 
