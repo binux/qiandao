@@ -98,9 +98,9 @@
         var _this = $(this);
         setTimeout(function() {
           if (_this.data('cookie') == "") {
-            alert('尚未安装GetCookie插件，请手动获取cookie！');
+            prompt('尚未安装GetCookie插件，请安装插件或手动获取！', 'https://github.com/acgotaku/GetCookies');
           } else if (_this.data('cookie') == "{}") {
-            alert('没有获得cookie，您是否已经登录？');
+            alert('没有获得cookie，您是否已经登录 '+_this.data('site')+' ？');
           } else {
             var cookie = _this.data('cookie');
             var cookie_str = "";
