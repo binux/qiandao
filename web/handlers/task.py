@@ -31,10 +31,10 @@ class TaskNewHandler(BaseHandler):
                     break
         tplid = int(tplid)
 
-        tpl = self.check_permission(self.db.tpl.get(tplid, fields=('id', 'userid', 'note', 'variables')))
+        tpl = self.check_permission(self.db.tpl.get(tplid, fields=('id', 'userid', 'note', 'sitename', 'siteurl', 'variables')))
         variables = json.loads(tpl['variables'])
         
-        self.render('task_new.html', tpls=tpls, tplid=tplid, note=tpl['note'], variables=variables, task={})
+        self.render('task_new.html', tpls=tpls, tplid=tplid, tpl=tpl, variables=variables, task={})
 
     @tornado.web.authenticated
     def post(self, taskid=None):

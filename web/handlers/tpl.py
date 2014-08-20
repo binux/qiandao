@@ -55,12 +55,12 @@ class TPLPushHandler(BaseHandler):
 class TPLVarHandler(BaseHandler):
     def get(self, tplid):
         user = self.current_user
-        tpl = self.db.tpl.get(tplid, fields=('id', 'note', 'userid', 'variables'))
+        tpl = self.db.tpl.get(tplid, fields=('id', 'note', 'userid', 'sitename', 'siteurl', 'variables'))
         if not self.permission(tpl):
             self.evil(+5)
             self.finish('<span class="alert alert-danger">没有权限</span>')
             return
-        self.render('task_new_var.html', note=tpl['note'], variables=json.loads(tpl['variables']))
+        self.render('task_new_var.html', tpl=tpl, variables=json.loads(tpl['variables']))
 
 class TPLDelHandler(BaseHandler):
     @tornado.web.authenticated

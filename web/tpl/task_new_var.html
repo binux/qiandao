@@ -1,18 +1,17 @@
-{% if note %}<div class="alert alert-info">{{ note }}</div>{% endif %}
+{% if tpl.note %}<div class="alert alert-info">{{ tpl.note }}</div>{% endif %}
+
+{% macro asurl(siteurl) %}{{ 'http://'+siteurl if not siteurl.startswith('http') else siteurl }}{% endmacro %}
 
 {% macro varname_format(var) %}
 {%- set var_lower = var.lower() %}
 {%- if var_lower == 'username' %}用户名
 {%- elif var_lower == 'password' %}密码
+{%- elif var_lower == 'cookie' %}<span>Cookies</span>{% if tpl.siteurl %}<a href="javascript:void(0)" class="control-helper" data-toggle="get-cookie" data-site="{{ asurl(tpl.siteurl) }}" data-cookie="">点击获取</a>{% endif %}
 {%- else %}{{ var }}
 {%- endif -%}
 {% endmacro %}
 
 {% macro var_tips(var) %}
-{% set var_lower = var.lower() %}
-{% if var_lower == 'cookie' %}<p class="block-heler">将
-  <a href="javascript:window.prompt('将以下内容复制粘贴回 Cookie 输入框中。', document.cookie)" onclick="alert('请将我拖拽到书签栏');return false;">这个脚本</a> 拖拽到书签栏，打开网站，点击书签，提取弹出框的内容。</p>
-{% endif %}
 {% endmacro %}
 
 {% for var in variables %}
@@ -22,3 +21,7 @@
   {{ var_tips(var) }}
 </div>
 {% endfor %}
+
+<script>
+  $('#siteurl').attr("href", "{{ asurl(tpl.siteurl) if tpl.siteurl else '' }}");
+</script>

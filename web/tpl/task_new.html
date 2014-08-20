@@ -9,7 +9,9 @@
   <div id="run-result"></div>
 
   <div class="form-group">
-    <label class="control-label" for="site-select">网站</label>
+    <label class="control-label" for="site-select">
+      <a id="siteurl" href="" target="_blank" style="color:black;">网站</a>
+    </label>
     <select class="form-control" name="_binux_tplid">
       {% for tpl in tpls %}
       <option value="{{ tpl.id }}" {% if tpl.id == tplid %}selected{% endif %} {% if not tpl.id %}disabled{% endif %}>{{ tpl.sitename or '未命名' }}</option>
@@ -48,6 +50,7 @@
   </div>
   <script>
     $(function() {
+      // run test
       $('#run').on('click', function() {
         var tplid = $('select[name=_binux_tplid]').val();
         var env = {};
@@ -78,14 +81,39 @@
         return false;
       });
 
+      // load tpl variables
       $('select[name=_binux_tplid]').on('change', function() {
         $('#variables').load("/tpl/"+$(this).val()+"/var");
       });
 
+      // auto fill note
       $('#variables').on('change', '[name=username]', function() {
         if ($('#note').val() == '') {
           $('#note').val($(this).val());
         }
+      });
+
+      // fill cookie
+      $('#variables').on('click', '[data-toggle=get-cookie]', function() {
+        var _this = $(this);
+        setTimeout(function() {
+          if (_this.data('cookie') == "") {
+            alert('尚未安装GetCookie插件，请手动获取cookie！');
+          } else if (_this.data('cookie') == "{}") {
+            alert('没有获得cookie，您是否已经登录？');
+          } else {
+            var cookie = _this.data('cookie');
+            var cookie_str = "";
+            for (key in cookie) {
+              cookie_str += encodeURIComponent(key)+'='+encodeURIComponent(cookie[key])+'; '
+            }
+            if (cookie_str == '') {
+              alert('没有获得cookie，您是否已经登录？');
+              return;
+            }
+            document.getElementById(_this[0].parentElement.getAttribute('for')).value = cookie_str;
+          }
+        }, 100);
       });
     })
   </script>

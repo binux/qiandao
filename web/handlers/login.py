@@ -10,6 +10,7 @@ import time
 import base64
 import umsgpack
 from tornado import gen
+from tornado.ioloop import IOLoop
 
 import config
 from base import *
@@ -25,7 +26,6 @@ class LoginHandler(BaseHandler):
     def post(self):
         email = self.get_argument('email')
         password = self.get_argument('password')
-        next = self.get_argument('next', None)
         if not email or not password:
             self.render('login.html', password_error=u'请输入用户名和密码', email=email)
             return
@@ -44,13 +44,12 @@ class LoginHandler(BaseHandler):
                 setcookie['secure'] = True
             self.set_secure_cookie('user', umsgpack.packb(user), **setcookie)
             self.db.user.mod(user['id'], atime=time.time(), aip=self.ip2int)
-            if not next:
-                self.redirect('/my')
-                return
+            
+            next = self.get_argument('next', '/my/')
+            self.redirect(next)
         else:
             self.evil(+5)
             self.render('login.html', password_error=u'不存在此邮箱或密码错误', email=email)
-            return
 
 class LogoutHandler(BaseHandler):
     def get(self):
@@ -95,11 +94,12 @@ class RegisterHandler(BaseHandler):
         if config.https:
             setcookie['secure'] = True
         self.set_secure_cookie('user', umsgpack.packb(user), **setcookie)
-        next = self.get_argument('next', None)
-        if not next:
-            self.redirect('/my')
 
-        self.send_mail(user)
+        next = self.get_argument('next', '/my/')
+        self.redirect(next)
+
+        future = self.send_mail(user)
+        IOLoop.current().add_future(future, lambda x: x)
 
     def send_mail(self, user):
         verified_code = [user['email'], time.time()]

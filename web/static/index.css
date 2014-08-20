@@ -25,11 +25,3 @@ form h1 sup {
 form div.text-right {
   margin-top: 30px;
 }
-form #site-select-div {
-  position: relative;
-}
-form #site-select-div a {
-  position: absolute;
-  top: 0;
-  right: 0;
-}

@@ -15,8 +15,8 @@
 
     <div class="form-group" id="site-select-div">
       <label class="control-label" for="site-select">
-        <span>网站</span>
-        <a href="/tpls/public">查看所有公开模板</a>
+        <a target="_blank" id="siteurl" style="color:black;">网站</a>
+        <a class="control-helper" href="/tpls/public">查看所有公开模板</a>
       </label>
       <select class="form-control" name="_binux_tplid">
         {% for tpl in tpls %}
@@ -57,6 +57,27 @@
           }
         });
       })
+      $('#variables').on('click', '[data-toggle=get-cookie]', function() {
+        var _this = $(this);
+        setTimeout(function() {
+          if (_this.data('cookie') == "") {
+            alert('尚未安装GetCookie插件，请手动获取cookie！');
+          } else if (_this.data('cookie') == "{}") {
+            alert('没有获得cookie，您是否已经登录？');
+          } else {
+            var cookie = _this.data('cookie');
+            var cookie_str = "";
+            for (key in cookie) {
+              cookie_str += encodeURIComponent(key)+'='+encodeURIComponent(cookie[key])+'; '
+            }
+            if (cookie_str == '') {
+              alert('没有获得cookie，您是否已经登录？');
+              return;
+            }
+            document.getElementById(_this[0].parentElement.getAttribute('for')).value = cookie_str;
+          }
+        }, 100);
+      });
     </script>
 
     {{ utils.modal_load() }}
