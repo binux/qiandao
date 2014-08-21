@@ -80,10 +80,10 @@ class TaskEditHandler(TaskNewHandler):
             'tplid', 'disabled', 'note')), 'w')
 
         tpl = self.check_permission(self.db.tpl.get(task['tplid'], fields=('id', 'userid', 'note',
-            'sitename', 'variables')))
+            'sitename', 'siteurl', 'variables')))
 
         variables = json.loads(tpl['variables'])
-        self.render('task_new.html', tpls=[tpl, ], tplid=tpl['id'], note=tpl['note'], variables=variables, task=task)
+        self.render('task_new.html', tpls=[tpl, ], tplid=tpl['id'], tpl=tpl, variables=variables, task=task)
 
 class TaskRunHandler(BaseHandler):
     @tornado.web.authenticated
