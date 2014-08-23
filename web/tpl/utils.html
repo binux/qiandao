@@ -134,7 +134,11 @@ $(function() {
       return;
     }
 
-    window.set_cookie_variable = function(cookie) {
+    window.addEventListener("message", function(cookid) {
+      if (event.origin != window.location.origin) {
+        return ;
+      }
+
       var cookie_str = "";
       for (key in cookie) {
         cookie_str += key+'='+cookie[key]+'; '
@@ -144,24 +148,7 @@ $(function() {
         return;
       }
       $('#input-cookie').val(cookie_str);
-    }
-    
-    var tries = 0;
-    var try_get = function() {
-      if (!$this.attr('data-cookie')) {
-        tries += 1
-        if (tries > 10) {
-          alert('没有获得cookie，您是否已经登录？');
-          return;
-        }
-        setTimeout(try_get, 100);
-      }
-
-      var cookie = JSON.parse($this.attr('data-cookie'))
-      set_cookie_variable(cookie);
-    }
-
-    setTimeout(try_get, 100);
+    }, false);
   });
 })
 </script>
