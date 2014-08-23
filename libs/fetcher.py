@@ -91,7 +91,7 @@ class Fetcher(object):
 
         session = cookie_utils.CookieSession()
         if req.headers.get('Cookie'):
-            session.update(dict(urlparse.parse_qsl(req.headers['Cookie'])))
+            session.update(dict(x.strip().split('=', 1) for x in req.headers['Cookie'].split(';')))
         if isinstance(env['session'], cookie_utils.CookieSession):
             session.from_json(env['session'].to_json())
         else:
@@ -151,6 +151,12 @@ class Fetcher(object):
         def build_response(response):
             cookies = cookie_utils.CookieSession()
             cookies.extract_cookies_to_jar(response.request, response)
+
+            encoding = utils.find_encoding(response.body, response.headers)
+            if not response.headers.get('content-type'):
+                response.headers['content-type'] = 'text/plain'
+            if 'charset=' not in response.headers.get('content-type', ''):
+                response.headers['content-type'] += '; charset='+encoding
 
             return dict(
                     status = response.code,
