@@ -134,11 +134,12 @@ $(function() {
       return;
     }
 
-    window.addEventListener("message", function(cookid) {
+    window.addEventListener("message", function(event) {
       if (event.origin != window.location.origin) {
         return ;
       }
 
+      var cookie = event.data;
       var cookie_str = "";
       for (key in cookie) {
         cookie_str += key+'='+cookie[key]+'; '
