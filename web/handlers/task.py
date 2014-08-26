@@ -65,9 +65,9 @@ class TaskNewHandler(BaseHandler):
             task = self.check_permission(self.db.task.get(taskid, fields=('id', 'userid', 'init_env')), 'w')
 
             init_env = self.db.user.decrypt(user['id'], task['init_env'])
-            env.update(init_env)
-            env = self.db.user.encrypt(user['id'], env)
-            self.db.task.mod(taskid, init_env=env, env=None, session=None, note=note)
+            init_env.update(env)
+            init_env = self.db.user.encrypt(user['id'], init_env)
+            self.db.task.mod(taskid, init_env=init_env, env=None, session=None, note=note)
 
         #referer = self.request.headers.get('referer', '/my/')
         self.redirect('/my/')
