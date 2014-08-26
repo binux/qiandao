@@ -51,7 +51,7 @@ class TaskNewHandler(BaseHandler):
                 continue
             if not value:
                 continue
-            env[key] = value[0]
+            env[key] = self.get_body_argument(key)
 
         if not taskid:
             env = self.db.user.encrypt(user['id'], env)
