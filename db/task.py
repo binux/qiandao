@@ -67,4 +67,4 @@ class TaskDB(BaseDB):
     def scan(self, now=None, fields=None):
         if now is None:
             now = time.time()
-        return self._select2dic(what=fields, where="`next` < %s", where_values=(now, ))
+        return list(self._select2dic(what=fields, where="`next` < %s", where_values=(now, )))
