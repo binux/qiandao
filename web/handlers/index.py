@@ -18,7 +18,7 @@ class IndexHandlers(BaseHandler):
         fields = ('id', 'sitename', 'success_count')
         tpls = sorted(self.db.tpl.list(userid=None, fields=fields), key=lambda t: -t['success_count'])
         if not tpls:
-            raise HTTPError(404)
+            return self.render('index.html', tpls=[], tplid=0, tpl=None, variables=[])
 
         if not tplid:
             for tpl in tpls:

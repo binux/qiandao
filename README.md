@@ -9,7 +9,7 @@ qiandao.py
 ==========
 
 ```
-pip install tornado pycurl u-msgpack-python jinja2 chardet requests
+pip install tornado u-msgpack-python jinja2 chardet requests
 ./qiandao.py tpl.har [--key=value]* [env.json]
 ```
 
@@ -20,7 +20,8 @@ Web
 可选 redis
 
 ```
-pip install tornado pycurl u-msgpack-python jinja2 chardet requests mysql-connector-python redis
+apt-get install python-dev
+pip install tornado u-msgpack-python jinja2 chardet requests mysql-connector-python redis pbkdf2 pycrypto
 ./web.py
 ```
 

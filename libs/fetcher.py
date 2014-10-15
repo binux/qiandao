@@ -14,7 +14,10 @@ import logging
 import urlparse
 from datetime import datetime
 
-import pycurl
+try:
+    import pycurl
+except ImportError as e:
+    pycurl = None
 from jinja2 import Template
 from tornado import gen, concurrent, httpclient
 
@@ -25,7 +28,8 @@ logger = logging.getLogger('qiandao.fetcher')
 
 class Fetcher(object):
     def __init__(self, download_size_limit=config.download_size_limit):
-        httpclient.AsyncHTTPClient.configure('tornado.curl_httpclient.CurlAsyncHTTPClient')
+        if pycurl:
+            httpclient.AsyncHTTPClient.configure('tornado.curl_httpclient.CurlAsyncHTTPClient')
         self.client = httpclient.AsyncHTTPClient()
         self.download_size_limit = download_size_limit
 
