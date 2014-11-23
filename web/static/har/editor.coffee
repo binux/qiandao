@@ -38,14 +38,13 @@ define (require, exports, module) ->
       return
   )
   window.addEventListener("message", (ev) ->
-    console.log(ev)
     if event.origin != window.location.origin
       return
 
     cookie = ev.data
     cookie_str = ""
-    for key in cookie
-      cookie_str += key+'='+cookie[key]+'; '
+    for key, value in cookie
+      cookie_str += key+'='+value+'; '
     if cookie_str == ''
       alert('没有获得cookie，您是否已经登录？')
       return

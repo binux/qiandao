@@ -35,16 +35,15 @@
       }
     });
     window.addEventListener("message", function(ev) {
-      var cookie, cookie_str, key, _i, _len;
-      console.log(ev);
+      var cookie, cookie_str, key, value, _i, _len;
       if (event.origin !== window.location.origin) {
         return;
       }
       cookie = ev.data;
       cookie_str = "";
-      for (_i = 0, _len = cookie.length; _i < _len; _i++) {
-        key = cookie[_i];
-        cookie_str += key + '=' + cookie[key] + '; ';
+      for (value = _i = 0, _len = cookie.length; _i < _len; value = ++_i) {
+        key = cookie[value];
+        cookie_str += key + '=' + value + '; ';
       }
       if (cookie_str === '') {
         alert('没有获得cookie，您是否已经登录？');
