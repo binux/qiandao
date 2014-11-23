@@ -108,7 +108,7 @@ def format_date(date, gmt_offset=-8*60, relative=True, shorter=False, full_forma
     str_time = "%d:%02d:%02d" % (local_date.hour, local_date.minute, local_date.second)
 
     return format % {
-        "month_name": local_date.month - 1,
+        "month_name": local_date.month,
         "weekday": local_date.weekday(),
         "day": str(local_date.day),
         "year": str(local_date.year),
