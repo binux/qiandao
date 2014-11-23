@@ -35,14 +35,14 @@
       }
     });
     window.addEventListener("message", function(ev) {
-      var cookie, cookie_str, key, value, _i, _len;
+      var cookie, cookie_str, key, value;
       if (event.origin !== window.location.origin) {
         return;
       }
       cookie = ev.data;
       cookie_str = "";
-      for (value = _i = 0, _len = cookie.length; _i < _len; value = ++_i) {
-        key = cookie[value];
+      for (key in cookie) {
+        value = cookie[key];
         cookie_str += key + '=' + value + '; ';
       }
       if (cookie_str === '') {

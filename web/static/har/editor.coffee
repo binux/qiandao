@@ -43,7 +43,7 @@ define (require, exports, module) ->
 
     cookie = ev.data
     cookie_str = ""
-    for key, value in cookie
+    for key, value of cookie
       cookie_str += key+'='+value+'; '
     if cookie_str == ''
       alert('没有获得cookie，您是否已经登录？')
