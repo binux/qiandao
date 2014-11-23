@@ -27,27 +27,29 @@ define (require, exports, module) ->
   )
 
   # get cookie helper
+  cookie_input = null
   $(document).on('click', "[data-toggle=get-cookie]", (ev) ->
     $this = $(this)
+    cookie_input = $this.parent().find('input')
 
     if $('body').attr('get-cookie') is undefined
       alert('尚未安装GetCookie插件，请安装插件或手动获取！')
       $this.attr('href', 'https://chrome.google.com/webstore/detail/cookies-get-assistant/ljjpkibacifkfolehlgaolibbnlapkme').attr('target', '_blank')
       return
+  )
+  window.addEventListener("message", (ev) ->
+    console.log(ev)
+    if event.origin != window.location.origin
+      return
 
-    window.addEventListener("message", (ev) ->
-      if event.origin != window.location.origin
-        return
-
-      cookie = event.data
-      cookie_str = ""
-      for key in cookie
-        cookie_str += key+'='+cookie[key]+'; '
-      if cookie_str == ''
-        alert('没有获得cookie，您是否已经登录？')
-        return
-      $this.parent().find('input').val(cookie_str)
-    )
+    cookie = event.data
+    cookie_str = ""
+    for key in cookie
+      cookie_str += key+'='+cookie[key]+'; '
+    if cookie_str == ''
+      alert('没有获得cookie，您是否已经登录？')
+      return
+    cookie_input.val(cookie_str)
   )
 
   editor = angular.module('HAREditor', [
