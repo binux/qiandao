@@ -40,7 +40,7 @@
       if (event.origin !== window.location.origin) {
         return;
       }
-      cookie = event.data;
+      cookie = ev.data;
       cookie_str = "";
       for (_i = 0, _len = cookie.length; _i < _len; _i++) {
         key = cookie[_i];

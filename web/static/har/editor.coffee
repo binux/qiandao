@@ -42,7 +42,7 @@ define (require, exports, module) ->
     if event.origin != window.location.origin
       return
 
-    cookie = event.data
+    cookie = ev.data
     cookie_str = ""
     for key in cookie
       cookie_str += key+'='+cookie[key]+'; '
