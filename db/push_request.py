@@ -65,8 +65,8 @@ class PRDB(BaseDB):
         where_values = []
         for key, value in kwargs.iteritems():
             if value is None:
-                where += ' and %s is %%s' % self.escape(key)
+                where += ' and %s is %%s ORDER BY mtime DESC' % self.escape(key)
             else:
-                where += ' and %s = %%s' % self.escape(key)
+                where += ' and %s = %%s ORDER BY mtime DESC' % self.escape(key)
             where_values.append(value)
         return self._select2dic(what=fields, where=where, where_values=where_values, limit=limit)
