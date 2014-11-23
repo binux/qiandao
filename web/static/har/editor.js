@@ -24,6 +24,32 @@
         return sel.addRange(range);
       }
     });
+    $(document).on('click', "[data-toggle=get-cookie]", function(ev) {
+      var $this;
+      $this = $(this);
+      if ($('body').attr('get-cookie') === void 0) {
+        alert('尚未安装GetCookie插件，请安装插件或手动获取！');
+        $this.attr('href', 'https://chrome.google.com/webstore/detail/cookies-get-assistant/ljjpkibacifkfolehlgaolibbnlapkme').attr('target', '_blank');
+        return;
+      }
+      return window.addEventListener("message", function(ev) {
+        var cookie, cookie_str, key, _i, _len;
+        if (event.origin !== window.location.origin) {
+          return;
+        }
+        cookie = event.data;
+        cookie_str = "";
+        for (_i = 0, _len = cookie.length; _i < _len; _i++) {
+          key = cookie[_i];
+          cookie_str += key + '=' + cookie[key] + '; ';
+        }
+        if (cookie_str === '') {
+          alert('没有获得cookie，您是否已经登录？');
+          return;
+        }
+        return $this.parents('div').find('input').val(cookie_str);
+      });
+    });
     editor = angular.module('HAREditor', ['editablelist', 'upload_ctrl', 'entry_list', 'entry_editor']);
     return {
       init: function() {
