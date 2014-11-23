@@ -46,7 +46,7 @@ define (require, exports, module) ->
       if cookie_str == ''
         alert('没有获得cookie，您是否已经登录？')
         return
-      $this.parents('div').find('input').val(cookie_str)
+      $this.parent().find('input').val(cookie_str)
     )
   )
 

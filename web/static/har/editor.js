@@ -47,7 +47,7 @@
           alert('没有获得cookie，您是否已经登录？');
           return;
         }
-        return $this.parents('div').find('input').val(cookie_str);
+        return $this.parent().find('input').val(cookie_str);
       });
     });
     editor = angular.module('HAREditor', ['editablelist', 'upload_ctrl', 'entry_list', 'entry_editor']);
