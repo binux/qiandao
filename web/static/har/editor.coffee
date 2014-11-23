@@ -30,7 +30,7 @@ define (require, exports, module) ->
   cookie_input = null
   $(document).on('click', "[data-toggle=get-cookie]", (ev) ->
     $this = $(this)
-    cookie_input = $this.parent().find('input')
+    cookie_input = angular.element($this.parent().find('input'))
 
     if $('body').attr('get-cookie') is undefined
       alert('尚未安装GetCookie插件，请安装插件或手动获取！')
@@ -49,6 +49,7 @@ define (require, exports, module) ->
       alert('没有获得cookie，您是否已经登录？')
       return
     cookie_input.val(cookie_str)
+    cookie_input.scope().$parent.var.value = cookie_str
   )
 
   editor = angular.module('HAREditor', [

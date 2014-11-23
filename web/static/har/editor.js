@@ -28,7 +28,7 @@
     $(document).on('click', "[data-toggle=get-cookie]", function(ev) {
       var $this;
       $this = $(this);
-      cookie_input = $this.parent().find('input');
+      cookie_input = angular.element($this.parent().find('input'));
       if ($('body').attr('get-cookie') === void 0) {
         alert('尚未安装GetCookie插件，请安装插件或手动获取！');
         $this.attr('href', 'https://chrome.google.com/webstore/detail/cookies-get-assistant/ljjpkibacifkfolehlgaolibbnlapkme').attr('target', '_blank');
@@ -49,7 +49,8 @@
         alert('没有获得cookie，您是否已经登录？');
         return;
       }
-      return cookie_input.val(cookie_str);
+      cookie_input.val(cookie_str);
+      return cookie_input.scope().$parent["var"].value = cookie_str;
     });
     editor = angular.module('HAREditor', ['editablelist', 'upload_ctrl', 'entry_list', 'entry_editor']);
     return {
