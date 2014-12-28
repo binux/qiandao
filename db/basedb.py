@@ -8,6 +8,11 @@
 import logging
 logger = logging.getLogger('qiandao.basedb')
 
+def tostr(s):
+    if isinstance(s, bytearray):
+        return str(s)
+    return s
+
 class BaseDB(object):
     '''
     BaseDB
@@ -41,7 +46,7 @@ class BaseDB(object):
         logger.debug("<sql: %s>", sql_query)
 
         for row in self._execute(sql_query, where_values):
-            yield row
+            yield [tostr(x) for x in row]
 
     def _select2dic(self, tablename=None, what="*", where="", where_values=[], offset=0, limit=None):
         tablename = self.escape(tablename or self.__tablename__)
@@ -57,7 +62,7 @@ class BaseDB(object):
         fields = [f[0] for f in dbcur.description]
 
         for row in dbcur:
-            yield dict(zip(fields, row))
+            yield dict(zip(fields, [tostr(x) for x in row]))
  
     def _replace(self, tablename=None, **values):
         tablename = self.escape(tablename or self.__tablename__)
