@@ -109,7 +109,10 @@ class TPLRunHandler(BaseHandler):
                 raise HTTPError(400)
 
         try:
-            result = yield self.fetcher.do_fetch(fetch_tpl, env)
+            if self.current_user:
+                result = yield self.fetcher.do_fetch(fetch_tpl, env)
+            else:
+                result = yield self.fetcher.do_fetch(fetch_tpl, env, proxies=[])
         except Exception as e:
             self.render('tpl_run_failed.html', log=e)
             return
