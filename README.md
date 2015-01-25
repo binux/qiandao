@@ -21,7 +21,8 @@ Web
 
 ```
 apt-get install python-dev
-pip install tornado u-msgpack-python jinja2 chardet requests mysql-connector-python redis pbkdf2 pycrypto
+pip install tornado u-msgpack-python jinja2 chardet requests redis pbkdf2 pycrypto
+pip install mysql-connector-python --allow-external mysql-connector-python
 ./web.py
 ```
 
