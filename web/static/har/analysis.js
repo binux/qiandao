@@ -212,9 +212,9 @@
           if (query) {
             url.search = "?" + query;
           }
-          entry.request.url = utils.url_unparse(url);
-          entry.request.queryString = utils.dict2list(url.query);
         }
+        entry.request.url = utils.url_unparse(url);
+        entry.request.queryString = utils.dict2list(url.query);
         _ref2 = har.log.entries;
         for (_j = 0, _len1 = _ref2.length; _j < _len1; _j++) {
           entry = _ref2[_j];

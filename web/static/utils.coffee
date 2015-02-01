@@ -125,4 +125,47 @@ define (require) ->
         catch error
           return null
 
+    tpl2har: (tpl) ->
+      return {
+        log:
+          creator:
+            name: 'binux'
+            version: 'qiandao'
+          entries: ({
+            checked: true
+            startedDateTime: (new Date()).toISOString()
+            time: 1
+            request:
+              method: en.request.method
+              url: en.request.url
+              headers: ({
+                name: x.name
+                value: x.value
+                checked: true
+              } for x in en.request.headers or [])
+              queryString: []
+              cookies: ({
+                name: x.name
+                value: x.value
+                checked: true
+              } for x in en.request.cookies or [])
+              headersSize: -1
+              bodySize: if en.request.data then en.request.data.length else 0
+              postData:
+                mimeType: en.request.mimeType
+                text: en.request.data
+            response: {}
+            cache: {}
+            timings: {}
+            connections: "0"
+            pageref: "page_0"
+
+            success_asserts: en.rule?.success_asserts
+            failed_asserts: en.rule?.failed_asserts
+            extract_variables: en.rule?.extract_variables
+          } for en in tpl)
+          pages: []
+          version: '1.2'
+      }
+
   return exports

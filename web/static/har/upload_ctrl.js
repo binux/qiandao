@@ -51,6 +51,10 @@
       }
       $scope.load_file = function(data) {
         var loaded;
+        if (!data.log) {
+          data = utils.tpl2har(data);
+        }
+        console.log(data);
         loaded = {
           filename: $scope.file.name,
           har: analysis.analyze(data, {

@@ -131,8 +131,8 @@ define (require, exports, module) ->
       if changed
         query = utils.querystring_unparse_with_variables(url.query)
         url.search = "?#{query}" if query
-        entry.request.url = utils.url_unparse(url)
-        entry.request.queryString = utils.dict2list(url.query)
+      entry.request.url = utils.url_unparse(url)
+      entry.request.queryString = utils.dict2list(url.query)
 
       # post data
       for entry in har.log.entries

@@ -86,11 +86,10 @@
       $scope.recommend = function() {
         return analysis.recommend($scope.har);
       };
-      
       $scope.download = function() {
         var tpl;
         $scope.pre_save();
-        tpl = btoa(unescape(encodeURIComponent(angular.toJson(har2tpl($scope.har)))));
+        tpl = btoa(angular.toJson(har2tpl($scope.har)));
         angular.element('#download-har').attr('download', $scope.setting.sitename + '.har').attr('href', 'data:application/json;base64,' + tpl);
         return true;
       };

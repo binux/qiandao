@@ -49,6 +49,9 @@ define (require, exports, module) ->
         $scope.load_remote(location.href)
 
       $scope.load_file = (data) ->
+        if not data.log
+          data = utils.tpl2har(data)
+        console.log data
         loaded =
           filename: $scope.file.name
           har: analysis.analyze(data, {
