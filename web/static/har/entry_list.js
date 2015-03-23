@@ -86,7 +86,6 @@
       $scope.recommend = function() {
         return analysis.recommend($scope.har);
       };
-      
       $scope.download = function() {
         var tpl;
         $scope.pre_save();

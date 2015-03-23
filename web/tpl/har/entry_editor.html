@@ -18,11 +18,11 @@
           <li ng-class="{active: panel=='test'}">
             <a href="javascript:void(0)" ng-click="panel='test'">测试</a>
           </li>
+          <li ng-class="{active: panel=='preview'}">
+            <a href="javascript:void(0)" ng-click="panel='preview'">预览</a>
+          </li>
           <li ng-class="{active: panel=='preview-headers'}" ng-show="preview">
             <a href="javascript:void(0)" ng-click="panel='preview-headers'">结果 Headers</a>
-          </li>
-          <li ng-class="{active: panel=='preview'}" ng-show="preview">
-            <a href="javascript:void(0)" ng-click="panel='preview'">预览</a>
           </li>
         </ul>
       </div>
@@ -190,7 +190,7 @@
 
 
         <!-- preview -->
-        <div class="modal-body panel-preview" ng-if="preview" ng-show="panel=='preview'">
+        <div class="modal-body panel-preview" ng-show="panel=='preview'">
           <div>
             <span>Status Code:</span>
             <span class="label {{ status_label(preview.response.status) }}">{{ preview.response.status }}</span>

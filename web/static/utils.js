@@ -175,6 +175,79 @@
             return null;
           }
         }
+      },
+      tpl2har: function(tpl) {
+        var en, x;
+        return {
+          log: {
+            creator: {
+              name: 'binux',
+              version: 'qiandao'
+            },
+            entries: (function() {
+              var _i, _len, _ref, _ref1, _ref2, _results;
+              _results = [];
+              for (_i = 0, _len = tpl.length; _i < _len; _i++) {
+                en = tpl[_i];
+                _results.push({
+                  checked: true,
+                  startedDateTime: (new Date()).toISOString(),
+                  time: 1,
+                  request: {
+                    method: en.request.method,
+                    url: en.request.url,
+                    headers: (function() {
+                      var _j, _len1, _ref, _results1;
+                      _ref = en.request.headers || [];
+                      _results1 = [];
+                      for (_j = 0, _len1 = _ref.length; _j < _len1; _j++) {
+                        x = _ref[_j];
+                        _results1.push({
+                          name: x.name,
+                          value: x.value,
+                          checked: true
+                        });
+                      }
+                      return _results1;
+                    })(),
+                    queryString: [],
+                    cookies: (function() {
+                      var _j, _len1, _ref, _results1;
+                      _ref = en.request.cookies || [];
+                      _results1 = [];
+                      for (_j = 0, _len1 = _ref.length; _j < _len1; _j++) {
+                        x = _ref[_j];
+                        _results1.push({
+                          name: x.name,
+                          value: x.value,
+                          checked: true
+                        });
+                      }
+                      return _results1;
+                    })(),
+                    headersSize: -1,
+                    bodySize: en.request.data ? en.request.data.length : 0,
+                    postData: {
+                      mimeType: en.request.mimeType,
+                      text: en.request.data
+                    }
+                  },
+                  response: {},
+                  cache: {},
+                  timings: {},
+                  connections: "0",
+                  pageref: "page_0",
+                  success_asserts: (_ref = en.rule) != null ? _ref.success_asserts : void 0,
+                  failed_asserts: (_ref1 = en.rule) != null ? _ref1.failed_asserts : void 0,
+                  extract_variables: (_ref2 = en.rule) != null ? _ref2.extract_variables : void 0
+                });
+              }
+              return _results;
+            })(),
+            pages: [],
+            version: '1.2'
+          }
+        };
       }
     };
     return exports;
