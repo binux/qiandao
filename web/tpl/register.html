@@ -23,6 +23,7 @@
       {% if password_error %}<p class="text-danger">{{ password_error }}</p>{% endif %}
     </div>
     <div class="text-right">
+      <p><a href="/password_reset">忘记密码?</a></p>
       <button type="submit" class="btn btn-default" onclick="document.forms[0].action='/login'+location.search">登录</button>
       <button type="submit" class="btn btn-default" onclick="document.forms[0].action='/register'+location.search">注册</button>
     </div>

@@ -80,7 +80,7 @@ class UserDB(BaseDB):
         assert 'userkey' not in kwargs, 'userkey not modifiable'
 
         if 'password' in kwargs:
-            kwargs['password'] = self.encrypt(id, kwargs['password'])
+            kwargs['password'] = self.encrypt(id, crypto.password_hash(kwargs['password']))
 
         return self._update(where="id=%s", where_values=(id, ), **kwargs)
 

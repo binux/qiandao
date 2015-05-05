@@ -151,9 +151,105 @@ class VerifyHandler(BaseHandler):
             self.set_status(400)
             self.finish('验证失败')
 
+
+class PasswordResetHandler(BaseHandler):
+    def get(self, code):
+        if not code:
+            return self.render('password_reset_email.html')
+
+        try:
+            verified_code = base64.b64decode(code)
+            userid, verified_code = self.db.user.decrypt(0, verified_code)
+            user = self.db.user.get(userid, fields=('id', 'email', 'mtime'))
+            assert user
+            mtime, time_time = self.db.user.decrypt(userid, verified_code)
+            assert mtime == user['mtime']
+            assert time.time() - time_time < 60 * 60
+        except Exception as e:
+            self.evil(+10)
+            logger.error(e)
+            self.set_status(400)
+            self.finish('Bad Request')
+            return
+
+        return self.render('password_reset.html')
+
+    def post(self, code):
+        if not code:
+            self.evil(+5)
+
+            email = self.get_argument('email')
+            if not email:
+                return self.render('password_reset_email.html',
+                                   email_error=u'请输入邮箱')
+            if email.count('@') != 1 or email.count('.') == 0:
+                return self.render('password_reset_email.html',
+                                   email_error=u'邮箱格式不正确')
+
+            user = self.db.user.get(email=email, fields=('id', 'email', 'mtime', 'nickname', 'role'))
+            if user:
+                logger.info('password reset: userid=%(id)s email=%(email)s', user)
+                future = self.send_mail(user)
+                IOLoop.current().add_future(future, lambda x: x)
+
+            return self.finish("如果用户存在，会将发送密码重置邮件到您的邮箱，请注意查收。（如果您没有收到过激活邮件，可能无法也无法收到密码重置邮件）")
+        else:
+            password = self.get_argument('password')
+            if len(password) < 6:
+                return self.render('password_reset.html', password_error=u'密码需要大于6位')
+
+            try:
+                verified_code = base64.b64decode(code)
+                userid, verified_code = self.db.user.decrypt(0, verified_code)
+                user = self.db.user.get(userid, fields=('id', 'email', 'mtime', 'email_verified'))
+                assert user
+                mtime, time_time = self.db.user.decrypt(userid, verified_code)
+                assert mtime == user['mtime']
+                assert time.time() - time_time < 60 * 60
+            except Exception as e:
+                self.evil(+10)
+                logger.error(e)
+                self.set_status(400)
+                self.finish('Bad Request')
+                return
+
+            self.db.user.mod(userid,
+                             password=password,
+                             mtime=time.time(),
+                             )
+            return self.finish("密码重置成功!")
+
+    def send_mail(self, user):
+        verified_code = [user['mtime'], time.time()]
+        verified_code = self.db.user.encrypt(user['id'], verified_code)
+        verified_code = self.db.user.encrypt(0, [user['id'], verified_code])
+        verified_code = base64.b64encode(verified_code)
+
+        future = utils.send_mail(to=user['email'], subject=u"签到(qiandao.today) 密码重置", html=u"""
+
+        <h1 style="margin-left: 30px;">签到<sup>alpha</sup></h1>
+
+        <p>点击以下链接完成您的密码重置（一小时内有效）。</p>
+
+        <p><a href="http://qiandao.today/password_reset/%s">http://qiandao.today/password_reset/%s</a></p>
+
+        <p>点击或复制到浏览器中打开</p>
+
+        """ % (verified_code, verified_code), async=True)
+
+        def get_result(future):
+            try:
+                return future.result()
+            except Exception as e:
+                logging.error(e)
+
+        future.add_done_callback(get_result)
+        return future
+
 handlers = [
         ('/login', LoginHandler),
         ('/logout', LogoutHandler),
         ('/register', RegisterHandler),
         ('/verify/(.*)', VerifyHandler),
+        ('/password_reset/?(.*)', PasswordResetHandler),
         ]

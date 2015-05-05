@@ -76,8 +76,8 @@
 
 {% macro submit_loading() %}
 <script>
-  $(document).on('click', 'button[type=submit]', function() {
-    $(this).button('loading');
+  $(document).on('submit', 'form', function() {
+    $("button[type=submit]").button('loading');
   })
 </script>
 {% endmacro %}
