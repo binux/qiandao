@@ -18,13 +18,14 @@ try:
     import pycurl
 except ImportError as e:
     pycurl = None
-from jinja2 import Template
-from tornado import gen, concurrent, httpclient
+from jinja2 import Environment
+from tornado import gen, httpclient
 
 import config
 from libs import cookie_utils, utils
 
 logger = logging.getLogger('qiandao.fetcher')
+
 
 class Fetcher(object):
     def __init__(self, download_size_limit=config.download_size_limit):
@@ -32,15 +33,16 @@ class Fetcher(object):
             httpclient.AsyncHTTPClient.configure('tornado.curl_httpclient.CurlAsyncHTTPClient')
         self.client = httpclient.AsyncHTTPClient()
         self.download_size_limit = download_size_limit
+        self.jinja_env = Environment()
+        self.jinja_env.globals = utils.jinja_globals
 
-    @staticmethod
-    def render(request, env, session={}):
+    def render(self, request, env, session={}):
         request = dict(request)
 
         def _render(obj, key):
             if not obj.get(key):
                 return
-            obj[key] = Template(obj[key]).render(_cookies=session, **env)
+            obj[key] = self.jinja_env.from_string(obj[key]).render(_cookies=session, **env)
 
         _render(request, 'method')
         _render(request, 'url')
@@ -53,11 +55,10 @@ class Fetcher(object):
         _render(request, 'data')
         return request
 
-    @staticmethod
-    def build_request(obj, download_size_limit=config.download_size_limit):
+    def build_request(self, obj, download_size_limit=config.download_size_limit):
         env = obj['env']
         rule = obj['rule']
-        request = Fetcher.render(obj['request'], env['variables'], env['session'])
+        request = self.render(obj['request'], env['variables'], env['session'])
 
         method = request['method']
         url = request['url']

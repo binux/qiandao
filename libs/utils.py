@@ -159,6 +159,7 @@ def send_mail(to, subject, text=None, html=None, async=False, _from=u"签到提�
 import chardet
 from requests.utils import get_encoding_from_headers, get_encodings_from_content
 
+
 def find_encoding(content, headers=None):
     # content is unicode
     if isinstance(content, unicode):
@@ -186,6 +187,7 @@ def find_encoding(content, headers=None):
 
     return encoding or 'latin_1'
 
+
 def decode(content, headers=None):
     encoding = find_encoding(content, headers)
     if encoding == 'unicode':
@@ -196,8 +198,19 @@ def decode(content, headers=None):
     except Exception as e:
         return None
 
+
 def quote_chinese(url, encodeing="utf-8"):
     if isinstance(url, unicode):
         return quote_chinese(url.encode("utf-8"))
     res = [b if ord(b) < 128 else '%%%02X' % (ord(b)) for b in url]
     return "".join(res)
+
+
+import hashlib
+md5string = lambda x: hashlib.md5(utf8(x)).hexdigest()
+
+jinja_globals = {
+    'md5': md5string,
+    'quote_chinese': quote_chinese,
+    'utf8': utf8,
+}
