@@ -24,6 +24,7 @@ class mysql(object):
 class redis(object):
     host = 'localhost'
     port = 6379
+    passwd = None
     db = 1
 evil = 100
 

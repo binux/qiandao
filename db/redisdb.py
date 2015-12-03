@@ -11,10 +11,10 @@ import logging
 import umsgpack
 
 class RedisDB(object):
-    def __init__(self, host=config.redis.host, port=config.redis.port, db=config.redis.db, evil=config.evil):
+    def __init__(self, host=config.redis.host, port=config.redis.port, password=config.redis.passwd, db=config.redis.db, evil=config.evil):
         self.evil_limit = evil
         try:
-            self.client = redis.StrictRedis(host=host, port=port, db=db, socket_timeout=3, socket_connect_timeout=3)
+            self.client = redis.StrictRedis(host=host, port=port, password=password, db=db, socket_timeout=3, socket_connect_timeout=3)
             self.client.ping()
         except redis.exceptions.ConnectionError as e:
             logging.error(e)
