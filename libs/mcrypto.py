@@ -50,4 +50,8 @@ def aes_decrypt(word, key=config.aes_key, iv=None):
     aes = AES.new(key, AES.MODE_CBC, iv)
     word = aes.decrypt(word)
 
-    return umsgpack.unpackb(word)
+    while word:
+        try:
+            return umsgpack.unpackb(word)
+        except umsgpack.ExtraData:
+            word = word[:-1]
