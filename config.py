@@ -18,7 +18,7 @@ class mysql(object):
     host = 'localhost'
     port = '3306'
     database = 'qiandao'
-    user = 'root'
+    user = 'qiandao'
     passwd = None
 
 class redis(object):
