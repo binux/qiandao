@@ -96,7 +96,7 @@ define (require, exports, module) ->
     for entry in har.log.entries
       if not entry.request.postData?.text
         continue
-      if not entry.request.postData?.mimeType?.toLowerCase().indexOf("application/x-www-form-urlencoded") == 0
+      if not (entry.request.postData?.mimeType?.toLowerCase().indexOf("application/x-www-form-urlencoded") == 0)
         entry.request.postData.params = undefined
         continue
       result = []
