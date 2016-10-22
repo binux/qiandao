@@ -222,5 +222,5 @@ jinja_globals = {
     'md5': md5string,
     'quote_chinese': quote_chinese,
     'utf8': utf8,
-    'timestamp': time.time(),
+    'timestamp': time.time,
 }
