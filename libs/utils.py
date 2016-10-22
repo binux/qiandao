@@ -8,15 +8,18 @@
 import socket
 import struct
 
-def ip2int(addr):                                                               
-    return struct.unpack("!I", socket.inet_aton(addr))[0]                       
 
-def int2ip(addr):                                                               
-    return socket.inet_ntoa(struct.pack("!I", addr))                            
+def ip2int(addr):
+    return struct.unpack("!I", socket.inet_aton(addr))[0]
+
+
+def int2ip(addr):
+    return socket.inet_ntoa(struct.pack("!I", addr))
 
 
 import umsgpack
 import functools
+
 
 def func_cache(f):
     _cache = {}
@@ -29,6 +32,7 @@ def func_cache(f):
         return _cache[key]
 
     return wrapper
+
 
 def method_cache(fn):
     @functools.wraps(fn)
@@ -43,6 +47,7 @@ def method_cache(fn):
     return wrapper
 
 import datetime
+
 
 def format_date(date, gmt_offset=-8*60, relative=True, shorter=False, full_format=False):
     """Formats the given date (which should be GMT).
@@ -115,6 +120,7 @@ def format_date(date, gmt_offset=-8*60, relative=True, shorter=False, full_forma
         "time": str_time
     }
 
+
 def utf8(string):
     if isinstance(string, unicode):
         return string.encode('utf8')
@@ -123,6 +129,7 @@ def utf8(string):
 import urllib
 import config
 from tornado import httpclient
+
 
 def send_mail(to, subject, text=None, html=None, async=False, _from=u"签到提醒 <noreply@mail.qiandao.today>"):
     if not config.mailgun_key:
@@ -135,10 +142,10 @@ def send_mail(to, subject, text=None, html=None, async=False, _from=u"签到提�
         client = httpclient.HTTPClient()
 
     body = {
-            'from': utf8(_from),
-            'to': utf8(to),
-            'subject': utf8(subject),
-            }
+        'from': utf8(_from),
+        'to': utf8(to),
+        'subject': utf8(subject),
+    }
 
     if text:
         body['text'] = utf8(text)
@@ -148,12 +155,12 @@ def send_mail(to, subject, text=None, html=None, async=False, _from=u"签到提�
         raise Exception('nedd text or html')
 
     req = httpclient.HTTPRequest(
-            method = "POST",
-            url = "https://api.mailgun.net/v2/mail.qiandao.today/messages",
-            auth_username = "api",
-            auth_password = config.mailgun_key,
-            body = urllib.urlencode(body)
-            )
+        method="POST",
+        url="https://api.mailgun.net/v2/mail.qiandao.today/messages",
+        auth_username="api",
+        auth_password=config.mailgun_key,
+        body=urllib.urlencode(body)
+    )
     return client.fetch(req)
 
 import chardet
@@ -195,7 +202,7 @@ def decode(content, headers=None):
 
     try:
         return content.decode(encoding, 'replace')
-    except Exception as e:
+    except Exception:
         return None
 
 
@@ -209,8 +216,11 @@ def quote_chinese(url, encodeing="utf-8"):
 import hashlib
 md5string = lambda x: hashlib.md5(utf8(x)).hexdigest()
 
+
+import time
 jinja_globals = {
     'md5': md5string,
     'quote_chinese': quote_chinese,
     'utf8': utf8,
+    'timestamp': time.time(),
 }
