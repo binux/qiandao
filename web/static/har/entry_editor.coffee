@@ -165,11 +165,13 @@ define (require, exports, module) ->
           data = content.decoded
         else if from == 'status'
           data = ''+$scope.preview.response.status
-        else if from.indexOf('header-')
+        else if from.indexOf('header-') == 0
           from = from[7..]
           for header in $scope.preview.response.headers
             if header.name.toLowerCase() == from
               data = header.value
+        else if from == 'header'
+          data = (h.name + ': ' + h.value for h in $scope.preview.response.headers).join("\n")
 
         if not data
           return null

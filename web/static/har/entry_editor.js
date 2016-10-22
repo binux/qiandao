@@ -214,7 +214,7 @@
             data = content.decoded;
           } else if (from === 'status') {
             data = '' + $scope.preview.response.status;
-          } else if (from.indexOf('header-')) {
+          } else if (from.indexOf('header-') === 0) {
             from = from.slice(7);
             _ref3 = $scope.preview.response.headers;
             for (_i = 0, _len = _ref3.length; _i < _len; _i++) {
@@ -223,6 +223,17 @@
                 data = header.value;
               }
             }
+          } else if (from === 'header') {
+            data = ((function() {
+              var _j, _len1, _ref4, _results;
+              _ref4 = $scope.preview.response.headers;
+              _results = [];
+              for (_j = 0, _len1 = _ref4.length; _j < _len1; _j++) {
+                h = _ref4[_j];
+                _results.push(h.name + ': ' + h.value);
+              }
+              return _results;
+            })()).join("\n");
           }
           if (!data) {
             return null;

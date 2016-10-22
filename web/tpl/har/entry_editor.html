@@ -209,7 +209,7 @@
             </summary>
             <dl class="dl-horizontal">
               <dt ng-repeat-start="rule in entry.success_asserts">
-                <select ng-model="rule.from" ng-options="v for v in ['content', 'status', 'header-location']"></select>
+                <select ng-model="rule.from" ng-options="v for v in ['content', 'status', 'header-location', 'header']"></select>
                 <div class="input-wrapper">
                   <input placeholder="rule" ng-model="rule.re">
                 </div>
@@ -236,7 +236,7 @@
             </summary>
             <dl class="dl-horizontal">
               <dt ng-repeat-start="rule in entry.failed_asserts">
-                <select ng-model="rule.from" ng-options="v for v in ['content', 'status', 'header-location']"></select>
+                <select ng-model="rule.from" ng-options="v for v in ['content', 'status', 'header-location', 'header']"></select>
                 <div class="input-wrapper">
                   <input placeholder="rule" ng-model="rule.re">
                 </div>
@@ -263,7 +263,10 @@
             </summary>
             <dl class="dl-horizontal">
               <dt ng-repeat-start="rule in entry.extract_variables">
-                <div class="input-wrapper">
+                <div class=select-wrapper>
+                  <select ng-model="rule.from" ng-options="v for v in ['content', 'status', 'header-location', 'header']"></select>
+                </div>
+                <div class="input-wrapper name">
                   <input placeholder="name" ng-model="rule.name">
                 </div>
                 <span class="eq">=</span>
