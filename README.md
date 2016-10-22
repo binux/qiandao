@@ -5,6 +5,26 @@ qiandao
 
 HAR editor 使用指南：https://github.com/binux/qiandao/blob/master/docs/har-howto.md
 
+Web
+===
+
+Mysql 或 sqlite3
+可选 redis
+
+```
+apt-get install python-dev
+pip install http://cdn.mysql.com/Downloads/Connector-Python/mysql-connector-python-2.0.4.zip#md5=3df394d89300db95163f17c843ef49df
+pip install tornado u-msgpack-python jinja2 chardet requests mysql-connector-python redis pbkdf2 pycrypto
+# if mysql
+mysql < qiandao.sql
+# fi
+./run.py
+```
+
+设置管理员
+
+在数据库中，将用户的 role 改为 admin
+
 qiandao.py
 ==========
 
@@ -12,25 +32,6 @@ qiandao.py
 pip install tornado u-msgpack-python jinja2 chardet requests
 ./qiandao.py tpl.har [--key=value]* [env.json]
 ```
-
-Web
-===
-
-需要 Mysql
-可选 redis
-
-```
-apt-get install python-dev
-pip install http://cdn.mysql.com/Downloads/Connector-Python/mysql-connector-python-2.0.4.zip#md5=3df394d89300db95163f17c843ef49df
-pip install tornado u-msgpack-python jinja2 chardet requests mysql-connector-python redis pbkdf2 pycrypto
-mysql < qiandao.sql
-./worker.py &
-./web.py
-```
-
-设置管理员
-
-在数据库中，将用户的 role 改为 admin
 
 鸣谢
 ====

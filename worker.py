@@ -12,16 +12,20 @@ import tornado.log
 import tornado.ioloop
 from tornado import gen
 
-import db
 import config
 from libs import utils
 from libs.fetcher import Fetcher
 
-tornado.log.enable_pretty_logging()
 logger = logging.getLogger('qiandao.worker')
 class MainWorker(object):
     def __init__(self):
         self.running = False
+
+        if config.db_type == 'sqlite3':
+            import sqlite3_db as db
+        else:
+            import db
+
         class DB(object):
             user = db.UserDB()
             tpl = db.TPLDB()
@@ -233,6 +237,7 @@ class MainWorker(object):
                     #""")
 
 if __name__ == '__main__':
+    tornado.log.enable_pretty_logging()
     worker = MainWorker()
     io_loop = tornado.ioloop.IOLoop.instance()
     tornado.ioloop.PeriodicCallback(worker, config.check_task_loop, io_loop).start()
