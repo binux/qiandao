@@ -21,6 +21,8 @@ class BaseDB(_BaseDB):
     dbcur should be overwirte
     '''
     placeholder = '?'
+    conn = None
+    last_pid = 0
 
     @staticmethod
     def escape(string):
@@ -32,4 +34,5 @@ class BaseDB(_BaseDB):
         if not (self.conn and pid == self.last_pid):
             self.last_pid = pid
             self.conn = sqlite3.connect(self.path, isolation_level=None)
+            self.conn.text_factory = str
         return self.conn.cursor()

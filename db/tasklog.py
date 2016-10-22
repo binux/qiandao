@@ -42,9 +42,9 @@ class TaskLogDB(BaseDB):
         where_values = []
         for key, value in kwargs.iteritems():
             if value is None:
-                where += ' and %s is %%s ORDER BY ctime DESC' % self.escape(key)
+                where += ' and %s is %s ORDER BY ctime DESC' % (self.escape(key), self.placeholder)
             else:
-                where += ' and %s = %%s ORDER BY ctime DESC' % self.escape(key)
+                where += ' and %s = %s ORDER BY ctime DESC' % (self.escape(key), self.placeholder)
             where_values.append(value)
         for tasklog in self._select2dic(what=fields, where=where, where_values=where_values, limit=limit):
             yield tasklog

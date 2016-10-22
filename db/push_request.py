@@ -54,10 +54,10 @@ class PRDB(BaseDB):
             assert each not in kwargs, '%s not modifiable' % each
 
         kwargs['mtime'] = time.time()
-        return self._update(where="id=%s", where_values=(id, ), **kwargs)
+        return self._update(where="id=%s" % self.placeholder, where_values=(id, ), **kwargs)
 
     def get(self, id, fields=None):
-        for pr in self._select2dic(what=fields, where='id=%s', where_values=(id, )):
+        for pr in self._select2dic(what=fields, where='id=%s' % self.placeholder, where_values=(id, )):
             return pr
 
     def list(self, fields=None, limit=100, **kwargs):
@@ -65,9 +65,9 @@ class PRDB(BaseDB):
         where_values = []
         for key, value in kwargs.iteritems():
             if value is None:
-                where += ' and %s is %%s' % self.escape(key)
+                where += ' and %s is %s' % (self.escape(key), self.placeholder)
             else:
-                where += ' and %s = %%s' % self.escape(key)
+                where += ' and %s = %s' % (self.escape(key), self.placeholder)
             where_values.append(value)
         where +=' ORDER BY mtime DESC'
         return self._select2dic(what=fields, where=where, where_values=where_values, limit=limit)

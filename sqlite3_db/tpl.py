@@ -16,7 +16,7 @@ class TPLDB(_TPLDB, BaseDB):
     def __init__(self, path=config.sqlite3.path):
         self.path = path
         self._execute('''CREATE TABLE IF NOT EXISTS `%s` (
-          `id` INT UNSIGNED NOT NULL PRIMARY KEY,
+          `id` INTEGER PRIMARY KEY,
           `userid` INT UNSIGNED NULL,
           `siteurl` VARCHAR(256) NULL,
           `sitename` VARCHAR(128) NULL,

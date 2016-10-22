@@ -13,7 +13,7 @@ class TaskDB(_TaskDB, BaseDB):
     def __init__(self, path=config.sqlite3.path):
         self.path = path
         self._execute('''CREATE TABLE IF NOT EXISTS `%s` (
-          `id` INT UNSIGNED NOT NULL PRIMARY KEY,
+          `id` INTEGER PRIMARY KEY,
           `tplid` INT UNSIGNED NOT NULL,
           `userid` INT UNSIGNED NOT NULL,
           `disabled` TINYINT(1) NOT NULL DEFAULT 0,

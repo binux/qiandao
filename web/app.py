@@ -35,7 +35,7 @@ class Application(tornado.web.Application):
                 auto_reload=config.debug)
 
         if config.db_type == 'sqlite3':
-            import sqlite3 as db
+            import sqlite3_db as db
         else:
             import db
 

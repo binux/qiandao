@@ -14,7 +14,7 @@ class TaskLogDB(_TaskLogDB, BaseDB):
     def __init__(self, path=config.sqlite3.path):
         self.path = path
         self._execute('''CREATE TABLE IF NOT EXISTS `%s` (
-          `id` INT UNSIGNED NOT NULL PRIMARY KEY,
+          `id` INTEGER PRIMARY KEY,
           `taskid` INT UNSIGNED NOT NULL,
           `success` TINYINT(1) NOT NULL,
           `ctime` INT UNSIGNED NOT NULL,
