@@ -21,6 +21,11 @@ class mysql(object):
     user = 'qiandao'
     passwd = None
 
+class sqlite3(object):
+    path = './database.db'
+
+db_type = 'sqlite3'
+
 class redis(object):
     host = 'localhost'
     port = 6379
