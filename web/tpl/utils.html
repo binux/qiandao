@@ -124,9 +124,13 @@ $(function() {
     }
   });
 
+  $('[data-toggle=get-cookie][disabled]').attr('disabled', false);
+
   // fill cookie
   $('#variables').on('click', '[data-toggle=get-cookie]', function() {
     var $this = $(this);
+    if ($this.attr('disabled'))
+      return;
 
     if ($('body').attr('get-cookie') === undefined) {
       alert('尚未安装GetCookie插件，请安装插件或手动获取！');
