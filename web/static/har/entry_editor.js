@@ -123,10 +123,37 @@
         if (place_holder == null) {
           place_holder = '';
         }
-        console.log(string);
         string = (string || place_holder).toString();
         re = /{{\s*([\w]+)[^}]*?\s*}}/g;
         return $sce.trustAsHtml(string.replace(re, '<span class="label label-primary">$&</span>'));
+      };
+      $scope.add_request = function(pos) {
+        var current_pos;
+        if (pos == null) {
+          pos = 1;
+        }
+        if ((current_pos = $scope.$parent.har.log.entries.indexOf($scope.entry)) === -1) {
+          $scope.alert("can't find position to add request");
+          return;
+        }
+        current_pos += pos;
+        $scope.$parent.har.log.entries.splice(current_pos, 0, {
+          checked: false,
+          pageref: $scope.entry.pageref,
+          recommend: true,
+          request: {
+            method: 'GET',
+            url: '',
+            postData: {
+              test: ''
+            },
+            headers: {},
+            cookies: {}
+          },
+          response: {}
+        });
+        $rootScope.$broadcast('har-change');
+        return angular.element('#edit-entry').modal('hide');
       };
       return $scope.do_test = function() {
         var c, h, _ref, _ref1;

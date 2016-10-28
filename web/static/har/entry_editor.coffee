@@ -105,10 +105,31 @@ define (require, exports, module) ->
 
     # variables template
     $scope.variables_wrapper = (string, place_holder='') ->
-      console.log(string)
       string = (string or place_holder).toString()
       re = /{{\s*([\w]+)[^}]*?\s*}}/g
       $sce.trustAsHtml(string.replace(re, '<span class="label label-primary">$&</span>'))
+
+    $scope.add_request = (pos) ->
+      pos ?= 1
+      if (current_pos = $scope.$parent.har.log.entries.indexOf($scope.entry)) == -1
+        $scope.alert "can't find position to add request"
+        return
+      current_pos += pos
+      $scope.$parent.har.log.entries.splice(current_pos, 0, {
+        checked: false
+        pageref: $scope.entry.pageref
+        recommend: true
+        request:
+          method: 'GET'
+          url: ''
+          postData:
+            test: ''
+          headers: {}
+          cookies: {}
+        response: {}
+      })
+      $rootScope.$broadcast('har-change')
+      angular.element('#edit-entry').modal('hide')
 
     # fetch test
     $scope.do_test = () ->

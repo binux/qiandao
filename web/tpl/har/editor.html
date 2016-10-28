@@ -119,7 +119,7 @@
             'label-warning': (entry.request.method != 'GET'),
             'label-primary': (entry.request.method == 'GET')
             }">{{ entry.request.method }}</span>
-          <span class="entry-url" ng-click="edit(entry)">{{ entry.request.url }}</span>
+          <span class="entry-url" ng-click="edit(entry)">{{ entry.request.url || ":empty" }}</span>
         </a>
 
         <li class="list-group-item" ng-if="filted.length == 0">过滤条件下没有请求</li>
