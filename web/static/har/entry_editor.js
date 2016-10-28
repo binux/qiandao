@@ -123,7 +123,8 @@
         if (place_holder == null) {
           place_holder = '';
         }
-        string = string || place_holder;
+        console.log(string);
+        string = (string || place_holder).toString();
         re = /{{\s*([\w]+)[^}]*?\s*}}/g;
         return $sce.trustAsHtml(string.replace(re, '<span class="label label-primary">$&</span>'));
       };
@@ -199,7 +200,7 @@
           return $scope.alert(data);
         });
         return $scope.preview_match = function(re, from) {
-          var content, data, error, header, m, _i, _len, _ref2, _ref3;
+          var content, data, error, header, m, match, result, _i, _len, _ref2, _ref3;
           data = null;
           if (!from) {
             return null;
@@ -239,20 +240,30 @@
             return null;
           }
           try {
-            re = new RegExp(re);
+            if (match = re.match(/^\/(.*?)\/([gim]*)$/)) {
+              re = new RegExp(match[1], match[2]);
+            } else {
+              re = new RegExp(re);
+            }
           } catch (_error) {
             error = _error;
             console.error(error);
             return null;
           }
-          if (m = data.match(re)) {
+          result = [];
+          if (re.global) {
+            while (m = re.exec(data)) {
+              result.push(m[1] ? m[1] : m[0]);
+            }
+          } else {
+            m = data.match(re);
             if (m[1]) {
               return m[1];
             } else {
               return m[0];
             }
           }
-          return null;
+          return result;
         };
       };
     });

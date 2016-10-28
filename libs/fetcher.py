@@ -229,13 +229,37 @@ class Fetcher(object):
                 break
 
         for r in rule.get('extract_variables') or '':
-            m = re.search(r['re'], getdata(r['from']))
-            if m:
-                if m.groups():
-                    m = m.groups()[0]
-                else:
-                    m = m.group(0)
-                env['variables'][r['name']] = m
+            pattern = r['re']
+            flags = 0
+            find_all = False
+
+            re_m = re.match(r"^/(.*?)/([gim]*)$", r['re'])
+            if re_m:
+                pattern = re_m.group(1)
+                if 'i' in re_m.group(2):
+                    flags |= re.I
+                if 'm' in re_m.group(2):
+                    flags |= re.M
+                if 'g' in re_m.group(2):
+                    find_all = True
+
+            if find_all:
+                result = []
+                for m in re.compile(pattern, flags).finditer(getdata(r['from'])):
+                    if m.groups():
+                        m = m.groups()[0]
+                    else:
+                        m = m.group(0)
+                    result.append(m)
+                env['variables'][r['name']] = result
+            else:
+                m = re.compile(pattern, flags).search(getdata(r['from']))
+                if m:
+                    if m.groups():
+                        m = m.groups()[0]
+                    else:
+                        m = m.group(0)
+                    env['variables'][r['name']] = m
 
         return success
 

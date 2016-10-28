@@ -105,7 +105,8 @@ define (require, exports, module) ->
 
     # variables template
     $scope.variables_wrapper = (string, place_holder='') ->
-      string = string or place_holder
+      console.log(string)
+      string = (string or place_holder).toString()
       re = /{{\s*([\w]+)[^}]*?\s*}}/g
       $sce.trustAsHtml(string.replace(re, '<span class="label label-primary">$&</span>'))
 
@@ -177,14 +178,22 @@ define (require, exports, module) ->
           return null
 
         try
-          re = new RegExp(re)
+          if match = re.match(/^\/(.*?)\/([gim]*)$/)
+            re = new RegExp(match[1], match[2])
+          else
+            re = new RegExp(re)
         catch error
           console.error(error)
           return null
 
-        if m = data.match(re)
+        result = []
+        if re.global
+          while m = re.exec(data)
+            result.push(if m[1] then m[1] else m[0])
+        else
+          m = data.match(re)
           return if m[1] then m[1] else m[0]
-        return null
+        return result
 
       ## eof
     )

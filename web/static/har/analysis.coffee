@@ -3,6 +3,14 @@
 #         http://binux.me
 # Created on 2014-08-02 10:07:33
 
+Array.prototype.some ?= (f) ->
+  (return true if f x) for x in @
+  return false
+
+Array.prototype.every ?= (f) ->
+  (return false if not f x) for x in @
+  return true
+
 define (require, exports, module) ->
   utils = require('/static/utils')
 
@@ -157,7 +165,10 @@ define (require, exports, module) ->
 
   exports =
     analyze: (har, variables={}) ->
-      replace_variables((xhr mime_type analyze_cookies headers sort post_data rm_content har), variables)
+      if har.log
+        replace_variables((xhr mime_type analyze_cookies headers sort post_data rm_content har), variables)
+      else
+        har
 
     recommend_default: (har) ->
       domain = null
@@ -237,6 +248,13 @@ define (require, exports, module) ->
         entry.filter_variables = true
       else
         entry.filter_variables = false
+      return result
+
+    find_variables: (har) ->
+      result = []
+      for entry in har.log.entries
+        for each in @.variables_in_entry entry
+          result.push each
       return result
 
   return exports
