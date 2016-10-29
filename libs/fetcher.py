@@ -201,6 +201,7 @@ class Fetcher(object):
     @staticmethod
     def run_rule(response, rule, env):
         success = True
+        msg = ''
 
         content = [-1, ]
         def getdata(_from):
@@ -219,13 +220,16 @@ class Fetcher(object):
                 return ''
 
         for r in rule.get('success_asserts') or '':
-            if not re.search(r['re'], getdata(r['from'])):
-                success = False
+            if re.search(r['re'], getdata(r['from'])):
                 break
+        else:
+            if rule.get('success_asserts'):
+                success = False
 
         for r in rule.get('failed_asserts') or '':
             if re.search(r['re'], getdata(r['from'])):
                 success = False
+                msg = 'fail assert: %s' % r
                 break
 
         for r in rule.get('extract_variables') or '':
@@ -261,7 +265,7 @@ class Fetcher(object):
                         m = m.group(0)
                     env['variables'][r['name']] = m
 
-        return success
+        return success, msg
 
     @staticmethod
     def tpl2har(tpl):
@@ -366,16 +370,55 @@ class Fetcher(object):
             response = e.response
 
         env['session'].extract_cookies_to_jar(response.request, response)
-        success = self.run_rule(response, rule, env)
+        success, msg = self.run_rule(response, rule, env)
 
         raise gen.Return({
             'success': success,
             'response': response,
             'env': env,
+            'msg': msg,
             })
 
+    FOR_START = re.compile('{%\s*for\s+(\w+)\s+in\s+(\w+)\s*%}')
+    FOR_END = re.compile('{%\s*endfor\s*%}')
+
+    def parse(self, tpl):
+        stmt_stack = []
+
+        for i, entry in enumerate(tpl):
+            if 'type' in entry:
+                yield entry
+            elif self.FOR_START.match(entry['request']['url']):
+                m = self.FOR_START.match(entry['request']['url'])
+                stmt_stack.append({
+                    'type': 'for',
+                    'target': m.group(1),
+                    'from': m.group(2),
+                    'body': []
+                })
+            elif self.FOR_END.match(entry['request']['url']):
+                if stmt_stack and stmt_stack[-1]['type'] == 'for':
+                    entry = stmt_stack.pop()
+                    if stmt_stack:
+                        stmt_stack[-1]['body'].append(entry)
+                    else:
+                        yield entry
+            elif stmt_stack:
+                stmt_stack[-1]['body'].append({
+                    'type': 'request',
+                    'entry': entry,
+                })
+            else:
+                yield {
+                    'type': 'request',
+                    'entry': entry,
+                }
+
+        while stmt_stack:
+            yield stmt_stack.pop()
+
     @gen.coroutine
-    def do_fetch(self, tpl, env, proxies=config.proxies):
+    def do_fetch(self, tpl, env, proxies=config.proxies, request_limit=100):
         """
         do a fetch of hole tpl
         """
@@ -384,21 +427,29 @@ class Fetcher(object):
         else:
             proxy = {}
 
-        for i, entry in enumerate(tpl):
-            try:
-                result = yield self.fetch(dict(
-                    request = entry['request'],
-                    rule = entry['rule'],
-                    env = env,
-                    ), proxy=proxy)
-                env = result['env']
-            except Exception as e:
-                if config.debug:
-                    logging.exception(e)
-                raise Exception('failed at %d/%d request, error:%r, %s' % (
-                    i+1, len(tpl), e, entry['request']['url']))
-            if not result['success']:
-                raise Exception('failed at %d/%d request, code:%s, %s' % (
-                    i+1, len(tpl), result['response'].code, entry['request']['url']))
+        for i, block in enumerate(self.parse(tpl)):
+            if request_limit <= 0:
+                raise Exception('request limit')
+            elif block['type'] == 'for':
+                for each in env['variables'].get(block['from'], []):
+                    env['variables'][block['target']] = each
+                    env = yield self.do_fetch(block['body'], env, proxies=[proxy], request_limit=request_limit)
+            elif block['type'] == 'request':
+                entry = block['entry']
+                try:
+                    request_limit -= 1
+                    result = yield self.fetch(dict(
+                        request = entry['request'],
+                        rule = entry['rule'],
+                        env = env,
+                        ), proxy=proxy)
+                    env = result['env']
+                except Exception as e:
+                    if config.debug:
+                        logging.exception(e)
+                    raise Exception('failed at %d/%d request, error:%r, %s' % (
+                        i+1, len(tpl), e, entry['request']['url']))
+                if not result['success']:
+                    raise Exception('failed at %d/%d request, %s, %s' % (
+                        i+1, len(tpl), result['msg'], entry['request']['url']))
         raise gen.Return(env)
-

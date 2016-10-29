@@ -277,20 +277,22 @@
             console.error(error);
             return null;
           }
-          result = [];
           if (re.global) {
+            result = [];
             while (m = re.exec(data)) {
               result.push(m[1] ? m[1] : m[0]);
             }
+            return result;
           } else {
-            m = data.match(re);
-            if (m[1]) {
-              return m[1];
-            } else {
-              return m[0];
+            if (m = data.match(re)) {
+              if (m[1]) {
+                return m[1];
+              } else {
+                return m[0];
+              }
             }
+            return null;
           }
-          return result;
         };
       };
     });

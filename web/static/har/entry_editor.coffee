@@ -207,14 +207,15 @@ define (require, exports, module) ->
           console.error(error)
           return null
 
-        result = []
         if re.global
+          result = []
           while m = re.exec(data)
             result.push(if m[1] then m[1] else m[0])
+          return result
         else
-          m = data.match(re)
-          return if m[1] then m[1] else m[0]
-        return result
+          if m = data.match(re)
+            return if m[1] then m[1] else m[0]
+          return null
 
       ## eof
     )
