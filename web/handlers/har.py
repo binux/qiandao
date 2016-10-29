@@ -75,7 +75,10 @@ class HARSave(BaseHandler):
             def _get(obj, key):
                 if not obj.get(key):
                     return
-                ast = env.parse(obj[key])
+                try:
+                    ast = env.parse(obj[key])
+                except:
+                    return
                 var.update(meta.find_undeclared_variables(ast))
 
             _get(req, 'method')
