@@ -165,7 +165,7 @@ class MainWorker(object):
                     new_env['session'] if isinstance(new_env['session'], basestring) else new_env['session'].to_json())
 
             # todo next not mid night
-            next = time.time() + (tpl['interval'] if tpl['interval'] else 24 * 60 * 60)
+            next = time.time() + max((tpl['interval'] if tpl['interval'] else 24 * 60 * 60), 30*60)
             if tpl['interval'] is None:
                 next = self.fix_next_time(next)
 
