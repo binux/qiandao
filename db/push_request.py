@@ -31,7 +31,7 @@ class PRDB(BaseDB):
             database=config.mysql.database, user=config.mysql.user, passwd=config.mysql.passwd):
         import mysql.connector
         self.conn = mysql.connector.connect(user=user, password=passwd, host=host, port=port,
-                database=database, autocommit=True, pool_size=5)
+                database=database, autocommit=True)
 
     def add(self, from_tplid, from_userid, to_tplid, to_userid, msg=''):
         now = time.time()
