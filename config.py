@@ -5,37 +5,41 @@
 #         http://binux.me
 # Created on 2014-07-30 12:21:48
 
+import os
 import hashlib
+import urlparse
 
 debug = True
 gzip = True
 bind = '0.0.0.0'
-port = 8923
-https = False
+port = int(os.getenv('PORT', 8923))
+https = bool(os.getenv('ENABLE_HTTPS', False))
 cookie_days = 5
+mysql_url = urlparse.urlparse(os.getenv('JAWSDB_MARIA_URL', ''))
+redis_url = urlparse.urlparse(os.getenv('REDISCLOUD_URL', ''))
 
 class mysql(object):
-    host = 'localhost'
-    port = '3306'
-    database = 'qiandao'
-    user = 'qiandao'
-    passwd = None
+    host = mysql_url.hostname or 'localhost'
+    port = mysql_url.port or '3306'
+    database = mysql_url.path[1:] or 'qiandao'
+    user = mysql_url.username or 'qiandao'
+    passwd = mysql_url.password or None
 
 class sqlite3(object):
     path = './database.db'
 
-db_type = 'sqlite3'
+db_type = os.getenv('DB_TYPE', 'sqlite3')
 
 class redis(object):
-    host = 'localhost'
-    port = 6379
-    passwd = None
-    db = 1
+    host = redis_url.hostname or 'localhost'
+    port = redis_url.port or 6379
+    passwd = redis_url.password or None
+    db = int(os.getenv('REDIS_DB_INDEX', 1))
 evil = 100
 
 pbkdf2_iterations = 400
-aes_key = hashlib.sha256('binux').digest()
-cookie_secret = hashlib.sha256('binux').digest()
+aes_key = hashlib.sha256(os.getenv('AES_KEY', 'binux')).digest()
+cookie_secret = hashlib.sha256(os.getenv('COOKIE_SECRET', 'binux')).digest()
 check_task_loop = 10000
 download_size_limit = 1*1024*1024
 proxies = []
