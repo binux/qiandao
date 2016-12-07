@@ -162,7 +162,7 @@ class MainWorker(object):
 
             variables = self.db.user.encrypt(task['userid'], new_env['variables'])
             session = self.db.user.encrypt(task['userid'],
-                    new_env['session'] if isinstance(new_env['session'], basestring) else new_env['session'].to_json())
+                    new_env['session'].to_json() if hasattr(new_env['session'], 'to_json') else new_env['session'])
 
             # todo next not mid night
             next = time.time() + max((tpl['interval'] if tpl['interval'] else 24 * 60 * 60), 30*60)

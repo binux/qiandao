@@ -36,7 +36,7 @@ class Fetcher(object):
         self.jinja_env = Environment()
         self.jinja_env.globals = utils.jinja_globals
 
-    def render(self, request, env, session={}):
+    def render(self, request, env, session=[]):
         request = dict(request)
         if isinstance(session, cookie_utils.CookieSession):
             _cookies = session
