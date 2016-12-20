@@ -10,6 +10,7 @@ import json
 import umsgpack
 from tornado import gen
 from jinja2 import Environment, meta
+from libs import utils
 
 from base import *
 
@@ -65,7 +66,7 @@ class HARSave(BaseHandler):
     @staticmethod
     def get_variables(tpl):
         variables = set()
-        extracted = set()
+        extracted = set(utils.jinja_globals.keys())
         env = Environment()
         for entry in tpl:
             req = entry['request']
