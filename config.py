@@ -44,6 +44,7 @@ check_task_loop = 10000
 download_size_limit = 1*1024*1024
 proxies = []
 
+mail_domain = "mail.qiandao.today"
 mailgun_key = ""
 ga_key = ""
 

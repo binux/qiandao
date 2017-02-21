@@ -131,7 +131,7 @@ import config
 from tornado import httpclient
 
 
-def send_mail(to, subject, text=None, html=None, async=False, _from=u"签到提醒 <noreply@mail.qiandao.today>"):
+def send_mail(to, subject, text=None, html=None, async=False, _from=u"签到提醒 <noreply@%s>" % config.mail_domain):
     if not config.mailgun_key:
         return
 
@@ -156,7 +156,7 @@ def send_mail(to, subject, text=None, html=None, async=False, _from=u"签到提�
 
     req = httpclient.HTTPRequest(
         method="POST",
-        url="https://api.mailgun.net/v2/mail.qiandao.today/messages",
+        url="https://api.mailgun.net/v2/%s/messages" % config.mail_domain,
         auth_username="api",
         auth_password=config.mailgun_key,
         body=urllib.urlencode(body)
