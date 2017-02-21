@@ -14,6 +14,15 @@ import threading
 from db.basedb import BaseDB as _BaseDB
 
 
+def to_unicode(string):
+    if isinstance(string, unicode):
+        return string
+    try:
+        return string.decode('utf8')
+    except UnicodeDecodeError:
+        return string
+
+
 class BaseDB(_BaseDB):
     '''
     BaseDB
@@ -34,5 +43,5 @@ class BaseDB(_BaseDB):
         if not (self.conn and pid == self.last_pid):
             self.last_pid = pid
             self.conn = sqlite3.connect(self.path, isolation_level=None)
-            self.conn.text_factory = str
+            self.conn.text_factory = to_unicode
         return self.conn.cursor()
