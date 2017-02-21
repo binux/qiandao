@@ -28,8 +28,10 @@ class mysql(object):
 class sqlite3(object):
     path = './database.db'
 
+# 数据库类型，修改 sqlite3 为 mysql 使用 mysql
 db_type = os.getenv('DB_TYPE', 'sqlite3')
 
+# redis 连接参数，可选
 class redis(object):
     host = redis_url.hostname or 'localhost'
     port = redis_url.port or 6379
@@ -44,8 +46,11 @@ check_task_loop = 10000
 download_size_limit = 1*1024*1024
 proxies = []
 
+# mailgun 邮件发送, 域名和 apikey
 mail_domain = "mail.qiandao.today"
 mailgun_key = ""
+
+# google analytics
 ga_key = ""
 
 try:
