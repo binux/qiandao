@@ -27,6 +27,10 @@ mysql < qiandao.sql
 ./run.py
 ```
 
+数据不随项目分发，去 [https://qiandao.today/tpls/public](https://qiandao.today/tpls/public) 查看你需要的模板，点击下载。
+在你自己的主页中 「我的模板+」 点击 + 上传。模板需要发布才会在「公开模板」中展示，你需要管理员权限在「我的发布请求」中审批通过。
+
+
 设置管理员
 
 ```
