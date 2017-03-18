@@ -18,7 +18,7 @@ try:
     import pycurl
 except ImportError as e:
     pycurl = None
-from jinja2 import Environment
+from jinja2.sandbox import SandboxedEnvironment as Environment
 from tornado import gen, httpclient
 
 import config
