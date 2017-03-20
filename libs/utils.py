@@ -132,6 +132,8 @@ from tornado import httpclient
 
 
 def send_mail(to, subject, text=None, html=None, async=False, _from=u"签到提醒 <noreply@%s>" % config.mail_domain):
+    if _send_mail(to, subject, html or text):
+        return
     if not config.mailgun_key:
         return
 
@@ -162,6 +164,32 @@ def send_mail(to, subject, text=None, html=None, async=False, _from=u"签到提�
         body=urllib.urlencode(body)
     )
     return client.fetch(req)
+
+
+import smtplib
+from email.mime.text import MIMEText
+import logging
+
+logger = logging.getLogger('qiandao.util')
+
+
+def _send_mail(to, subject, text=None):
+    msg = MIMEText(text, _subtype='html', _charset='utf-8')
+    msg['Subject'] = subject
+    msg['From'] = config.mail_user
+    msg['To'] = to
+    try:
+        logger.info('send mail to {}'.format(to))
+        s = smtplib.SMTP()
+        s.connect(config.mail_smtp)
+        s.login(config.mail_user, config.mail_password)
+        s.sendmail(config.mail_user, to, msg.as_string())
+        s.close()
+        return True
+    except Exception as e:
+        logger.error('send mail error {}'.format(str(e)))
+        return False
+
 
 import chardet
 from requests.utils import get_encoding_from_headers, get_encodings_from_content
