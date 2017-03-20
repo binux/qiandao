@@ -188,7 +188,6 @@ def _send_mail(to, subject, text=None):
         return True
     except Exception as e:
         logger.error('send mail error {}'.format(str(e)))
-        return False
 
 
 import chardet

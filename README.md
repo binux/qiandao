@@ -45,6 +45,14 @@ pip install tornado u-msgpack-python jinja2 chardet requests
 ./qiandao.py tpl.har [--key=value]* [env.json]
 ```
 
+config.py
+=========
+```python
+mail_smtp = ""     # 邮件smtp 地址
+mail_user = ""    # 邮件账户
+mail_passowrd = ""   # 邮件密码
+```
+
 鸣谢
 ====
 

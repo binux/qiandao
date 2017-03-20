@@ -47,9 +47,9 @@ download_size_limit = 1*1024*1024
 proxies = []
 
 # mailgun 邮件发送, 域名和 apikey
-mail_smtp = "smtp.mxhichina.com"
-mail_user = "liukai@rongshutong.com"
-mail_password = "VOcAMErXrYMbyFO7"
+mail_smtp = ""
+mail_user = ""
+mail_password = ""
 mail_domain = "mail.qiandao.today"
 mailgun_key = ""
 
