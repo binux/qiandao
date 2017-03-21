@@ -132,9 +132,8 @@ from tornado import httpclient
 
 
 def send_mail(to, subject, text=None, html=None, async=False, _from=u"签到提醒 <noreply@%s>" % config.mail_domain):
-    if _send_mail(to, subject, html or text):
-        return
     if not config.mailgun_key:
+        _send_mail(to, subject, html or text or '')
         return
 
     httpclient.AsyncHTTPClient.configure('tornado.curl_httpclient.CurlAsyncHTTPClient')
