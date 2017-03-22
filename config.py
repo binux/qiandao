@@ -46,6 +46,9 @@ check_task_loop = 10000
 download_size_limit = 1*1024*1024
 proxies = []
 
+# 域名
+domain = 'qiandao.today'
+
 # mailgun 邮件发送, 域名和 apikey
 mail_smtp = ""
 mail_user = ""
