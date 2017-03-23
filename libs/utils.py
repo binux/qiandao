@@ -173,11 +173,10 @@ import logging
 logger = logging.getLogger('qiandao.util')
 
 
-@gen.coroutine
 def _send_mail(to, subject, text=None, subtype='html'):
     if not config.mail_smtp:
         logger.info('no smtp')
-        raise gen.Return()
+        return
     msg = MIMEText(text, _subtype=subtype, _charset='utf-8')
     msg['Subject'] = subject
     msg['From'] = config.mail_user
@@ -187,11 +186,10 @@ def _send_mail(to, subject, text=None, subtype='html'):
         s = smtplib.SMTP()
         s.connect(config.mail_smtp)
         s.login(config.mail_user, config.mail_password)
-        yield s.sendmail(config.mail_user, to, msg.as_string())
+        s.sendmail(config.mail_user, to, msg.as_string())
         s.close()
     except Exception as e:
         logger.error('send mail error {}'.format(str(e)))
-        raise gen.Return()
 
 
 import chardet

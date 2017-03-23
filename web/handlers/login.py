@@ -117,7 +117,7 @@ class RegisterHandler(BaseHandler):
         <p>点击或复制到浏览器中打开</p>
 
         <p>您也可以不验证邮箱继续使用签到的服务，我们不会继续给您发送任何邮件。</p>
-        """ % (config.domain, config.domain, verified_code, verified_code), async=True)
+        """ % (config.domain, verified_code, config.domain, verified_code), async=True)
 
         def get_result(future):
             try:
@@ -237,7 +237,7 @@ class PasswordResetHandler(BaseHandler):
 
         <p>点击或复制到浏览器中打开</p>
 
-        """ % (config.domain, config.domain, verified_code, verified_code), async=True)
+        """ % (config.domain, verified_code, config.domain, verified_code), async=True)
 
         def get_result(future):
             try:
