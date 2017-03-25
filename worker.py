@@ -177,7 +177,7 @@ class MainWorker(object):
                     success_count=task['success_count']+1,
                     env=variables,
                     session=session,
-                    mtime = time.time(),
+                    mtime=time.time(),
                     next=next)
             self.db.tpl.incr_success(tpl['id'])
 
@@ -212,13 +212,14 @@ class MainWorker(object):
 
 下一次重试在一天之后，为防止签到中断，给您发送这份邮件。
 
-访问： http://qiandao.today/task/%(taskid)s/log 查看日志。
+访问： http://%(domain)s/task/%(taskid)s/log 查看日志。
                     """ % dict(
-                        sitename = tpl['sitename'] or u'未命名',
-                        siteurl = tpl['siteurl'] or u'',
-                        cnt = task['last_failed_count'] + 1,
-                        disable = u"因连续多次失败，已停止。" if disabled else u"",
-                        taskid = task['id'],
+                        sitename=tpl['sitename'] or u'未命名',
+                        siteurl=tpl['siteurl'] or u'',
+                        cnt=task['last_failed_count'] + 1,
+                        disable=u"因连续多次失败，已停止。" if disabled else u"",
+                        domain=config.domain,
+                        taskid=task['id'],
                         ), async=True)
                 except Exception as e:
                     logging.error('send mail error: %r', e)

@@ -45,6 +45,17 @@ pip install tornado u-msgpack-python jinja2 chardet requests
 ./qiandao.py tpl.har [--key=value]* [env.json]
 ```
 
+config.py
+=========
+优先用`mailgun`方式发送邮件，如果要用smtp方式发送邮件，请填写mail_smtp, mail_user, mail_password
+```python
+mail_smtp = ""     # 邮件smtp 地址
+mail_user = ""    # 邮件账户
+mail_passowrd = ""   # 邮件密码
+mail_domain = "mail.qiandao.today"
+mailgun_key = ""
+```
+
 鸣谢
 ====
 

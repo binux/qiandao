@@ -7,6 +7,7 @@
 
 import socket
 import struct
+from tornado import gen
 
 
 def ip2int(addr):
@@ -133,7 +134,8 @@ from tornado import httpclient
 
 def send_mail(to, subject, text=None, html=None, async=False, _from=u"签到提醒 <noreply@%s>" % config.mail_domain):
     if not config.mailgun_key:
-        return
+        subtype = 'html' if html else 'plain'
+        return _send_mail(to, subject, html or text or '', subtype)
 
     httpclient.AsyncHTTPClient.configure('tornado.curl_httpclient.CurlAsyncHTTPClient')
     if async:
@@ -162,6 +164,33 @@ def send_mail(to, subject, text=None, html=None, async=False, _from=u"签到提�
         body=urllib.urlencode(body)
     )
     return client.fetch(req)
+
+
+import smtplib
+from email.mime.text import MIMEText
+import logging
+
+logger = logging.getLogger('qiandao.util')
+
+
+def _send_mail(to, subject, text=None, subtype='html'):
+    if not config.mail_smtp:
+        logger.info('no smtp')
+        return
+    msg = MIMEText(text, _subtype=subtype, _charset='utf-8')
+    msg['Subject'] = subject
+    msg['From'] = config.mail_user
+    msg['To'] = to
+    try:
+        logger.info('send mail to {}'.format(to))
+        s = smtplib.SMTP()
+        s.connect(config.mail_smtp)
+        s.login(config.mail_user, config.mail_password)
+        s.sendmail(config.mail_user, to, msg.as_string())
+        s.close()
+    except Exception as e:
+        logger.error('send mail error {}'.format(str(e)))
+
 
 import chardet
 from requests.utils import get_encoding_from_headers, get_encodings_from_content
