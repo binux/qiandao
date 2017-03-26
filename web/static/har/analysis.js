@@ -116,7 +116,7 @@
         }
         _ref3 = (function() {
           var _len3, _m, _ref3, _ref4, _results;
-          _ref4 = ((_ref3 = entry.response) != null ? _ref3.headers : void 0) != null;
+          _ref4 = (_ref3 = entry.response) != null ? _ref3.headers : void 0;
           _results = [];
           for (_m = 0, _len3 = _ref4.length; _m < _len3; _m++) {
             h = _ref4[_m];
@@ -367,7 +367,7 @@
             _results = [];
             for (_m = 0, _len3 = _ref5.length; _m < _len3; _m++) {
               cookie = _ref5[_m];
-              if ((new Date(cookie.expires)) > start_time) {
+              if (!cookie.expires || (new Date(cookie.expires)) > start_time) {
                 _results.push(cookie.name);
               }
             }
