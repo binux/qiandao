@@ -94,7 +94,7 @@
         return true;
       };
       $scope.pre_save = function() {
-        var alert_elem, alert_info_elem, error, first_entry, _base, _base1;
+        var alert_elem, alert_info_elem, error, first_entry, parsed_url, _base, _base1;
         alert_elem = angular.element('#save-har .alert-danger').hide();
         alert_info_elem = angular.element('#save-har .alert-info').hide();
         first_entry = (function() {
@@ -114,7 +114,8 @@
           if ((_base = $scope.setting).sitename == null) {
             _base.sitename = first_entry && utils.get_domain(first_entry.request.url).split('.')[0];
           }
-          return (_base1 = $scope.setting).siteurl != null ? _base1.siteurl : _base1.siteurl = first_entry && utils.url_parse(first_entry.request.url).host;
+          parsed_url = first_entry && utils.url_parse(first_entry.request.url);
+          return (_base1 = $scope.setting).siteurl != null ? _base1.siteurl : _base1.siteurl = parsed_url.protocol === 'https:' && ("" + parsed_url.protocol + "//" + parsed_url.host) || parsed_url.host;
         } catch (_error) {
           error = _error;
           return console.error(error);
