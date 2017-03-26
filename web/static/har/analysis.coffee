@@ -66,7 +66,7 @@ define (require, exports, module) ->
           #})), entry.request.url)
 
       # update cookie from response
-      for header in (h for h in entry.response?.headers? when h.name.toLowerCase() == 'set-cookie')
+      for header in (h for h in entry.response?.headers when h.name.toLowerCase() == 'set-cookie')
         entry.filter_set_cookie = true
         try
           cookie_jar.setCookieSync(header.value, entry.request.url, {now: new Date(entry.startedDateTime)})
@@ -214,7 +214,7 @@ define (require, exports, module) ->
           continue
 
         start_time = new Date(entry.startedDateTime)
-        set_cookie = (cookie.name for cookie in entry.response?.cookies when (new Date(cookie.expires)) > start_time)
+        set_cookie = (cookie.name for cookie in entry.response?.cookies when not cookie.expires or (new Date(cookie.expires)) > start_time)
         _related_cookies = (c for c in related_cookies when c not in set_cookie)
         if related_cookies.length > _related_cookies.length
           entry.recommend = true
