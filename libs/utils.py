@@ -7,16 +7,20 @@
 
 import socket
 import struct
+from tornado import gen
 
-def ip2int(addr):                                                               
-    return struct.unpack("!I", socket.inet_aton(addr))[0]                       
 
-def int2ip(addr):                                                               
-    return socket.inet_ntoa(struct.pack("!I", addr))                            
+def ip2int(addr):
+    return struct.unpack("!I", socket.inet_aton(addr))[0]
+
+
+def int2ip(addr):
+    return socket.inet_ntoa(struct.pack("!I", addr))
 
 
 import umsgpack
 import functools
+
 
 def func_cache(f):
     _cache = {}
@@ -29,6 +33,7 @@ def func_cache(f):
         return _cache[key]
 
     return wrapper
+
 
 def method_cache(fn):
     @functools.wraps(fn)
@@ -43,6 +48,7 @@ def method_cache(fn):
     return wrapper
 
 import datetime
+
 
 def format_date(date, gmt_offset=-8*60, relative=True, shorter=False, full_format=False):
     """Formats the given date (which should be GMT).
@@ -115,6 +121,7 @@ def format_date(date, gmt_offset=-8*60, relative=True, shorter=False, full_forma
         "time": str_time
     }
 
+
 def utf8(string):
     if isinstance(string, unicode):
         return string.encode('utf8')
@@ -124,9 +131,11 @@ import urllib
 import config
 from tornado import httpclient
 
-def send_mail(to, subject, text=None, html=None, async=False, _from=u"签到提醒 <noreply@mail.qiandao.today>"):
+
+def send_mail(to, subject, text=None, html=None, async=False, _from=u"签到提醒 <noreply@%s>" % config.mail_domain):
     if not config.mailgun_key:
-        return
+        subtype = 'html' if html else 'plain'
+        return _send_mail(to, subject, html or text or '', subtype)
 
     httpclient.AsyncHTTPClient.configure('tornado.curl_httpclient.CurlAsyncHTTPClient')
     if async:
@@ -135,10 +144,10 @@ def send_mail(to, subject, text=None, html=None, async=False, _from=u"签到提�
         client = httpclient.HTTPClient()
 
     body = {
-            'from': utf8(_from),
-            'to': utf8(to),
-            'subject': utf8(subject),
-            }
+        'from': utf8(_from),
+        'to': utf8(to),
+        'subject': utf8(subject),
+    }
 
     if text:
         body['text'] = utf8(text)
@@ -148,13 +157,40 @@ def send_mail(to, subject, text=None, html=None, async=False, _from=u"签到提�
         raise Exception('nedd text or html')
 
     req = httpclient.HTTPRequest(
-            method = "POST",
-            url = "https://api.mailgun.net/v2/mail.qiandao.today/messages",
-            auth_username = "api",
-            auth_password = config.mailgun_key,
-            body = urllib.urlencode(body)
-            )
+        method="POST",
+        url="https://api.mailgun.net/v2/%s/messages" % config.mail_domain,
+        auth_username="api",
+        auth_password=config.mailgun_key,
+        body=urllib.urlencode(body)
+    )
     return client.fetch(req)
+
+
+import smtplib
+from email.mime.text import MIMEText
+import logging
+
+logger = logging.getLogger('qiandao.util')
+
+
+def _send_mail(to, subject, text=None, subtype='html'):
+    if not config.mail_smtp:
+        logger.info('no smtp')
+        return
+    msg = MIMEText(text, _subtype=subtype, _charset='utf-8')
+    msg['Subject'] = subject
+    msg['From'] = config.mail_user
+    msg['To'] = to
+    try:
+        logger.info('send mail to {}'.format(to))
+        s = smtplib.SMTP()
+        s.connect(config.mail_smtp)
+        s.login(config.mail_user, config.mail_password)
+        s.sendmail(config.mail_user, to, msg.as_string())
+        s.close()
+    except Exception as e:
+        logger.error('send mail error {}'.format(str(e)))
+
 
 import chardet
 from requests.utils import get_encoding_from_headers, get_encodings_from_content
@@ -194,8 +230,8 @@ def decode(content, headers=None):
         return content
 
     try:
-        return content.decode(encoding)
-    except Exception as e:
+        return content.decode(encoding, 'replace')
+    except Exception:
         return None
 
 
@@ -209,8 +245,11 @@ def quote_chinese(url, encodeing="utf-8"):
 import hashlib
 md5string = lambda x: hashlib.md5(utf8(x)).hexdigest()
 
+
+import time
 jinja_globals = {
     'md5': md5string,
     'quote_chinese': quote_chinese,
     'utf8': utf8,
+    'timestamp': time.time,
 }

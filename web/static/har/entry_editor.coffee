@@ -105,9 +105,31 @@ define (require, exports, module) ->
 
     # variables template
     $scope.variables_wrapper = (string, place_holder='') ->
-      string = string or place_holder
+      string = (string or place_holder).toString()
       re = /{{\s*([\w]+)[^}]*?\s*}}/g
       $sce.trustAsHtml(string.replace(re, '<span class="label label-primary">$&</span>'))
+
+    $scope.add_request = (pos) ->
+      pos ?= 1
+      if (current_pos = $scope.$parent.har.log.entries.indexOf($scope.entry)) == -1
+        $scope.alert "can't find position to add request"
+        return
+      current_pos += pos
+      $scope.$parent.har.log.entries.splice(current_pos, 0, {
+        checked: false
+        pageref: $scope.entry.pageref
+        recommend: true
+        request:
+          method: 'GET'
+          url: ''
+          postData:
+            test: ''
+          headers: {}
+          cookies: {}
+        response: {}
+      })
+      $rootScope.$broadcast('har-change')
+      angular.element('#edit-entry').modal('hide')
 
     # fetch test
     $scope.do_test = () ->
@@ -165,24 +187,35 @@ define (require, exports, module) ->
           data = content.decoded
         else if from == 'status'
           data = ''+$scope.preview.response.status
-        else if from.indexOf('header-')
+        else if from.indexOf('header-') == 0
           from = from[7..]
           for header in $scope.preview.response.headers
             if header.name.toLowerCase() == from
               data = header.value
+        else if from == 'header'
+          data = (h.name + ': ' + h.value for h in $scope.preview.response.headers).join("\n")
 
         if not data
           return null
 
         try
-          re = new RegExp(re)
+          if match = re.match(/^\/(.*?)\/([gim]*)$/)
+            re = new RegExp(match[1], match[2])
+          else
+            re = new RegExp(re)
         catch error
           console.error(error)
           return null
 
-        if m = data.match(re)
-          return if m[1] then m[1] else m[0]
-        return null
+        if re.global
+          result = []
+          while m = re.exec(data)
+            result.push(if m[1] then m[1] else m[0])
+          return result
+        else
+          if m = data.match(re)
+            return if m[1] then m[1] else m[0]
+          return null
 
       ## eof
     )

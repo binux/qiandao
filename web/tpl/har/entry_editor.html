@@ -75,7 +75,7 @@
         <!-- cookie end -->
 
         <!--post data-->
-        <details open onclick="return false" ng-if="entry.request.postData.text">
+        <details open onclick="return false" ng-if="entry.request.postData.text || entry.request.method === 'POST'">
           <summary>
             Request Payload
             <a class="btn btn-info btn-xxs" ng-if="entry.request.postData.params"
@@ -209,7 +209,7 @@
             </summary>
             <dl class="dl-horizontal">
               <dt ng-repeat-start="rule in entry.success_asserts">
-                <select ng-model="rule.from" ng-options="v for v in ['content', 'status', 'header-location']"></select>
+                <select ng-model="rule.from" ng-options="v for v in ['content', 'status', 'header-location', 'header']"></select>
                 <div class="input-wrapper">
                   <input placeholder="rule" ng-model="rule.re">
                 </div>
@@ -236,7 +236,7 @@
             </summary>
             <dl class="dl-horizontal">
               <dt ng-repeat-start="rule in entry.failed_asserts">
-                <select ng-model="rule.from" ng-options="v for v in ['content', 'status', 'header-location']"></select>
+                <select ng-model="rule.from" ng-options="v for v in ['content', 'status', 'header-location', 'header']"></select>
                 <div class="input-wrapper">
                   <input placeholder="rule" ng-model="rule.re">
                 </div>
@@ -263,7 +263,10 @@
             </summary>
             <dl class="dl-horizontal">
               <dt ng-repeat-start="rule in entry.extract_variables">
-                <div class="input-wrapper">
+                <div class=select-wrapper>
+                  <select ng-model="rule.from" ng-options="v for v in ['content', 'status', 'header-location', 'header']"></select>
+                </div>
+                <div class="input-wrapper name">
                   <input placeholder="name" ng-model="rule.name">
                 </div>
                 <span class="eq">=</span>
@@ -287,6 +290,12 @@
 
         <!-- footer -->
         <div class="modal-footer">
+          <div class="add-request">
+            在
+            <button type=button class="btn btn-default btn-xs" ng-click="add_request(0)">前面</button>
+            <button type=button class="btn btn-default btn-xs" ng-click="add_request(1)">后面</button>
+            插入一个请求
+          </div>
           <button type="button" class="btn btn-success do-test" data-loading-test="Loading..."
             ng-show="panel=='test' || panel=='preview' || panel=='preview-headers'"
             ng-click="do_test()">测试</button>

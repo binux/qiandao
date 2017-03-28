@@ -5,19 +5,24 @@
 #         http://binux.me
 # Created on 2014-08-08 20:40:53
 
-import redis
 import config
 import logging
 import umsgpack
 
 class RedisDB(object):
     def __init__(self, host=config.redis.host, port=config.redis.port, password=config.redis.passwd, db=config.redis.db, evil=config.evil):
+        try:
+            import redis
+        except ImportError:
+            self.client = None
+            return
+
         self.evil_limit = evil
         try:
             self.client = redis.StrictRedis(host=host, port=port, password=password, db=db, socket_timeout=3, socket_connect_timeout=3)
             self.client.ping()
         except redis.exceptions.ConnectionError as e:
-            logging.error(e)
+            logging.warning(e)
             self.client = None
 
     def evil(self, ip, userid, cnt=None):

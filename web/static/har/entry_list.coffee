@@ -87,12 +87,20 @@ define (require, exports, module) ->
 
         first_entry = (() ->
           for entry in $scope.har.log.entries when entry.checked
-            return entry)()
+            variables = analysis.variables_in_entry(entry)
+            if ('cookies' in variables or 'cookie' in variables)
+              return entry
+        )()
+        if not first_entry
+          first_entry ?= (() ->
+            for entry in $scope.har.log.entries when entry.checked
+              return entry)()
 
         try
           $scope.setting ?= {}
           $scope.setting.sitename ?= first_entry and utils.get_domain(first_entry.request.url).split('.')[0]
-          $scope.setting.siteurl ?= first_entry and utils.url_parse(first_entry.request.url).host
+          parsed_url = first_entry and utils.url_parse(first_entry.request.url)
+          $scope.setting.siteurl ?= parsed_url.protocol == 'https:' and "#{parsed_url.protocol}//#{parsed_url.host}" or parsed_url.host
         catch error
           console.error(error)
 
