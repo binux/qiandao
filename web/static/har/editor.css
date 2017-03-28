@@ -122,10 +122,18 @@ h1 {
   width: 60%;
   position: relative;
 }
+#edit-entry .extract-variables dt .select-wrapper {
+  width: 100px;
+  position: absolute;
+  left: 0;
+}
 #edit-entry .extract-variables dt .input-wrapper {
   width: 50%;
   float: left;
   padding: 0 20px;
+}
+#edit-entry .extract-variables dt .input-wrapper.name {
+  padding-left: 120px;
 }
 #edit-entry .extract-variables dt .eq {
   position: absolute;
@@ -152,4 +160,7 @@ h1 {
 [contenteditable]:empty:not(:focus):before {
   color: #777;
   content: attr(data-ph);
+}
+.add-request {
+  float: left;
 }

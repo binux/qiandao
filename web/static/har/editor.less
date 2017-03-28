@@ -155,10 +155,20 @@ h1 {
       width: 60%;
       position: relative;
 
+      .select-wrapper {
+        width: 100px;
+        position: absolute;
+        left: 0;
+      }
+
       .input-wrapper {
         width: 50%;
         float: left;
         padding: 0 20px;
+      }
+
+      .input-wrapper.name {
+        padding-left: 120px;
       }
 
       .eq {
@@ -194,4 +204,8 @@ h1 {
 [contenteditable]:empty:not(:focus):before {
   color: #777;
   content:attr(data-ph)
+}
+
+.add-request {
+  float: left;
 }

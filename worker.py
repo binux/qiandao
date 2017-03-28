@@ -12,16 +12,20 @@ import tornado.log
 import tornado.ioloop
 from tornado import gen
 
-import db
 import config
 from libs import utils
 from libs.fetcher import Fetcher
 
-tornado.log.enable_pretty_logging()
 logger = logging.getLogger('qiandao.worker')
 class MainWorker(object):
     def __init__(self):
         self.running = False
+
+        if config.db_type == 'sqlite3':
+            import sqlite3_db as db
+        else:
+            import db
+
         class DB(object):
             user = db.UserDB()
             tpl = db.TPLDB()
@@ -158,10 +162,10 @@ class MainWorker(object):
 
             variables = self.db.user.encrypt(task['userid'], new_env['variables'])
             session = self.db.user.encrypt(task['userid'],
-                    new_env['session'] if isinstance(new_env['session'], basestring) else new_env['session'].to_json())
+                    new_env['session'].to_json() if hasattr(new_env['session'], 'to_json') else new_env['session'])
 
             # todo next not mid night
-            next = time.time() + (tpl['interval'] if tpl['interval'] else 24 * 60 * 60)
+            next = time.time() + max((tpl['interval'] if tpl['interval'] else 24 * 60 * 60), 30*60)
             if tpl['interval'] is None:
                 next = self.fix_next_time(next)
 
@@ -173,7 +177,7 @@ class MainWorker(object):
                     success_count=task['success_count']+1,
                     env=variables,
                     session=session,
-                    mtime = time.time(),
+                    mtime=time.time(),
                     next=next)
             self.db.tpl.incr_success(tpl['id'])
 
@@ -208,13 +212,14 @@ class MainWorker(object):
 
 下一次重试在一天之后，为防止签到中断，给您发送这份邮件。
 
-访问： http://qiandao.today/task/%(taskid)s/log 查看日志。
+访问： http://%(domain)s/task/%(taskid)s/log 查看日志。
                     """ % dict(
-                        sitename = tpl['sitename'] or u'未命名',
-                        siteurl = tpl['siteurl'] or u'',
-                        cnt = task['last_failed_count'] + 1,
-                        disable = u"因连续多次失败，已停止。" if disabled else u"",
-                        taskid = task['id'],
+                        sitename=tpl['sitename'] or u'未命名',
+                        siteurl=tpl['siteurl'] or u'',
+                        cnt=task['last_failed_count'] + 1,
+                        disable=u"因连续多次失败，已停止。" if disabled else u"",
+                        domain=config.domain,
+                        taskid=task['id'],
                         ), async=True)
                 except Exception as e:
                     logging.error('send mail error: %r', e)
@@ -233,6 +238,7 @@ class MainWorker(object):
                     #""")
 
 if __name__ == '__main__':
+    tornado.log.enable_pretty_logging()
     worker = MainWorker()
     io_loop = tornado.ioloop.IOLoop.instance()
     tornado.ioloop.PeriodicCallback(worker, config.check_task_loop, io_loop).start()

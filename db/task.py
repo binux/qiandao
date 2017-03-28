@@ -8,7 +8,6 @@
 import time
 import logging
 import umsgpack
-import mysql.connector
 
 import config
 from libs import utils
@@ -24,8 +23,9 @@ class TaskDB(BaseDB):
 
     def __init__(self, host=config.mysql.host, port=config.mysql.port,
             database=config.mysql.database, user=config.mysql.user, passwd=config.mysql.passwd):
+        import mysql.connector
         self.conn = mysql.connector.connect(user=user, password=passwd, host=host, port=port,
-                database=database, autocommit=True, pool_size=5)
+                database=database, autocommit=True)
 
     def add(self, tplid, userid, env):
         now = time.time()
@@ -51,20 +51,20 @@ class TaskDB(BaseDB):
         assert 'ctime' not in kwargs, 'ctime not modifiable'
 
         kwargs['mtime'] = time.time()
-        return self._update(where="id=%s", where_values=(id, ), **kwargs)
+        return self._update(where="id=%s" % self.placeholder, where_values=(id, ), **kwargs)
 
     def get(self, id, fields=None):
         assert id, 'need id'
-        for task in self._select2dic(what=fields, where='id=%s', where_values=(id, )):
+        for task in self._select2dic(what=fields, where='id=%s' % self.placeholder, where_values=(id, )):
             return task
 
     def list(self, userid, fields=None, limit=100):
-        return self._select2dic(what=fields, where='userid=%s', where_values=(userid, ), limit=limit)
+        return self._select2dic(what=fields, where='userid=%s' % self.placeholder, where_values=(userid, ), limit=limit)
 
     def delete(self, id):
-        self._delete(where="id=%s", where_values=(id, ))
+        self._delete(where="id=%s" % self.placeholder, where_values=(id, ))
 
     def scan(self, now=None, fields=None):
         if now is None:
             now = time.time()
-        return list(self._select2dic(what=fields, where="`next` < %s", where_values=(now, )))
+        return list(self._select2dic(what=fields, where="`next` < %s" % self.placeholder, where_values=(now, )))

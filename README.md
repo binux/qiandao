@@ -5,6 +5,38 @@ qiandao
 
 HAR editor 使用指南：https://github.com/binux/qiandao/blob/master/docs/har-howto.md
 
+Web
+===
+
+需要 python2.7, 虚拟主机无法安装
+
+```
+apt-get install python-dev autoconf g++ python-pbkdf2
+pip install tornado u-msgpack-python jinja2 chardet requests pbkdf2 pycrypto
+```
+
+可选 redis, Mysql
+
+```
+mysql < qiandao.sql
+```
+
+启动
+
+```
+./run.py
+```
+
+数据不随项目分发，去 [https://qiandao.today/tpls/public](https://qiandao.today/tpls/public) 查看你需要的模板，点击下载。
+在你自己的主页中 「我的模板+」 点击 + 上传。模板需要发布才会在「公开模板」中展示，你需要管理员权限在「我的发布请求」中审批通过。
+
+
+设置管理员
+
+```
+./chrole.py your@email.address admin
+```
+
 qiandao.py
 ==========
 
@@ -13,24 +45,16 @@ pip install tornado u-msgpack-python jinja2 chardet requests
 ./qiandao.py tpl.har [--key=value]* [env.json]
 ```
 
-Web
-===
-
-需要 Mysql
-可选 redis
-
+config.py
+=========
+优先用`mailgun`方式发送邮件，如果要用smtp方式发送邮件，请填写mail_smtp, mail_user, mail_password
+```python
+mail_smtp = ""     # 邮件smtp 地址
+mail_user = ""    # 邮件账户
+mail_passowrd = ""   # 邮件密码
+mail_domain = "mail.qiandao.today"
+mailgun_key = ""
 ```
-apt-get install python-dev
-pip install http://cdn.mysql.com/Downloads/Connector-Python/mysql-connector-python-2.0.4.zip#md5=3df394d89300db95163f17c843ef49df
-pip install tornado u-msgpack-python jinja2 chardet requests mysql-connector-python redis pbkdf2 pycrypto
-mysql < qiandao.sql
-./worker.py &
-./web.py
-```
-
-设置管理员
-
-在数据库中，将用户的 role 改为 admin
 
 鸣谢
 ====

@@ -24,10 +24,16 @@
         return sel.addRange(range);
       }
     });
+    $(function() {
+      return $('[data-toggle=get-cookie][disabled]').attr('disabled', false);
+    });
     cookie_input = null;
     $(document).on('click', "[data-toggle=get-cookie]", function(ev) {
       var $this;
       $this = $(this);
+      if ($this.attr('disabled')) {
+        return;
+      }
       cookie_input = angular.element($this.parent().find('input'));
       if ($('body').attr('get-cookie') === void 0) {
         alert('尚未安装GetCookie插件，请安装插件或手动获取！');

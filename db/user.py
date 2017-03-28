@@ -8,7 +8,6 @@
 import time
 import logging
 import umsgpack
-import mysql.connector
 
 import config
 from libs import mcrypto as crypto, utils
@@ -30,8 +29,9 @@ class UserDB(BaseDB):
 
     def __init__(self, host=config.mysql.host, port=config.mysql.port,
             database=config.mysql.database, user=config.mysql.user, passwd=config.mysql.passwd):
+        import mysql.connector
         self.conn = mysql.connector.connect(user=user, password=passwd, host=host, port=port,
-                database=database, autocommit=True, pool_size=5)
+                database=database, autocommit=True)
 
     @staticmethod
     def check_nickname(nickname):
@@ -82,12 +82,12 @@ class UserDB(BaseDB):
         if 'password' in kwargs:
             kwargs['password'] = self.encrypt(id, crypto.password_hash(kwargs['password']))
 
-        return self._update(where="id=%s", where_values=(id, ), **kwargs)
+        return self._update(where="id=%s" % self.placeholder, where_values=(id, ), **kwargs)
 
     @utils.method_cache
     def __getuserkey(self, id):
         for (userkey, ) in self._select(what='userkey',
-                where='id=%s', where_values=(id, )):
+                where='id=%s' % self.placeholder, where_values=(id, )):
             return crypto.aes_decrypt(userkey)
 
     def encrypt(self, id, data):
@@ -115,10 +115,10 @@ class UserDB(BaseDB):
         assert 'userkey' not in fields, 'userkey not allow to get'
 
         if id:
-            where = 'id = %s'
+            where = 'id = %s' % self.placeholder
             value = (id, )
         elif email:
-            where = 'email = %s'
+            where = 'email = %s' % self.placeholder
             value = (email, )
         else:
             raise self.UserDBException('get user need id or email')

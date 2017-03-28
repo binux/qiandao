@@ -10,7 +10,6 @@ import logging
 import jinja2
 import tornado.web
 
-import db
 import config
 from libs import utils
 from libs.fetcher import Fetcher
@@ -34,6 +33,11 @@ class Application(tornado.web.Application):
                 extensions=['jinja2.ext.autoescape', 'jinja2.ext.loopcontrols', ],
                 autoescape=True,
                 auto_reload=config.debug)
+
+        if config.db_type == 'sqlite3':
+            import sqlite3_db as db
+        else:
+            import db
 
         class DB(object):
             user = db.UserDB()

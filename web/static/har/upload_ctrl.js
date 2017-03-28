@@ -50,23 +50,31 @@
         $scope.load_remote(location.href);
       }
       $scope.load_file = function(data) {
-        var loaded;
-        if (!data.log) {
-          data = utils.tpl2har(data);
-        }
+        var each, loaded, _i, _len, _ref;
         console.log(data);
-        loaded = {
-          filename: $scope.file.name,
-          har: analysis.analyze(data, {
-            username: $scope.username,
-            password: $scope.password
-          }),
-          env: {
-            username: $scope.username,
-            password: $scope.password
-          },
-          upload: true
-        };
+        if (data.log) {
+          loaded = {
+            filename: $scope.file.name,
+            har: analysis.analyze(data, {
+              username: $scope.username,
+              password: $scope.password
+            }),
+            upload: true
+          };
+        } else {
+          loaded = {
+            filename: $scope.file.name,
+            har: utils.tpl2har(data),
+            upload: true
+          };
+        }
+        loaded.env = {};
+        _ref = analysis.find_variables(loaded.har);
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          each = _ref[_i];
+          loaded.env[each] = "";
+        }
+        console.log(analysis.find_variables(loaded.har));
         return $scope.loaded(loaded);
       };
       $scope.load_local_har = function() {

@@ -97,9 +97,9 @@ class RegisterHandler(BaseHandler):
 
         next = self.get_argument('next', '/my/')
         self.redirect(next)
-
         future = self.send_mail(user)
-        IOLoop.current().add_future(future, lambda x: x)
+        if future:
+            IOLoop.current().add_future(future, lambda x: x)
 
     def send_mail(self, user):
         verified_code = [user['email'], time.time()]
@@ -112,12 +112,12 @@ class RegisterHandler(BaseHandler):
 
         <p>点击以下链接验证邮箱，当您的签到失败的时候，会自动给您发送通知邮件。</p>
 
-        <p><a href="http://qiandao.today/verify/%s">http://qiandao.today/verify/%s</a></p>
+        <p><a href="http://%s/verify/%s">http://%s/verify/%s</a></p>
 
         <p>点击或复制到浏览器中打开</p>
 
         <p>您也可以不验证邮箱继续使用签到的服务，我们不会继续给您发送任何邮件。</p>
-        """ % (verified_code, verified_code), async=True)
+        """ % (config.domain, verified_code, config.domain, verified_code), async=True)
 
         def get_result(future):
             try:
@@ -125,7 +125,8 @@ class RegisterHandler(BaseHandler):
             except Exception as e:
                 logging.error(e)
 
-        future.add_done_callback(get_result)
+        if future:
+            future.add_done_callback(get_result)
         return future
 
 class VerifyHandler(BaseHandler):
@@ -190,7 +191,8 @@ class PasswordResetHandler(BaseHandler):
             if user:
                 logger.info('password reset: userid=%(id)s email=%(email)s', user)
                 future = self.send_mail(user)
-                IOLoop.current().add_future(future, lambda x: x)
+                if future:
+                    IOLoop.current().add_future(future, lambda x: x)
 
             return self.finish("如果用户存在，会将发送密码重置邮件到您的邮箱，请注意查收。（如果您没有收到过激活邮件，可能无法也无法收到密码重置邮件）")
         else:
@@ -231,19 +233,19 @@ class PasswordResetHandler(BaseHandler):
 
         <p>点击以下链接完成您的密码重置（一小时内有效）。</p>
 
-        <p><a href="http://qiandao.today/password_reset/%s">http://qiandao.today/password_reset/%s</a></p>
+        <p><a href="http://%s/password_reset/%s">http://%s/password_reset/%s</a></p>
 
         <p>点击或复制到浏览器中打开</p>
 
-        """ % (verified_code, verified_code), async=True)
+        """ % (config.domain, verified_code, config.domain, verified_code), async=True)
 
         def get_result(future):
             try:
                 return future.result()
             except Exception as e:
                 logging.error(e)
-
-        future.add_done_callback(get_result)
+        if future:
+            future.add_done_callback(get_result)
         return future
 
 handlers = [

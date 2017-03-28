@@ -33,3 +33,8 @@ h1 > a:focus {
   top: 0;
   right: 0;
 }
+.form-group .control-label .control-helper[disabled] {
+  color: darkgray;
+  text-decoration: none;
+  cursor: default;
+}

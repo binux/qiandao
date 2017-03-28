@@ -123,9 +123,37 @@
         if (place_holder == null) {
           place_holder = '';
         }
-        string = string || place_holder;
+        string = (string || place_holder).toString();
         re = /{{\s*([\w]+)[^}]*?\s*}}/g;
         return $sce.trustAsHtml(string.replace(re, '<span class="label label-primary">$&</span>'));
+      };
+      $scope.add_request = function(pos) {
+        var current_pos;
+        if (pos == null) {
+          pos = 1;
+        }
+        if ((current_pos = $scope.$parent.har.log.entries.indexOf($scope.entry)) === -1) {
+          $scope.alert("can't find position to add request");
+          return;
+        }
+        current_pos += pos;
+        $scope.$parent.har.log.entries.splice(current_pos, 0, {
+          checked: false,
+          pageref: $scope.entry.pageref,
+          recommend: true,
+          request: {
+            method: 'GET',
+            url: '',
+            postData: {
+              test: ''
+            },
+            headers: {},
+            cookies: {}
+          },
+          response: {}
+        });
+        $rootScope.$broadcast('har-change');
+        return angular.element('#edit-entry').modal('hide');
       };
       return $scope.do_test = function() {
         var c, h, _ref, _ref1;
@@ -199,7 +227,7 @@
           return $scope.alert(data);
         });
         return $scope.preview_match = function(re, from) {
-          var content, data, error, header, m, _i, _len, _ref2, _ref3;
+          var content, data, error, header, m, match, result, _i, _len, _ref2, _ref3;
           data = null;
           if (!from) {
             return null;
@@ -214,7 +242,7 @@
             data = content.decoded;
           } else if (from === 'status') {
             data = '' + $scope.preview.response.status;
-          } else if (from.indexOf('header-')) {
+          } else if (from.indexOf('header-') === 0) {
             from = from.slice(7);
             _ref3 = $scope.preview.response.headers;
             for (_i = 0, _len = _ref3.length; _i < _len; _i++) {
@@ -223,25 +251,48 @@
                 data = header.value;
               }
             }
+          } else if (from === 'header') {
+            data = ((function() {
+              var _j, _len1, _ref4, _results;
+              _ref4 = $scope.preview.response.headers;
+              _results = [];
+              for (_j = 0, _len1 = _ref4.length; _j < _len1; _j++) {
+                h = _ref4[_j];
+                _results.push(h.name + ': ' + h.value);
+              }
+              return _results;
+            })()).join("\n");
           }
           if (!data) {
             return null;
           }
           try {
-            re = new RegExp(re);
+            if (match = re.match(/^\/(.*?)\/([gim]*)$/)) {
+              re = new RegExp(match[1], match[2]);
+            } else {
+              re = new RegExp(re);
+            }
           } catch (_error) {
             error = _error;
             console.error(error);
             return null;
           }
-          if (m = data.match(re)) {
-            if (m[1]) {
-              return m[1];
-            } else {
-              return m[0];
+          if (re.global) {
+            result = [];
+            while (m = re.exec(data)) {
+              result.push(m[1] ? m[1] : m[0]);
             }
+            return result;
+          } else {
+            if (m = data.match(re)) {
+              if (m[1]) {
+                return m[1];
+              } else {
+                return m[0];
+              }
+            }
+            return null;
           }
-          return null;
         };
       };
     });

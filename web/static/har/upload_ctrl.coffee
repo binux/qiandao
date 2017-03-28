@@ -49,19 +49,25 @@ define (require, exports, module) ->
         $scope.load_remote(location.href)
 
       $scope.load_file = (data) ->
-        if not data.log
-          data = utils.tpl2har(data)
         console.log data
-        loaded =
-          filename: $scope.file.name
-          har: analysis.analyze(data, {
-                username: $scope.username
-                password: $scope.password
-              })
-          env:
-            username: $scope.username
-            password: $scope.password
-          upload: true
+        if data.log
+          loaded =
+            filename: $scope.file.name
+            har: analysis.analyze(data, {
+                  username: $scope.username
+                  password: $scope.password
+                })
+            upload: true
+        else
+          loaded =
+            filename: $scope.file.name
+            har: utils.tpl2har data
+            upload: true
+
+        loaded.env = {}
+        for each in analysis.find_variables loaded.har
+          loaded.env[each] = ""
+        console.log analysis.find_variables loaded.har
         $scope.loaded(loaded)
 
       $scope.load_local_har = () ->
