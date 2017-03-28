@@ -156,7 +156,7 @@
         if (!((_ref1 = entry.request.postData) != null ? _ref1.text : void 0)) {
           continue;
         }
-        if (!((_ref2 = entry.request.postData) != null ? (_ref3 = _ref2.mimeType) != null ? _ref3.toLowerCase().indexOf("application/x-www-form-urlencoded") : void 0 : void 0) === 0) {
+        if (!(((_ref2 = entry.request.postData) != null ? (_ref3 = _ref2.mimeType) != null ? _ref3.toLowerCase().indexOf("application/x-www-form-urlencoded") : void 0 : void 0) === 0)) {
           entry.request.postData.params = void 0;
           continue;
         }
