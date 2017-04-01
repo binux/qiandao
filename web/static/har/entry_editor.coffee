@@ -124,8 +124,8 @@ define (require, exports, module) ->
           url: ''
           postData:
             test: ''
-          headers: {}
-          cookies: {}
+          headers: []
+          cookies: []
         response: {}
       })
       $rootScope.$broadcast('har-change')

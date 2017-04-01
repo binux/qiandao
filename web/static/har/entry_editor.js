@@ -147,8 +147,8 @@
             postData: {
               test: ''
             },
-            headers: {},
-            cookies: {}
+            headers: [],
+            cookies: []
           },
           response: {}
         });
