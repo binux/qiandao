@@ -1,4 +1,5 @@
 FROM python:2-onbuild
 MAINTAINER fangzhengjin <fangzhengjin@gmail.com>
-EXPOSE 8923
+ENV PORT 80
+EXPOSE $PORT
 CMD ["python","/usr/src/app/run.py"]
