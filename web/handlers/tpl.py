@@ -125,7 +125,7 @@ class TPLRunHandler(BaseHandler):
 class PublicTPLHandler(BaseHandler):
     def get(self):
         tpls = self.db.tpl.list(userid=None, limit=None, fields=('id', 'siteurl', 'sitename', 'banner', 'note', 'disabled', 'lock', 'last_success', 'ctime', 'mtime', 'fork', 'success_count'))
-        tpls = sorted(tpl, key=lambda t: -t['success_count'])
+        tpls = sorted(tpls, key=lambda t: -t['success_count'])
 
         self.render('tpls_public.html', tpls=tpls)
 
