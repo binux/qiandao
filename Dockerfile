@@ -1,4 +1,4 @@
-#基础镜像
+#基础镜像 此镜像会自动从项目中读取requirements.txt文件并安装文件中声明的依赖组件
 FROM python:2-onbuild
 
 #维护者信息
