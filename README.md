@@ -37,6 +37,11 @@ mysql < qiandao.sql
 ./chrole.py your@email.address admin
 ```
 
+使用Docker部署站点
+==========
+
+可参考 [Docker部署签到站教程](https://github.com/fangzhengjin/qiandao/wiki/Docker%E9%83%A8%E7%BD%B2%E7%AD%BE%E5%88%B0%E7%AB%99%E6%95%99%E7%A8%8B)
+
 qiandao.py
 ==========
 
