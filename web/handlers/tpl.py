@@ -19,7 +19,7 @@ class TPLPushHandler(BaseHandler):
             self.evil(+5)
             self.finish(u'<span class="alert alert-danger">没有权限</span>')
             return
-        tpls = self.db.tpl.list(userid=None, fields=('id', 'sitename'))
+        tpls = self.db.tpl.list(userid=None, limit=None, fields=('id', 'sitename'))
         self.render('tpl_push.html', tpl=tpl, tpls=tpls)
 
     @tornado.web.authenticated
@@ -124,7 +124,8 @@ class TPLRunHandler(BaseHandler):
 
 class PublicTPLHandler(BaseHandler):
     def get(self):
-        tpls = self.db.tpl.list(userid=None, limit=None, fields=('id', 'siteurl', 'sitename', 'banner', 'note', 'disabled', 'lock', 'last_success', 'ctime', 'mtime', 'fork'))
+        tpls = self.db.tpl.list(userid=None, limit=None, fields=('id', 'siteurl', 'sitename', 'banner', 'note', 'disabled', 'lock', 'last_success', 'ctime', 'mtime', 'fork', 'success_count'))
+        tpls = sorted(tpls, key=lambda t: -t['success_count'])
 
         self.render('tpls_public.html', tpls=tpls)
 

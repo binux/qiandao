@@ -67,7 +67,7 @@ class TPLDB(BaseDB):
         self._execute('UPDATE %s SET failed_count=failed_count+1 WHERE `id`=%d' % (
             self.escape(self.__tablename__), int(id)))
 
-    def list(self, fields=None, limit=100, **kwargs):
+    def list(self, fields=None, limit=None, **kwargs):
         where = '1=1'
         where_values = []
         for key, value in kwargs.iteritems():
