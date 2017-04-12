@@ -1,14 +1,21 @@
-#基础镜像 此镜像会自动从项目中读取requirements.txt文件并安装文件中声明的依赖组件
-FROM python:2-onbuild
+# 基础镜像
+FROM python:2.7-alpine
 
-#维护者信息
+# 维护者信息
 MAINTAINER fangzhengjin <fangzhengjin@gmail.com>
 
-#设置环境变量 在Dockerfile中设置的环境变量可以在启动的时候被覆盖
-ENV PORT 80
+RUN apk update
+RUN apk add bash autoconf g++
 
-#使用环境变量 设置容器暴露端口
+RUN mkdir -p /usr/src/app
+WORKDIR /usr/src/app
+
+COPY . /usr/src/app
+
+# 基础镜像已经包含pip组件
+RUN pip install --no-cache-dir -r requirements.txt
+
+ENV PORT 80
 EXPOSE $PORT/tcp
 
-#设置进入点
-ENTRYPOINT ["python","/usr/src/app/run.py"]
+CMD ["python","/usr/src/app/run.py"]
