@@ -18,4 +18,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 ENV PORT 80
 EXPOSE $PORT/tcp
 
+# 添加挂载点
+VOLUME ["/usr/src/app/"]
+
 CMD ["python","/usr/src/app/run.py"]
