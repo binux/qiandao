@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+
+{% block title %}我的签到{% endblock %}
+
+{% block head %}
+{{ super() }}
+<link href="{{ static_url('my.css') }}" rel="stylesheet" type="text/css">
+{% endblock %}
+
+{% block body %}
+{{ utils.header(current_user) }}
+
+<section class="task">
+  <div class="container">
+    <h2>
+      我的签到
+      <a href="/task/new" class="btn btn-default btn-xs modal_load glyphicon glyphicon-plus"></a>
+    </h2>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>网站</th>
+          <th>成功签到次数</th>
+          <th>失败次数</th>
+          <th>上次成功时间</th>
+          <th>状态</th>
+          <th>预计下次签到时间</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for task in tasks | sort(reverse=True, attribute="ctime") %}
+        <tr>
+          <td>
+            {% if task.disabled %}[禁用]{% endif %}
+            {{ utils.tplname(task.tpl) if task.tpl else "[已删除]" }}
+
+            {% if task.note %}
+            -
+              {% if task.note | length > 15 %}
+                <span data-toggle="popover" data-content="{{ task.note }}">{{ task.note or '' | truncate(10, True) }}</span>
+              {% else %} {{ task.note }} {% endif %}
+            {% endif %}
+          </td>
+          <td>{{ task.success_count }}</td>
+          <td>{{ task.failed_count }}</td>
+          <td>{{ format_date(task.last_success) if task.last_success else '从未' }}</td>
+          <td>{{ my_status(task) }}</td>
+          <td>{{ format_date(task.next) if task.next else '从不' }}</td>
+          <td>
+            {% if task.tpl %}
+            <a class="modal_load" href="/task/{{ task.id }}/edit">修改</a>
+            {% else %}
+            <a data-method="POST" href="/task/{{ task.id }}/del" data-confirm="是否要删除任务?">删除</a>
+            {% endif %}
+            <a data-load-method="POST" class="modal_load" href="/task/{{ task.id }}/run">立即执行</a>
+            <a href="/tpl/{{ task.tplid }}/edit" target="_blank">查看模板</a>
+            <a href="/task/{{ task.id }}/log" target="_blank">执行日志</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <div class="text-right">
+      <a href="/tpls/public" class="btn btn-default">所有公开模板</a>
+    </div>
+  </div>
+</section>
+
+<section class="tpl">
+  <div class="container">
+    <h2>
+      我的模板
+      <a href="/har/edit" class="btn btn-default btn-xs glyphicon glyphicon-plus" target="_blank"></a>
+    </h2>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>网站</th>
+          <th>创建时间</th>
+          <th>最近修改时间</th>
+          <th>最近成功时间</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for tpl in tpls | sort(reverse=True, attribute="mtime") %}
+        <tr>
+          <td>
+            {{ utils.tplname(tpl) }}
+            {% if tpl.fork %}<span>[fork]</span>{% endif %}
+          </td>
+          <td>
+            {{ format_date(tpl.ctime) }}
+          </td>
+          <td>
+            {{ format_date(tpl.mtime) }}
+          </td>
+          <td>
+            {% if tpl.last_success %}
+            <span class="last_success">{{ format_date(tpl.last_success) }}</span>
+            {% else %}
+            从未
+            {% endif %}
+          </td>
+          <td>
+            {% if tpl.lock %}
+            [锁定]
+            {% else %}
+            <a href="/tpl/{{ tpl.id }}/edit" target="_blank">编辑</a>
+            <a data-method="POST" href="/tpl/{{ tpl.id }}/del" data-confirm="是否要删除模板?">删除</a>
+            {% endif %}
+            <a class="modal_load" href="/task/new?tplid={{ tpl.id }}">新建签到</a>
+            <a class="modal_load" href="/tpl/{{ tpl.id }}/push">发布</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <div class="text-right">
+      <a href="/pushs" class="btn btn-default">我的发布请求</a>
+    </div>
+  </div>
+</section>
+
+<script>
+  $(function() {
+    $('[data-toggle=popover]').popover({
+      trigger: 'hover'
+    });
+  })
+</script>
+
+{{ utils.modal_load() }}
+{{ utils.apost() }}
+{% endblock %}

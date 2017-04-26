@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <title>{% block title %}签到{% endblock %}</title>
+    <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <meta name="description" content="{% block desc %}帮你每日签到，每天打卡！{% endblock %}">
+    <meta name="author" content="{% block author %}binux{% endblock %}">
+    <link rel="icon" type="image/png" href="{{ static_url('icon.png') }}">
+    <script src="{{ static_url('components/seajs/dist/sea.js') }}"></script>
+    <script>
+      seajs.config({
+        base: "/static",
+      })
+      console = console || {};
+      console.log = console.log || function(){};
+      console.debug = console.debug || function(){};
+      console.info = console.info || function(){};
+      console.error = console.error || function(){};
+    </script>
+    {% block head %}
+    <link href="{{ static_url('components/bootstrap/dist/css/bootstrap.min.css') }}" rel="stylesheet" type="text/css">
+    <script src="{{ static_url('components/jquery/dist/jquery.min.js') }}"></script>
+    <script src="{{ static_url('components/bootstrap/dist/js/bootstrap.min.js') }}"></script>
+    <link href="{{ static_url('base.css') }}" rel="stylesheet" type="text/css">
+    {% endblock %}
+
+    {% import "utils.html" as utils %}
+  </head>
+
+  <body>
+    {% block body %}{% endblock %}
+    {% block foot %}
+    <footer>
+      <div class="container">
+        <p class="text-center">a <a href="http://binux.me/" target="_blank">Binux</a>'s project. QQ群: <a target="_blank" href="http://shang.qq.com/wpa/qunwpa?idkey=a1fd752d54913eec062ae497b95a11b404af482f663782c5a1a714d24c092dc2">99363244</a></p>
+      </div>
+    </footer>
+    {% endblock %}
+    {% if config.ga_key %}
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+      ga('create', '{{ config.ga_key }}', 'auto');
+      ga('send', 'pageview');
+    </script>
+    {% endif %}
+  </body>
+</html>
+<!-- vim: set et sw=2 ts=2 sts=2 ff=unix fenc=utf8: -->
