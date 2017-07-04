@@ -52,11 +52,13 @@ pip install tornado u-msgpack-python jinja2 chardet requests
 
 config.py
 =========
-优先用`mailgun`方式发送邮件，如果要用smtp方式发送邮件，请填写mail_smtp, mail_user, mail_password
+优先用`mailgun`方式发送邮件，如果要用smtp方式发送邮件，请填写mail_smtp, mail_port, mail_ssl, mail_user, mail_password
 ```python
-mail_smtp = ""     # 邮件smtp 地址
-mail_user = ""    # 邮件账户
-mail_passowrd = ""   # 邮件密码
+mail_smtp = ""      # 邮件smtp地址
+mail_port = 465     # 邮件smtp端口，非SSL默认端口为25
+mail_ssl = True     # 邮件smtp是否使用SSL
+mail_user = ""      # 邮件smtp账户
+mail_passowrd = ""  # 邮件smtp密码
 mail_domain = "mail.qiandao.today"
 mailgun_key = ""
 ```
