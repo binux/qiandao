@@ -67,7 +67,22 @@
       if ($this.data('confirm') && !window.confirm($this.data('confirm'))) {
         return false;
       }
-      $('<form></form>').attr('method', $this.data('method')).attr('action', $this.attr('href')).appendTo(document.body).submit();
+      var prompt_result = '';
+      if ($this.data('prompt') && !(prompt_result = window.prompt($this.data('prompt')))) {
+        return false;
+      }
+      var form = $('<form></form>')
+        .attr('method', $this.data('method'))
+        .attr('action', $this.attr('href'));
+      if (prompt_result) {
+        $('<input>')
+          .attr('name', 'prompt')
+          .attr('value', prompt_result)
+          .appendTo(form);
+      }
+      form
+        .appendTo(document.body)
+        .submit();
       return false;
     })
   })

@@ -155,6 +155,9 @@ class PushActionHandler(BaseHandler):
 
     def refuse(self, pr):
         self.db.push_request.mod(pr['id'], status=self.db.push_request.REFUSE)
+        reject_message = self.get_argument('prompt', None)
+        if reject_message:
+            self.db.push_request.mod(pr['id'], msg=reject_message)
 
 class PushViewHandler(BaseHandler):
     @tornado.web.authenticated
