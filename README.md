@@ -150,7 +150,7 @@
 	```
 	例：
 	```
-	python ./chrole 123456@qq.com admin
+	python ./chrole.py 123456@qq.com admin
 	```
 3. 退出容器管理  
     ```
