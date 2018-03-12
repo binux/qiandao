@@ -2,12 +2,12 @@
 FROM python:2.7-alpine
 
 # 维护者信息
-MAINTAINER fangzhengjin <fangzhengjin@gmail.com>
+LABEL maintainer="fangzhengjin <fangzhengjin@gmail.com>"
 
-RUN apk update
-RUN apk add bash autoconf g++
+RUN apk update \
+    && apk add bash autoconf g++ \
+    && mkdir -p /usr/src/app
 
-RUN mkdir -p /usr/src/app
 WORKDIR /usr/src/app
 
 COPY . /usr/src/app
