@@ -253,3 +253,22 @@ jinja_globals = {
     'utf8': utf8,
     'timestamp': time.time,
 }
+
+import random
+def get_random(min_num, max_mun, unit):
+    random_num = random.uniform(min_num, max_mun)
+    result = "%.{}f".format(int(unit)) % random_num
+    return result
+
+import datetime
+def get_date_time(date=True, time=True):
+    now_date = datetime.datetime.today()
+    if date:
+        if time:
+            return str(now_date).split('.')[0]
+        else:
+            return str(now_date.date())
+    elif time:
+        return str(now_date.time()).split('.')[0]
+    else:
+        return
