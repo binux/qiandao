@@ -246,10 +246,33 @@ import hashlib
 md5string = lambda x: hashlib.md5(utf8(x)).hexdigest()
 
 
+import random
+def get_random(min_num, max_mun, unit):
+    random_num = random.uniform(min_num, max_mun)
+    result = "%.{}f".format(int(unit)) % random_num
+    return result
+
+
+import datetime
+def get_date_time(date=True, time=True):
+    now_date = datetime.datetime.today()
+    if date:
+        if time:
+            return str(now_date).split('.')[0]
+        else:
+            return str(now_date.date())
+    elif time:
+        return str(now_date.time()).split('.')[0]
+    else:
+        return
+
+
 import time
 jinja_globals = {
     'md5': md5string,
     'quote_chinese': quote_chinese,
     'utf8': utf8,
     'timestamp': time.time,
+    'random': get_random,
+    'date_time': get_date_time,
 }
