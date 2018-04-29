@@ -249,7 +249,7 @@ md5string = lambda x: hashlib.md5(utf8(x)).hexdigest()
 import random
 def get_random(min_num, max_mun, unit):
     random_num = random.uniform(min_num, max_mun)
-    result = "%.{}f".format(int(unit)) % random_num
+    result = "%.{0}f".format(int(unit)) % random_num
     return result
 
 
