@@ -254,8 +254,9 @@ def get_random(min_num, max_mun, unit):
 
 
 import datetime
-def get_date_time(date=True, time=True):
-    now_date = datetime.datetime.today()
+def get_date_time(date=True, time=True, time_difference=0):
+    time_difference = time_difference + 12
+    now_date = datetime.datetime.today() + datetime.timedelta(hours=time_difference)
     if date:
         if time:
             return str(now_date).split('.')[0]
