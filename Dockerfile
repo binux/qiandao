@@ -2,7 +2,7 @@
 FROM python:2.7-alpine
 
 # 维护者信息
-LABEL maintainer="fangzhengjin <fangzhengjin@gmail.com>"
+LABEL MAINTAINER="fangzhengjin <fangzhengjin@gmail.com>"
 
 RUN apk update \
     && apk add bash autoconf g++ \
