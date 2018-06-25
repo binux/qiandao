@@ -38,8 +38,7 @@ if __name__ == "__main__":
     http_server.start()
 
     worker = MainWorker()
-    io_loop = IOLoop.instance()
-    PeriodicCallback(worker, config.check_task_loop, io_loop).start()
+    PeriodicCallback(worker, config.check_task_loop).start()
     worker()
 
     logging.info("http server started on %s:%s", config.bind, port)
