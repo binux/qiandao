@@ -127,8 +127,8 @@
           <td>
             {% if each.status == 0 %}
             <a href="/push/{{ each.id }}/view" target="_blank">查看</a>
-            <a data-method="post" href="/push/{{ each.id }}/accept">接受</a>
-            <a data-method="post" data-prompt="reject message" href="/push/{{ each.id }}/refuse">拒绝</a>
+            <a data-method="post" target="_blank" href="/push/{{ each.id }}/accept">接受</a>
+            <a data-method="post" target="_blank" data-prompt="reject message" href="/push/{{ each.id }}/refuse">拒绝</a>
             {% endif %}
           </td>
         </tr>
