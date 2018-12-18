@@ -51,6 +51,8 @@ domain = 'qiandao.today'
 
 # mailgun 邮件发送, 域名和 apikey
 mail_smtp = ""
+mail_port = 465
+mail_ssl = True
 mail_user = ""
 mail_password = ""
 mail_domain = "mail.qiandao.today"

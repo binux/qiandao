@@ -74,6 +74,9 @@
       var form = $('<form></form>')
         .attr('method', $this.data('method'))
         .attr('action', $this.attr('href'));
+      if ($this.attr('target')) {
+        form.attr('target', $this.attr('target'))
+      }
       if (prompt_result) {
         $('<input>')
           .attr('name', 'prompt')
