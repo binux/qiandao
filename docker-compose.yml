@@ -1,0 +1,10 @@
+container:
+  image: 'fangzhengjin/qiandao'
+  restart: always
+  environment:
+    TZ: 'Asia/Shanghai'
+  ports:
+    - '10080:80'
+  volumes:
+    - '/home/qiandao-data/root:/usr/src/root'
+    - '/home/qiandao-data/database.db:/usr/src/app/database.db'  #必须手动创建文件
