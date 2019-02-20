@@ -62,7 +62,8 @@ CREATE TABLE IF NOT EXISTS `qiandao`.`tpl` (
   PRIMARY KEY (`id`),
   INDEX `ix_siteurl` (`siteurl` ASC),
   INDEX `ix_sitename` (`sitename` ASC),
-  INDEX `ix_public` (`public` ASC))
+  INDEX `ix_public` (`public` ASC)),
+  INDEX `ix_userid` (`userid`))
 ENGINE = MyISAM
 DEFAULT CHARACTER SET = utf8;
 
