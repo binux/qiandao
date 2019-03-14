@@ -4,4 +4,4 @@ jinja2
 chardet
 requests
 pbkdf2
-pycrypto
+pycryptodome
