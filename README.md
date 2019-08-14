@@ -58,7 +58,7 @@ mail_smtp = ""      # 邮件smtp地址
 mail_port = 465     # 邮件smtp端口，非SSL默认端口为25
 mail_ssl = True     # 邮件smtp是否使用SSL
 mail_user = ""      # 邮件smtp账户
-mail_passowrd = ""  # 邮件smtp密码
+mail_password = ""  # 邮件smtp密码
 mail_domain = "mail.qiandao.today"
 mailgun_key = ""
 ```
