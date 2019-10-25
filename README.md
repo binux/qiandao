@@ -1,3 +1,10 @@
+[![Docker Automated build](https://img.shields.io/docker/automated/fangzhengjin/qiandao?style=flat-square)][0]
+[![Docker Build Status](https://img.shields.io/docker/build/fangzhengjin/qiandao?style=flat-square)][0]
+[![Docker Stars](https://img.shields.io/docker/stars/fangzhengjin/qiandao?style=flat-square)][0]
+[![Docker Pulls](https://img.shields.io/docker/pulls/fangzhengjin/qiandao?style=flat-square)][0]
+
+***
+
 # Docker部署签到站教程
 
 > **注:**
@@ -175,6 +182,7 @@
 
 其他站点配置请参考 [配置说明][2]
 
+[0]:https://hub.docker.com/r/fangzhengjin/qiandao
 [1]:https://github.com/binux/qiandao
 [2]:https://github.com/binux/qiandao/blob/master/README.md
 [3]:https://github.com/fangzhengjin/qiandao/blob/master/Dockerfile
