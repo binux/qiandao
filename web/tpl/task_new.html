@@ -30,6 +30,13 @@
   </div>
   {% endif %}
 
+  {% if current_user %}
+  <div class="form-group">
+    <label class="control-label" for="proxy">代理</label>
+    <input type="text" class="form-control" name="_binux_proxy" value="{{ init_env._proxy or '' }}" id="proxy" placeholder="http://127.0.0.1:8080" pattern="((https?|socks5)+://)?([^:@/]+(:[^@/]+)?@)?[^:@/]+:\d+">
+  </div>
+  {% endif %}
+
   {% if not task and current_user %}
   <div class="checkbox">
     <label>
