@@ -10,6 +10,7 @@ import time
 from tornado import gen
 
 from base import *
+from libs import utils
 
 class TaskNewHandler(BaseHandler):
     def get(self):
@@ -34,7 +35,7 @@ class TaskNewHandler(BaseHandler):
         tpl = self.check_permission(self.db.tpl.get(tplid, fields=('id', 'userid', 'note', 'sitename', 'siteurl', 'variables')))
         variables = json.loads(tpl['variables'])
         
-        self.render('task_new.html', tpls=tpls, tplid=tplid, tpl=tpl, variables=variables, task={})
+        self.render('task_new.html', tpls=tpls, tplid=tplid, tpl=tpl, variables=variables, task={}, init_env={})
 
     @tornado.web.authenticated
     def post(self, taskid=None):
@@ -42,6 +43,7 @@ class TaskNewHandler(BaseHandler):
         tplid = int(self.get_body_argument('_binux_tplid'))
         tested = self.get_body_argument('_binux_tested', False)
         note = self.get_body_argument('_binux_note')
+        proxy = self.get_body_argument('_binux_proxy')
 
         tpl = self.check_permission(self.db.tpl.get(tplid, fields=('id', 'userid', 'interval')))
 
@@ -52,6 +54,7 @@ class TaskNewHandler(BaseHandler):
             if not value:
                 continue
             env[key] = self.get_body_argument(key)
+        env['_proxy'] = proxy
 
         if not taskid:
             env = self.db.user.encrypt(user['id'], env)
@@ -77,13 +80,15 @@ class TaskEditHandler(TaskNewHandler):
     def get(self, taskid):
         user = self.current_user
         task = self.check_permission(self.db.task.get(taskid, fields=('id', 'userid',
-            'tplid', 'disabled', 'note')), 'w')
+            'tplid', 'disabled', 'note', 'init_env')), 'w')
 
         tpl = self.check_permission(self.db.tpl.get(task['tplid'], fields=('id', 'userid', 'note',
             'sitename', 'siteurl', 'variables')))
 
+        init_env = self.db.user.decrypt(user['id'], task['init_env'])
+
         variables = json.loads(tpl['variables'])
-        self.render('task_new.html', tpls=[tpl, ], tplid=tpl['id'], tpl=tpl, variables=variables, task=task)
+        self.render('task_new.html', tpls=[tpl, ], tplid=tpl['id'], tpl=tpl, variables=variables, task=task, init_env=init_env)
 
 class TaskRunHandler(BaseHandler):
     @tornado.web.authenticated
@@ -107,7 +112,15 @@ class TaskRunHandler(BaseHandler):
                 )
 
         try:
-            new_env = yield self.fetcher.do_fetch(fetch_tpl, env)
+            url = utils.parse_url(env['variables'].get('_proxy'))
+            if not url:
+                new_env = yield self.fetcher.do_fetch(fetch_tpl, env)
+            else:
+                proxy = {
+                    'host': url['host'],
+                    'port': url['port'],
+                }
+                new_env = yield self.fetcher.do_fetch(fetch_tpl, env, [proxy])
         except Exception as e:
             self.db.tasklog.add(task['id'], success=False, msg=unicode(e))
             self.finish('<h1 class="alert alert-danger text-center">签到失败</h1><div class="well">%s</div>' % e)
