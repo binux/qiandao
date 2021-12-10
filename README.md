@@ -5,6 +5,10 @@ qiandao
 
 HAR editor 使用指南：https://github.com/binux/qiandao/blob/master/docs/har-howto.md
 
+## 新版框架迁移
+[qiandao-today/qiandao](https://github.com/qiandao-today/qiandao): 基于本项目发布的新版框架地址, 现持续维护中
+> 支持旧版数据库直接迁移，请提前做好数据库备份
+
 Web
 ===
 
