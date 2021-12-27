@@ -15,8 +15,8 @@ Web
 需要 python2.7, 虚拟主机无法安装
 
 ```
-apt-get install python-dev autoconf g++ python-pbkdf2
-pip install tornado==4.5.3 u-msgpack-python jinja2 chardet requests pbkdf2 pycrypto
+sudo apt-get install python-dev autoconf g++ python-pbkdf2 python-pip
+sudo pip install tornado==4.5.3 u-msgpack-python jinja2 chardet requests pbkdf2 pycrypto
 ```
 
 可选 redis, Mysql
@@ -62,7 +62,7 @@ mail_smtp = ""      # 邮件smtp地址
 mail_port = 465     # 邮件smtp端口，非SSL默认端口为25
 mail_ssl = True     # 邮件smtp是否使用SSL
 mail_user = ""      # 邮件smtp账户
-mail_passowrd = ""  # 邮件smtp密码
+mail_password = ""  # 邮件smtp密码
 mail_domain = "mail.qiandao.today"
 mailgun_key = ""
 ```
