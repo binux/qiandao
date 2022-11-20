@@ -11,7 +11,7 @@ import umsgpack
 
 import config
 from libs import mcrypto as crypto, utils
-from basedb import BaseDB
+from .basedb import BaseDB
 
 logger = logging.getLogger('qiandao.userdb')
 class UserDB(BaseDB):

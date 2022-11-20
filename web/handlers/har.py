@@ -5,6 +5,7 @@
 #         http://binux.me
 # Created on 2014-08-01 10:35:08
 
+import six
 import time
 import json
 import umsgpack
@@ -12,7 +13,7 @@ from tornado import gen
 from jinja2 import Environment, meta
 from libs import utils
 
-from base import *
+from .base import *
 
 class HAREditor(BaseHandler):
     def get(self, id=None):
@@ -25,7 +26,7 @@ class HAREditor(BaseHandler):
                 self.db.tpl.get(id, fields=('id', 'userid', 'sitename', 'siteurl', 'banner', 'note', 'interval',
                     'har', 'variables', 'lock')))
 
-        tpl['har'] = self.db.user.decrypt(tpl['userid'], tpl['har'])
+        tpl['har'] = utils.ensure_dict(self.db.user.decrypt(tpl['userid'], tpl['har']))
         tpl['variables'] = json.loads(tpl['variables'])
 
         #self.db.tpl.mod(id, atime=time.time())
@@ -60,7 +61,7 @@ class HARTest(BaseHandler):
                     }
                 }
 
-        self.finish(result)
+        self.finish(utils.ensure_dict(result))
 
 class HARSave(BaseHandler):
     @staticmethod

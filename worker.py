@@ -153,10 +153,10 @@ class MainWorker(object):
         start = time.time()
         try:
             fetch_tpl = self.db.user.decrypt(0 if not tpl['userid'] else task['userid'], tpl['tpl'])
-            env = dict(
+            env = utils.ensure_dict(dict(
                     variables = self.db.user.decrypt(task['userid'], task['init_env']),
                     session = [],
-                    )
+                    ))
 
             new_env = yield self.fetcher.do_fetch(fetch_tpl, env)
 
@@ -220,7 +220,7 @@ class MainWorker(object):
                         disable=u"因连续多次失败，已停止。" if disabled else u"",
                         domain=config.domain,
                         taskid=task['id'],
-                        ), async=True)
+                        ), async_mode=True)
                 except Exception as e:
                     logging.error('send mail error: %r', e)
 
@@ -241,6 +241,6 @@ if __name__ == '__main__':
     tornado.log.enable_pretty_logging()
     worker = MainWorker()
     io_loop = tornado.ioloop.IOLoop.instance()
-    tornado.ioloop.PeriodicCallback(worker, config.check_task_loop, io_loop).start()
+    tornado.ioloop.PeriodicCallback(worker, config.check_task_loop).start()
     worker()
     io_loop.start()

@@ -6,6 +6,7 @@
 # Created on 2012-12-15 16:15:50
 
 import os
+from importlib import __import__
 
 handlers = []
 ui_modules = {}

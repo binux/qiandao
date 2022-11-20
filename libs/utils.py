@@ -5,6 +5,7 @@
 #         http://binux.me
 # Created on 2014-08-07 22:00:27
 
+import six
 import socket
 import struct
 from tornado import gen
@@ -132,13 +133,13 @@ import config
 from tornado import httpclient
 
 
-def send_mail(to, subject, text=None, html=None, async=False, _from=u"签到提醒 <noreply@%s>" % config.mail_domain):
+def send_mail(to, subject, text=None, html=None, async_mode=False, _from=u"签到提醒 <noreply@%s>" % config.mail_domain):
     if not config.mailgun_key:
         subtype = 'html' if html else 'plain'
         return _send_mail(to, subject, html or text or '', subtype)
 
     httpclient.AsyncHTTPClient.configure('tornado.curl_httpclient.CurlAsyncHTTPClient')
-    if async:
+    if async_mode:
         client = httpclient.AsyncHTTPClient()
     else:
         client = httpclient.HTTPClient()
@@ -196,12 +197,12 @@ def _send_mail(to, subject, text=None, subtype='html'):
 
 
 import chardet
-from requests.utils import get_encoding_from_headers, get_encodings_from_content
+from requests.utils import get_encoding_from_headers
 
 
 def find_encoding(content, headers=None):
     # content is unicode
-    if isinstance(content, unicode):
+    if isinstance(content, six.text_type):
         return 'unicode'
 
     encoding = None
@@ -211,11 +212,6 @@ def find_encoding(content, headers=None):
         encoding = get_encoding_from_headers(headers)
         if encoding == 'ISO-8859-1':
             encoding = None
-
-    # Try charset from content
-    if not encoding:
-        encoding = get_encodings_from_content(content)
-        encoding = encoding and encoding[0] or None
 
     # Fallback to auto-detected encoding.
     if not encoding and chardet is not None:
@@ -280,3 +276,12 @@ jinja_globals = {
     'random': get_random,
     'date_time': get_date_time,
 }
+
+def ensure_dict(d):
+    if hasattr(d, 'items'):
+        return {six.ensure_str(k): ensure_dict(v) for k, v in d.items()}
+    if isinstance(d, list):
+        return [ensure_dict(x) for x in d]
+    if isinstance(d, six.binary_type):
+        return six.ensure_str(d)
+    return d

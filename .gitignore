@@ -1,3 +1,5 @@
 *.idea
 *.pyc
 database.db
+mysql
+local_config.py

@@ -10,7 +10,7 @@ import logging
 
 import config
 from libs import utils
-from basedb import BaseDB
+from .basedb import BaseDB
 
 class PRDB(BaseDB):
     '''
@@ -63,7 +63,7 @@ class PRDB(BaseDB):
     def list(self, fields=None, limit=100, **kwargs):
         where = '1=1'
         where_values = []
-        for key, value in kwargs.iteritems():
+        for key, value in kwargs.items():
             if value is None:
                 where += ' and %s is %s' % (self.escape(key), self.placeholder)
             else:

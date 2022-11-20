@@ -34,7 +34,7 @@ def aes_encrypt(word, key=config.aes_key, iv=None):
     word = umsgpack.packb(word)
     mod = len(word) % 16
     if mod != 0:
-        word += '\0' * (16-mod)
+        word += b'\0' * (16-mod)
 
     aes = AES.new(key, AES.MODE_CBC, iv)
     ciphertext = aes.encrypt(word)

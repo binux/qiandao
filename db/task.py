@@ -11,7 +11,7 @@ import umsgpack
 
 import config
 from libs import utils
-from basedb import BaseDB
+from .basedb import BaseDB
 
 class TaskDB(BaseDB):
     '''

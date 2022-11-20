@@ -6,12 +6,13 @@
 # Created on 2014-08-06 11:55:41
 
 import re
+import six
 import json
 import random
 import urllib
 import base64
 import logging
-import urlparse
+import urllib.parse as urlparse
 from datetime import datetime
 
 try:
@@ -47,7 +48,7 @@ class Fetcher(object):
         def _render(obj, key):
             if not obj.get(key):
                 return
-            obj[key] = self.jinja_env.from_string(obj[key]).render(_cookies=_cookies, **env)
+            obj[key] = self.jinja_env.from_string(obj[key]).render(_cookies=_cookies, **utils.ensure_dict(env))
 
         _render(request, 'method')
         _render(request, 'url')
@@ -151,7 +152,7 @@ class Fetcher(object):
                 if ret['postData']['mimeType'] == 'application/x-www-form-urlencoded':
                     ret['postData']['params'] = [
                             {'name': n, 'value': v} for n, v in \
-                                urlparse.parse_qsl(request.body)]
+                                urlparse.parse_qsl(six.ensure_str(request.body))]
                     try:
                         _ = json.dumps(ret['postData']['params'])
                     except UnicodeDecodeError:
