@@ -105,7 +105,8 @@ CREATE TABLE IF NOT EXISTS `qiandao`.`tasklog` (
   `success` TINYINT(1) NOT NULL,
   `ctime` INT UNSIGNED NOT NULL,
   `msg` TEXT NULL,
-  PRIMARY KEY (`id`))
+  PRIMARY KEY (`id`),
+  INDEX `ix_taskid` (`taskid`, `ctime` DESC))
 ENGINE = MyISAM;
 
 
