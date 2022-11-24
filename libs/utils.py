@@ -235,7 +235,7 @@ def decode(content, headers=None):
 
 
 def quote_chinese(url, encodeing="utf-8"):
-    if isinstance(url, unicode):
+    if isinstance(url, str):
         return quote_chinese(url.encode("utf-8"))
     res = [b if ord(b) < 128 else '%%%02X' % (ord(b)) for b in url]
     return "".join(res)

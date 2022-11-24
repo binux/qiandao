@@ -12,11 +12,10 @@ HAR editor 使用指南：https://github.com/binux/qiandao/blob/master/docs/har-
 Web
 ===
 
-需要 python2.7, 虚拟主机无法安装
+需要 python3.11, 虚拟主机无法安装
 
 ```
-apt-get install python-dev autoconf g++ python-pbkdf2
-pip install tornado==4.5.3 u-msgpack-python jinja2 chardet requests pbkdf2 pycrypto
+pip install -r requirements.txt
 ```
 
 可选 redis, Mysql
@@ -50,7 +49,7 @@ qiandao.py
 ==========
 
 ```
-pip install tornado u-msgpack-python jinja2 chardet requests
+pip install -r requirements.txt
 ./qiandao.py tpl.har [--key=value]* [env.json]
 ```
 

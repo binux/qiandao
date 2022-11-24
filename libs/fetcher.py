@@ -216,7 +216,7 @@ class Fetcher(object):
                 _from = _from[7:]
                 return response.headers.get(_from, '')
             elif _from == 'header':
-                return unicode(response.headers)
+                return str(response.headers)
             else:
                 return ''
 
